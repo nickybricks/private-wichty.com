@@ -74,7 +74,7 @@ export default function Landing() {
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-tight">
               {t('hero.title')}{" "}
-              <span className="text-primary bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <span className="text-gradient">
                 {t('hero.titleHighlight')}
               </span>
             </h1>

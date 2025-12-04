@@ -124,4 +124,19 @@ All colors MUST be HSL.
   .shadow-strong {
     box-shadow: var(--shadow-strong);
   }
+  
+  /* Gradient Text für Highlights */
+  .text-gradient {
+    background: linear-gradient(90deg, #FF4D68 0%, #8000FF 50%, #00C4CC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-warm {
+    background: linear-gradient(90deg, #FF4D68 0%, #8000FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
