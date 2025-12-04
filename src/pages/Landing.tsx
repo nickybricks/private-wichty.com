@@ -223,7 +223,7 @@ export default function Landing() {
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
           <div className="relative z-10">
-            <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-primary mb-4" />
+            <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4" style={{ stroke: 'url(#icon-gradient)' }} />
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
               {t('cta.title')}
             </h2>
