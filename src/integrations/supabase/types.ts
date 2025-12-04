@@ -16,39 +16,57 @@ export type Database = {
     Tables: {
       events: {
         Row: {
+          capacity_unlimited: boolean | null
           created_at: string
+          description: string | null
+          end_time: string | null
           event_date: string | null
           event_time: string | null
           id: string
           image_url: string | null
+          is_paid: boolean | null
+          is_public: boolean | null
           location: string | null
           name: string
+          requires_approval: boolean | null
           status: Database["public"]["Enums"]["event_status"]
           target_participants: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          capacity_unlimited?: boolean | null
           created_at?: string
+          description?: string | null
+          end_time?: string | null
           event_date?: string | null
           event_time?: string | null
           id?: string
           image_url?: string | null
+          is_paid?: boolean | null
+          is_public?: boolean | null
           location?: string | null
           name: string
+          requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          capacity_unlimited?: boolean | null
           created_at?: string
+          description?: string | null
+          end_time?: string | null
           event_date?: string | null
           event_time?: string | null
           id?: string
           image_url?: string | null
+          is_paid?: boolean | null
+          is_public?: boolean | null
           location?: string | null
           name?: string
+          requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
           updated_at?: string

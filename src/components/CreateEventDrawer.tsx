@@ -6,10 +6,24 @@ import { de, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Users, Image as ImageIcon, CalendarIcon, MapPin, Clock } from "lucide-react";
+import { 
+  Loader2, 
+  Image as ImageIcon, 
+  CalendarIcon, 
+  MapPin, 
+  Clock,
+  Globe,
+  Lock,
+  Users,
+  CreditCard,
+  UserCheck,
+  Infinity
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -17,7 +31,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerDescription,
 } from "@/components/ui/drawer";
 
 interface CreateEventDrawerProps {
@@ -29,14 +42,29 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('forms');
   const { t: ta } = useTranslation('auth');
+  
+  // Basic info
   const [name, setName] = useState("");
-  const [participants, setParticipants] = useState("");
-  const [eventDate, setEventDate] = useState<Date | undefined>();
-  const [eventTime, setEventTime] = useState("");
+  const [description, setDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+  
+  // Date & Time - pre-filled with today
+  const [eventDate, setEventDate] = useState<Date | undefined>(new Date());
+  const [startTime, setStartTime] = useState(format(new Date(), "HH:00"));
+  const [endTime, setEndTime] = useState(format(new Date(Date.now() + 2 * 60 * 60 * 1000), "HH:00"));
+  
+  // Location & Image
   const [location, setLocation] = useState("");
-  const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Event options
+  const [isPaid, setIsPaid] = useState(false);
+  const [requiresApproval, setRequiresApproval] = useState(false);
+  const [capacityUnlimited, setCapacityUnlimited] = useState(true);
+  const [maxCapacity, setMaxCapacity] = useState("");
+  
+  const [loading, setLoading] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -62,26 +90,35 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
 
   const resetForm = () => {
     setName("");
-    setParticipants("");
-    setEventDate(undefined);
-    setEventTime("");
+    setDescription("");
+    setIsPublic(true);
+    setEventDate(new Date());
+    setStartTime(format(new Date(), "HH:00"));
+    setEndTime(format(new Date(Date.now() + 2 * 60 * 60 * 1000), "HH:00"));
     setLocation("");
     setImageFile(null);
     setImagePreview(null);
+    setIsPaid(false);
+    setRequiresApproval(false);
+    setCapacityUnlimited(true);
+    setMaxCapacity("");
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const participantCount = parseInt(participants);
     
     if (!name.trim()) {
       toast.error(t('errors.enterEventName'));
       return;
     }
     
-    if (!participantCount || participantCount < 2) {
-      toast.error(t('errors.minParticipants'));
+    if (!eventDate) {
+      toast.error(i18n.language === 'de' ? 'Bitte wähle ein Datum aus' : 'Please select a date');
+      return;
+    }
+
+    if (!capacityUnlimited && (!maxCapacity || parseInt(maxCapacity) < 1)) {
+      toast.error(i18n.language === 'de' ? 'Bitte gib eine gültige Kapazität ein' : 'Please enter a valid capacity');
       return;
     }
 
@@ -96,7 +133,6 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
 
       let imageUrl = null;
 
-      // Upload image if provided
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -118,13 +154,19 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         .from("events")
         .insert({
           name: name.trim(),
-          target_participants: participantCount,
+          description: description.trim() || null,
+          is_public: isPublic,
+          event_date: format(eventDate, "yyyy-MM-dd"),
+          event_time: startTime || null,
+          end_time: endTime || null,
+          location: location.trim() || null,
+          image_url: imageUrl,
+          is_paid: isPaid,
+          requires_approval: requiresApproval,
+          capacity_unlimited: capacityUnlimited,
+          target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
           status: "waiting",
           user_id: user.id,
-          image_url: imageUrl,
-          event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
-          event_time: eventTime || null,
-          location: location.trim() || null,
         })
         .select()
         .single();
@@ -145,144 +187,248 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh]">
-        <div className="mx-auto w-full max-w-md overflow-y-auto px-4 pb-8">
-          <DrawerHeader className="text-center">
+      <DrawerContent className="max-h-[95vh]">
+        <div className="mx-auto w-full max-w-lg overflow-y-auto px-4 pb-8">
+          <DrawerHeader className="text-center pb-2">
             <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
-            <DrawerDescription>
-              {t('createEvent.drawerDescription')}
-            </DrawerDescription>
           </DrawerHeader>
 
-          <form onSubmit={handleCreateEvent} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="drawer-name" className="text-base">
-                {t('createEvent.eventName')}
-              </Label>
-              <Input
-                id="drawer-name"
-                type="text"
-                placeholder={t('createEvent.eventNamePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-12 text-lg"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="drawer-participants" className="text-base">
-                {t('createEvent.participants')}
-              </Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <form onSubmit={handleCreateEvent} className="space-y-5">
+            {/* Event Preview Card Style */}
+            <div className="rounded-2xl border border-border overflow-hidden bg-card">
+              {/* Image Upload Area */}
+              <label
+                htmlFor="drawer-image"
+                className="block relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors"
+              >
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt={t('createEvent.preview')}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
+                    </p>
+                  </div>
+                )}
                 <Input
-                  id="drawer-participants"
-                  type="number"
-                  min="2"
-                  placeholder={t('createEvent.participantsPlaceholder')}
-                  value={participants}
-                  onChange={(e) => setParticipants(e.target.value)}
-                  className="pl-10 h-12 text-lg"
+                  id="drawer-image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </label>
+
+              {/* Event Details */}
+              <div className="p-4 space-y-4">
+                {/* Public/Private Toggle */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={isPublic ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsPublic(true)}
+                    className="gap-1.5"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!isPublic ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsPublic(false)}
+                    className="gap-1.5"
+                  >
+                    <Lock className="h-4 w-4" />
+                    {i18n.language === 'de' ? 'Privat' : 'Private'}
+                  </Button>
+                </div>
+
+                {/* Event Name */}
+                <Input
+                  type="text"
+                  placeholder={t('createEvent.eventNamePlaceholder')}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   required
                 />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {t('createEvent.participantsHint')}
-              </p>
-            </div>
 
-            <div className="space-y-2">
-              <Label className="text-base">{i18n.language === 'de' ? 'Datum & Uhrzeit (optional)' : 'Date & time (optional)'}</Label>
-              <div className="flex gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "flex-1 h-12 justify-start text-left font-normal",
-                        !eventDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-5 w-5" />
-                      {eventDate ? format(eventDate, "dd.MM.yyyy", { locale: dateLocale }) : (i18n.language === 'de' ? 'Datum' : 'Date')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={eventDate}
-                      onSelect={setEventDate}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <div className="relative w-32">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                {/* Date & Time */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{i18n.language === 'de' ? 'Datum & Uhrzeit' : 'Date & Time'}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "justify-start text-left font-normal",
+                            !eventDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {eventDate ? format(eventDate, "EEE, dd. MMM yyyy", { locale: dateLocale }) : (i18n.language === 'de' ? 'Datum wählen' : 'Select date')}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={eventDate}
+                          onSelect={setEventDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <div className="flex items-center gap-1">
+                      <div className="relative">
+                        <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="pl-8 w-28"
+                          required
+                        />
+                      </div>
+                      <span className="text-muted-foreground">—</span>
+                      <Input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>Location</span>
+                  </div>
                   <Input
-                    id="drawer-time"
-                    type="time"
-                    value={eventTime}
-                    onChange={(e) => setEventTime(e.target.value)}
-                    className="pl-10 h-12"
+                    type="text"
+                    placeholder={i18n.language === 'de' ? 'Ort hinzufügen (optional)' : 'Add location (optional)'}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">
+                    {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
+                  </Label>
+                  <Textarea
+                    placeholder={i18n.language === 'de' ? 'Event-Beschreibung hinzufügen (optional)' : 'Add event description (optional)'}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    className="resize-none"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="drawer-location" className="text-base">
-                {i18n.language === 'de' ? 'Location (optional)' : 'Location (optional)'}
-              </Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="drawer-location"
-                  type="text"
-                  placeholder={i18n.language === 'de' ? 'z.B. Bei Maria zuhause' : 'e.g. At Maria\'s place'}
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="pl-10 h-12 text-lg"
-                />
-              </div>
-            </div>
+            {/* Event Options */}
+            <div className="rounded-2xl border border-border overflow-hidden bg-card">
+              <div className="p-4 space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                  {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
+                </h3>
 
-            <div className="space-y-2">
-              <Label htmlFor="drawer-image" className="text-base">
-                {t('createEvent.eventImage')} {t('createEvent.optional')}
-              </Label>
-              <div className="space-y-4">
-                <div className="flex items-center justify-center w-full">
-                  <label
-                    htmlFor="drawer-image"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors"
-                  >
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt={t('createEvent.preview')}
-                        className="h-full w-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                          {t('createEvent.uploadHint')}
+                {/* Paid/Free */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Zahlungen akzeptieren' : 'Accept payments'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {isPaid 
+                          ? (i18n.language === 'de' ? 'Teilnehmer zahlen für das Event' : 'Attendees pay for the event')
+                          : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch checked={isPaid} onCheckedChange={setIsPaid} />
+                </div>
+
+                {/* Requires Approval */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <UserCheck className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+                </div>
+
+                {/* Capacity */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">
+                          {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('createEvent.imageSize')}
+                        <p className="text-sm text-muted-foreground">
+                          {capacityUnlimited 
+                            ? (i18n.language === 'de' ? 'Unbegrenzte Teilnehmer' : 'Unlimited attendees')
+                            : (i18n.language === 'de' ? 'Begrenzte Plätze' : 'Limited spots')}
                         </p>
                       </div>
-                    )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant={capacityUnlimited ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCapacityUnlimited(true)}
+                      >
+                        <Infinity className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={!capacityUnlimited ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCapacityUnlimited(false)}
+                      >
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {!capacityUnlimited && (
                     <Input
-                      id="drawer-image"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageChange}
+                      type="number"
+                      min="1"
+                      placeholder={i18n.language === 'de' ? 'Max. Teilnehmer' : 'Max attendees'}
+                      value={maxCapacity}
+                      onChange={(e) => setMaxCapacity(e.target.value)}
+                      className="w-full"
                     />
-                  </label>
+                  )}
                 </div>
               </div>
             </div>
