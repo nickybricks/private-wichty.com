@@ -102,6 +102,7 @@
         "connected": "Connected",
         "connectButton": "Connect with Stripe",
         "continueSetup": "Continue setup",
+        "manageDashboard": "Open dashboard",
         "chargesEnabled": "Payments enabled",
         "payoutsEnabled": "Payouts enabled",
         "setupIncomplete": "Setup incomplete",
