@@ -1,0 +1,30 @@
+{
+  "createEvent": {
+    "title": "Create event",
+    "subtitle": "Ready in seconds",
+    "drawerTitle": "Create new event",
+    "drawerDescription": "Start your digital Secret Santa event",
+    "eventName": "Event name",
+    "eventNamePlaceholder": "e.g. Christmas Party 2024",
+    "participants": "Number of participants",
+    "participantsPlaceholder": "e.g. 5",
+    "participantsHint": "Odd numbers are also possible",
+    "eventImage": "Event image",
+    "optional": "(optional)",
+    "uploadImage": "Upload image",
+    "uploadHint": "Click to upload an image",
+    "imageSize": "PNG, JPG up to 5 MB",
+    "preview": "Preview",
+    "button": "Create event",
+    "loading": "Creating...",
+    "success": "Event created!",
+    "successCreated": "Event successfully created!"
+  },
+  "errors": {
+    "enterEventName": "Please enter an event name",
+    "minParticipants": "At least 2 participants required",
+    "selectImage": "Please select an image file",
+    "imageSize": "Image must be 5 MB or less",
+    "createError": "Error creating event"
+  }
+}

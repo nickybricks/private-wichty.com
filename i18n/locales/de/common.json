@@ -1,0 +1,44 @@
+{
+  "header": {
+    "login": "Anmelden",
+    "getStarted": "Loslegen",
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "footer": {
+    "about": "Über uns",
+    "legal": "Rechtliches",
+    "resources": "Ressourcen",
+    "imprint": "Impressum",
+    "privacy": "Datenschutz",
+    "guide": "Ratgeber",
+    "copyright": "Wichty. Alle Rechte vorbehalten."
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "status": {
+    "waiting": "Wartet",
+    "active": "Aktiv",
+    "completed": "Abgeschlossen"
+  },
+  "participants": "Teilnehmer",
+  "createdByYou": "Erstellt von dir",
+  "cookies": {
+    "title": "Cookie-Einstellungen",
+    "description": "Wir nutzen Cookies, um dein Erlebnis zu verbessern. Du kannst auswählen, welche Cookies du akzeptierst.",
+    "acceptAll": "Alle akzeptieren",
+    "acceptNecessary": "Nur notwendige",
+    "settings": "Einstellungen",
+    "settingsTitle": "Cookie-Einstellungen",
+    "necessary": "Notwendige Cookies",
+    "necessaryDesc": "Diese Cookies sind für die Grundfunktionen erforderlich.",
+    "analytics": "Analyse-Cookies",
+    "analyticsDesc": "Helfen uns zu verstehen, wie Besucher unsere Website nutzen.",
+    "marketing": "Marketing-Cookies",
+    "marketingDesc": "Werden verwendet, um relevante Werbung anzuzeigen.",
+    "save": "Speichern"
+  }
+}

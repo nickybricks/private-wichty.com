@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "badge": "Einfach. Digital. Fair.",
+    "title": "Wichteln war noch nie so",
+    "titleHighlight": "einfach",
+    "subtitle": "Organisiere dein Wichtel-Event in wenigen Sekunden. Teile den Link, lade Freunde ein und startet die faire Zulosung.",
+    "learnMore": "Mehr erfahren →"
+  },
+  "benefits": {
+    "free": "100% kostenlos",
+    "unlimited": "Unbegrenzt Teilnehmer",
+    "instant": "Sofort einsatzbereit"
+  },
+  "whyUs": {
+    "title": "Warum Wichty?",
+    "subtitle": "Die moderne Art zu wichteln – ohne Zettel, ohne Chaos, ohne Probleme",
+    "secure": {
+      "title": "Sicher & Privat",
+      "description": "Deine Daten sind verschlüsselt. Niemand außer dir sieht, wen du gezogen hast."
+    },
+    "fast": {
+      "title": "Blitzschnell",
+      "description": "In unter 2 Minuten erstellt und geteilt. Keine Registrierung für Teilnehmer nötig."
+    },
+    "fair": {
+      "title": "Fair & Zufällig",
+      "description": "Garantiert faire Zulosung durch Algorithmus. Niemand zieht sich selbst."
+    },
+    "everyone": {
+      "title": "Für alle",
+      "description": "Perfekt für Familie, Freunde und Kollegen. Beliebig viele Teilnehmer möglich."
+    }
+  },
+  "blog": {
+    "badge": "Tipps & Inspiration",
+    "title": "Wichtel-Ratgeber",
+    "subtitle": "Ideen und Wissenswertes rund ums Wichteln",
+    "allArticles": "Alle Artikel"
+  },
+  "cta": {
+    "title": "Bereit für dein Wichtel-Event?",
+    "subtitle": "Starte jetzt kostenfrei und organisiere dein perfektes Wichtel-Event in wenigen Minuten.",
+    "button": "Jetzt Event erstellen"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "badge": "Simple. Digital. Fair.",
+    "title": "Secret Santa has never been",
+    "titleHighlight": "easier",
+    "subtitle": "Organize your Secret Santa event in seconds. Share the link, invite friends and start the fair draw.",
+    "learnMore": "Learn more →"
+  },
+  "benefits": {
+    "free": "100% free",
+    "unlimited": "Unlimited participants",
+    "instant": "Ready instantly"
+  },
+  "whyUs": {
+    "title": "Why Wichty?",
+    "subtitle": "The modern way to do Secret Santa – no paper, no chaos, no problems",
+    "secure": {
+      "title": "Secure & Private",
+      "description": "Your data is encrypted. No one but you can see who you drew."
+    },
+    "fast": {
+      "title": "Lightning Fast",
+      "description": "Created and shared in under 2 minutes. No registration required for participants."
+    },
+    "fair": {
+      "title": "Fair & Random",
+      "description": "Guaranteed fair draw by algorithm. No one draws themselves."
+    },
+    "everyone": {
+      "title": "For Everyone",
+      "description": "Perfect for family, friends and colleagues. Any number of participants possible."
+    }
+  },
+  "blog": {
+    "badge": "Tips & Inspiration",
+    "title": "Secret Santa Guide",
+    "subtitle": "Ideas and knowledge about Secret Santa",
+    "allArticles": "All Articles"
+  },
+  "cta": {
+    "title": "Ready for your Secret Santa event?",
+    "subtitle": "Start for free now and organize your perfect Secret Santa event in minutes.",
+    "button": "Create Event Now"
+  }
+}

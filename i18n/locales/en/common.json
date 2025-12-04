@@ -1,0 +1,44 @@
+{
+  "header": {
+    "login": "Sign In",
+    "getStarted": "Get Started",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Log Out"
+  },
+  "footer": {
+    "about": "About Us",
+    "legal": "Legal",
+    "resources": "Resources",
+    "imprint": "Imprint",
+    "privacy": "Privacy Policy",
+    "guide": "Guide",
+    "copyright": "Wichty. All rights reserved."
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "status": {
+    "waiting": "Waiting",
+    "active": "Active",
+    "completed": "Completed"
+  },
+  "participants": "Participants",
+  "createdByYou": "Created by you",
+  "cookies": {
+    "title": "Cookie Settings",
+    "description": "We use cookies to improve your experience. You can choose which cookies to accept.",
+    "acceptAll": "Accept All",
+    "acceptNecessary": "Necessary Only",
+    "settings": "Settings",
+    "settingsTitle": "Cookie Settings",
+    "necessary": "Necessary Cookies",
+    "necessaryDesc": "These cookies are required for basic functionality.",
+    "analytics": "Analytics Cookies",
+    "analyticsDesc": "Help us understand how visitors use our website.",
+    "marketing": "Marketing Cookies",
+    "marketingDesc": "Used to display relevant advertising.",
+    "save": "Save"
+  }
+}

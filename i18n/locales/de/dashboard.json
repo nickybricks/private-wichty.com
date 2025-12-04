@@ -1,0 +1,19 @@
+{
+  "title": "Meine Events",
+  "subtitle": "Erstelle neue Events oder trete bestehenden bei",
+  "newEvent": "Neues Event",
+  "filter": {
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen"
+  },
+  "empty": {
+    "title": "Noch keine Events",
+    "subtitle": "Erstelle dein erstes Wichtel-Event oder trete einem bestehenden bei!",
+    "button": "Erstes Event erstellen",
+    "pastTitle": "Keine vergangenen Events",
+    "pastSubtitle": "Hier erscheinen Events, deren Datum bereits vergangen ist."
+  },
+  "errors": {
+    "loadingEvents": "Fehler beim Laden der Events"
+  }
+}

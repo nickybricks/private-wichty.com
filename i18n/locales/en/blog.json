@@ -1,0 +1,22 @@
+{
+  "title": "Secret Santa Guide",
+  "metaTitle": "Secret Santa Guide: Tips & Ideas | Wichty",
+  "metaDescription": "Discover tips, ideas, and inspiration for Secret Santa. From White Elephant to office events – everything for your perfect gift exchange.",
+  "badge": "Tips & Inspiration",
+  "subtitle": "Ideas, tips, and knowledge about Secret Santa – for unforgettable events",
+  "breadcrumb": {
+    "home": "Home",
+    "guide": "Guide"
+  },
+  "toApp": "To App",
+  "allArticles": "All Articles",
+  "relatedArticles": "Related Articles",
+  "topics": "Topics",
+  "readingTime": "{{minutes}} min read",
+  "readInGerman": "Auf Deutsch lesen",
+  "cta": {
+    "title": "Start your Secret Santa Event",
+    "description": "Create your event for free now and invite your friends.",
+    "button": "Get Started"
+  }
+}

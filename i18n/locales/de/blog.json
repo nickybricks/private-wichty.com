@@ -1,0 +1,22 @@
+{
+  "title": "Wichtel-Ratgeber",
+  "metaTitle": "Wichtel-Ratgeber: Tipps & Ideen für dein Wichteln | Wichty",
+  "metaDescription": "Entdecke Tipps, Ideen und Inspiration rund ums Wichteln. Von Schrottwichteln bis Firmen-Events – alles für dein perfektes Wichtel-Event.",
+  "badge": "Tipps & Inspiration",
+  "subtitle": "Ideen, Tipps und Wissenswertes rund ums Wichteln – für unvergessliche Events",
+  "breadcrumb": {
+    "home": "Startseite",
+    "guide": "Ratgeber"
+  },
+  "toApp": "Zur App",
+  "allArticles": "Alle Artikel",
+  "relatedArticles": "Weitere Artikel",
+  "topics": "Themen",
+  "readingTime": "{{minutes}} Min. Lesezeit",
+  "readInEnglish": "Read in English",
+  "cta": {
+    "title": "Starte dein Wichtel-Event",
+    "description": "Erstelle jetzt kostenfrei dein Event und lade deine Freunde ein.",
+    "button": "Jetzt loslegen"
+  }
+}
