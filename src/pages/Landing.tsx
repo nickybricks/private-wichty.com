@@ -46,7 +46,7 @@ export default function Landing() {
             <Button
               variant="ghost"
               onClick={() => setShowAuthDialog(true)}
-              className="hidden sm:inline-flex"
+              className="sm:hidden"
             >
               {tc('header.login')}
             </Button>
