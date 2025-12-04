@@ -54,7 +54,7 @@ export default function Landing() {
               onClick={() => setShowAuthDialog(true)}
               className="shadow-medium hover:shadow-strong transition-all"
             >
-              {tc('header.getStarted')}
+              {tc('header.login')}
             </Button>
           </div>
         </div>
