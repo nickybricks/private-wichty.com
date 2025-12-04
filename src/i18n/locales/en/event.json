@@ -2,29 +2,35 @@
   "notFound": "Event not found",
   "loadingError": "Error loading event",
   "participants": "Participants",
-  "shareLink": "Share link",
+  "participantsCount": "{{count}} participants",
+  "shareLink": "Share",
   "linkCopied": "Link copied!",
-  "waitingFor": "Waiting for {{count}} more players...",
-  "readyToPlay": "Ready to play! 🎉",
-  "startDraw": "Start draw",
-  "alreadyDrawn": "You've already drawn! Check your assignment above. 🎁",
   "noDate": "No date specified",
   "noLocation": "No location specified",
   "at": "at",
   "oclock": "",
-  "youGift": "You're gifting:",
-  "wish": "Wish",
-  "editWish": "Edit wish",
-  "you": "(You)",
+  "free": "Free",
   "joinSuccess": "Successfully joined!",
+  "cta": {
+    "join": "Join",
+    "requestJoin": "Request to join",
+    "buyTicket": "Buy ticket",
+    "joined": "You're attending ✓"
+  },
+  "host": {
+    "title": "Host",
+    "viewEvents": "View events"
+  },
+  "participantsList": {
+    "title": "Who's coming",
+    "close": "Close"
+  },
   "join": {
     "title": "Join event",
-    "description": "Enter your name and gift wish to join the event.",
+    "description": "Enter your name to join the event.",
     "yourName": "Your name",
     "namePlaceholder": "e.g. John Smith",
-    "yourWish": "Your gift wish",
-    "wishPlaceholder": "What would you like? Write down some ideas...",
-    "button": "Join event",
+    "button": "Join",
     "loading": "Joining...",
     "error": "Error joining"
   },

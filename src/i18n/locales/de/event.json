@@ -2,29 +2,35 @@
   "notFound": "Event nicht gefunden",
   "loadingError": "Fehler beim Laden des Events",
   "participants": "Teilnehmer",
-  "shareLink": "Link teilen",
+  "participantsCount": "{{count}} Teilnehmer",
+  "shareLink": "Teilen",
   "linkCopied": "Link kopiert!",
-  "waitingFor": "Wartet auf {{count}} weitere Spieler...",
-  "readyToPlay": "Spielbereit! 🎉",
-  "startDraw": "Zulosung starten",
-  "alreadyDrawn": "Du hast bereits gezogen! Schau dir deine Zuteilung oben an. 🎁",
   "noDate": "Kein Datum angegeben",
   "noLocation": "Kein Ort angegeben",
   "at": "um",
   "oclock": "Uhr",
-  "youGift": "Du beschenkst:",
-  "wish": "Wunsch",
-  "editWish": "Wunsch bearbeiten",
-  "you": "(Du)",
+  "free": "Kostenfrei",
   "joinSuccess": "Erfolgreich beigetreten!",
+  "cta": {
+    "join": "Teilnehmen",
+    "requestJoin": "Beitrittsanfrage",
+    "buyTicket": "Ticket kaufen",
+    "joined": "Du nimmst teil ✓"
+  },
+  "host": {
+    "title": "Host",
+    "viewEvents": "Events ansehen"
+  },
+  "participantsList": {
+    "title": "Wer kommt",
+    "close": "Schließen"
+  },
   "join": {
     "title": "Event beitreten",
-    "description": "Gib deinen Namen und deinen Geschenkwunsch ein, um dem Event beizutreten.",
+    "description": "Gib deinen Namen ein, um dem Event beizutreten.",
     "yourName": "Dein Name",
     "namePlaceholder": "z.B. Max Mustermann",
-    "yourWish": "Dein Geschenkwunsch",
-    "wishPlaceholder": "Was hättest du gerne? Schreib ein paar Ideen auf...",
-    "button": "Event beitreten",
+    "button": "Teilnehmen",
     "loading": "Tritt bei...",
     "error": "Fehler beim Beitreten"
   },
