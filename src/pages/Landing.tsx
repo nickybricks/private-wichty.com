@@ -44,13 +44,6 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <LanguageToggle />
             <Button
-              variant="ghost"
-              onClick={() => setShowAuthDialog(true)}
-              className="sm:hidden"
-            >
-              {tc('header.login')}
-            </Button>
-            <Button
               onClick={() => setShowAuthDialog(true)}
               className="shadow-medium hover:shadow-strong transition-all"
             >
