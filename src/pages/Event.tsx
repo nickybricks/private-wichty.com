@@ -281,7 +281,21 @@ export default function Event() {
         {/* Event Title & Details */}
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
+              {/* Prominent Price Badge for Paid Events */}
+              {event.is_paid && event.price_cents > 0 && (
+                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-primary">
+                    {new Intl.NumberFormat(i18n.language === 'de' ? 'de-DE' : 'en-US', {
+                      style: 'currency',
+                      currency: event.currency?.toUpperCase() || 'EUR',
+                    }).format(event.price_cents / 100)}
+                  </span>
+                </div>
+              )}
+            </div>
             {isHost && (
               <Button 
                 variant="ghost" 
