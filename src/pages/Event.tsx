@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Users, Gift, Settings, Calendar, MapPin } from "lucide-react";
+import { Loader2, Users, Gift, Settings, Calendar, MapPin, CreditCard } from "lucide-react";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { ParticipantsList } from "@/components/ParticipantsList";
 import { DrawAnimation } from "@/components/DrawAnimation";
@@ -26,6 +26,9 @@ interface Event {
   event_time: string | null;
   location: string | null;
   user_id: string | null;
+  is_paid: boolean;
+  price_cents: number;
+  currency: string;
 }
 
 interface Participant {
@@ -40,6 +43,7 @@ interface Participant {
 export default function Event() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation('event');
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -61,7 +65,57 @@ export default function Event() {
     checkAuth();
     fetchEventData();
     subscribeToChanges();
+    
+    // Handle payment success
+    handlePaymentSuccess();
   }, [id]);
+
+  const handlePaymentSuccess = async () => {
+    const paymentSuccess = searchParams.get('payment_success');
+    const participantName = searchParams.get('name');
+    const participantWish = searchParams.get('wish');
+
+    if (paymentSuccess === 'true' && participantName) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Add participant after successful payment
+        const { data, error } = await supabase
+          .from("participants")
+          .insert({
+            event_id: id,
+            name: decodeURIComponent(participantName),
+            wish: participantWish ? decodeURIComponent(participantWish) : '',
+            user_id: user.id,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          // Check if already exists
+          if (error.code !== '23505') { // unique constraint violation
+            throw error;
+          }
+        } else if (data) {
+          setCurrentParticipantId(data.id);
+          localStorage.setItem(`participant_${id}`, data.id);
+          toast.success(t('joinSuccess'));
+        }
+
+        // Clean URL
+        window.history.replaceState({}, '', `/event/${id}`);
+        fetchEventData();
+      } catch (error) {
+        console.error('Error adding participant after payment:', error);
+      }
+    }
+
+    if (searchParams.get('payment_cancelled') === 'true') {
+      toast.error(i18n.language === 'de' ? 'Zahlung abgebrochen' : 'Payment cancelled');
+      window.history.replaceState({}, '', `/event/${id}`);
+    }
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -332,6 +386,10 @@ export default function Event() {
         onOpenChange={setShowJoinSheet}
         eventId={id!}
         onSuccess={handleJoinSuccess}
+        isPaidEvent={event.is_paid}
+        priceCents={event.price_cents}
+        currency={event.currency}
+        eventName={event.name}
       />
 
       {/* Draw Animation */}

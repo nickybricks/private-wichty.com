@@ -94,7 +94,21 @@
     },
     "payment": {
       "title": "Zahlungseinstellungen",
-      "description": "Hier kannst du deine Zahlungsmethoden und Abrechnungen verwalten."
+      "description": "Hier kannst du deine Zahlungsmethoden und Abrechnungen verwalten.",
+      "stripeConnect": {
+        "title": "Stripe Connect",
+        "description": "Verbinde deinen Stripe-Account, um Zahlungen für kostenpflichtige Events zu erhalten.",
+        "notConnected": "Nicht verbunden",
+        "connected": "Verbunden",
+        "connectButton": "Mit Stripe verbinden",
+        "continueSetup": "Einrichtung fortsetzen",
+        "chargesEnabled": "Zahlungen aktiviert",
+        "payoutsEnabled": "Auszahlungen aktiviert",
+        "setupIncomplete": "Einrichtung unvollständig",
+        "connecting": "Verbinde...",
+        "error": "Fehler beim Verbinden mit Stripe",
+        "platformFee": "5% Plattformgebühr pro Transaktion"
+      }
     },
     "ticketSales": {
       "title": "Ticketverkauf",

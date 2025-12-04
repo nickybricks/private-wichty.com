@@ -61,6 +61,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   
   // Event options
   const [isPaid, setIsPaid] = useState(false);
+  const [price, setPrice] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [capacityUnlimited, setCapacityUnlimited] = useState(true);
   const [maxCapacity, setMaxCapacity] = useState("");
@@ -100,6 +101,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     setImageFile(null);
     setImagePreview(null);
     setIsPaid(false);
+    setPrice("");
     setRequiresApproval(false);
     setCapacityUnlimited(true);
     setMaxCapacity("");
@@ -120,6 +122,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
 
     if (!capacityUnlimited && (!maxCapacity || parseInt(maxCapacity) < 1)) {
       toast.error(i18n.language === 'de' ? 'Bitte gib eine gültige Kapazität ein' : 'Please enter a valid capacity');
+      return;
+    }
+
+    if (isPaid && (!price || parseFloat(price) <= 0)) {
+      toast.error(i18n.language === 'de' ? 'Bitte gib einen gültigen Preis ein' : 'Please enter a valid price');
       return;
     }
 
@@ -163,6 +170,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           location: location.trim() || null,
           image_url: imageUrl,
           is_paid: isPaid,
+          price_cents: isPaid ? Math.round(parseFloat(price) * 100) : 0,
+          currency: 'eur',
           requires_approval: requiresApproval,
           capacity_unlimited: capacityUnlimited,
           target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
@@ -367,6 +376,30 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                   </div>
                   <Switch checked={isPaid} onCheckedChange={setIsPaid} />
                 </div>
+
+                {/* Price Input when paid */}
+                {isPaid && (
+                  <div className="pl-8 space-y-2">
+                    <Label className="text-sm">
+                      {i18n.language === 'de' ? 'Preis pro Teilnehmer' : 'Price per attendee'}
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                      <Input
+                        type="number"
+                        min="0.50"
+                        step="0.50"
+                        placeholder="10.00"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="pl-8"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.language === 'de' ? '5% Plattformgebühr werden abgezogen' : '5% platform fee will be deducted'}
+                    </p>
+                  </div>
+                )}
 
                 {/* Requires Approval */}
                 <div className="flex items-center justify-between">

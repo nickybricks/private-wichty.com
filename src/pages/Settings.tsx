@@ -17,8 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell
+import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell, CheckCircle2, AlertCircle, ExternalLink
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -62,9 +63,28 @@ export default function Settings() {
   const [notifyOrganizing, setNotifyOrganizing] = useState(true);
   const [notifyProductUpdates, setNotifyProductUpdates] = useState(false);
 
+  // Stripe Connect
+  const [stripeConnectStatus, setStripeConnectStatus] = useState<{
+    connected: boolean;
+    charges_enabled: boolean;
+    payouts_enabled: boolean;
+    details_submitted: boolean;
+  } | null>(null);
+  const [stripeConnecting, setStripeConnecting] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(true);
+
   useEffect(() => {
     checkAuth();
     loadProfile();
+    checkStripeConnectStatus();
+
+    // Check for Stripe redirect params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('stripe_connected') === 'true' || params.get('stripe_refresh') === 'true') {
+      checkStripeConnectStatus();
+      // Clean URL
+      window.history.replaceState({}, '', '/settings');
+    }
   }, []);
 
   const checkAuth = async () => {
@@ -103,6 +123,55 @@ export default function Settings() {
       }
     } catch (error) {
       console.error("Error loading profile:", error);
+    }
+  };
+
+  const checkStripeConnectStatus = async () => {
+    try {
+      setStripeLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke('check-connect-status', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      setStripeConnectStatus(data);
+    } catch (error) {
+      console.error('Error checking Stripe status:', error);
+    } finally {
+      setStripeLoading(false);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    setStripeConnecting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error(t('auth:errors.pleaseLogin'));
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-connect-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      console.error('Error connecting Stripe:', error);
+      toast.error(t('settingsPage.payment.stripeConnect.error'));
+    } finally {
+      setStripeConnecting(false);
     }
   };
 
@@ -765,12 +834,93 @@ export default function Settings() {
           </TabsContent>
 
           {/* Zahlungseinstellungen Tab */}
-          <TabsContent value="zahlung" className="mt-6">
+          <TabsContent value="zahlung" className="mt-6 space-y-6">
+            {/* Stripe Connect */}
             <Card className="p-6 shadow-medium">
-              <div className="text-center py-8 text-muted-foreground">
-                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">{t('settingsPage.payment.title')}</h3>
-                <p className="text-sm">{t('settingsPage.payment.description')}</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{t('settingsPage.payment.stripeConnect.title')}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {t('settingsPage.payment.stripeConnect.description')}
+                      </p>
+                    </div>
+                  </div>
+                  {stripeLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  ) : stripeConnectStatus?.connected ? (
+                    <Badge variant={stripeConnectStatus.charges_enabled ? "default" : "secondary"}>
+                      {stripeConnectStatus.charges_enabled ? (
+                        <>
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          {t('settingsPage.payment.stripeConnect.connected')}
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          {t('settingsPage.payment.stripeConnect.setupIncomplete')}
+                        </>
+                      )}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">
+                      {t('settingsPage.payment.stripeConnect.notConnected')}
+                    </Badge>
+                  )}
+                </div>
+
+                {stripeConnectStatus?.connected && (
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <div className={`flex items-center gap-1.5 text-sm ${stripeConnectStatus.charges_enabled ? 'text-green-600' : 'text-muted-foreground'}`}>
+                      {stripeConnectStatus.charges_enabled ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4" />
+                      )}
+                      {t('settingsPage.payment.stripeConnect.chargesEnabled')}
+                    </div>
+                    <div className={`flex items-center gap-1.5 text-sm ${stripeConnectStatus.payouts_enabled ? 'text-green-600' : 'text-muted-foreground'}`}>
+                      {stripeConnectStatus.payouts_enabled ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4" />
+                      )}
+                      {t('settingsPage.payment.stripeConnect.payoutsEnabled')}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    {t('settingsPage.payment.stripeConnect.platformFee')}
+                  </p>
+                  <Button
+                    onClick={handleConnectStripe}
+                    disabled={stripeConnecting || stripeLoading}
+                    variant={stripeConnectStatus?.charges_enabled ? "outline" : "default"}
+                  >
+                    {stripeConnecting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('settingsPage.payment.stripeConnect.connecting')}
+                      </>
+                    ) : stripeConnectStatus?.connected && !stripeConnectStatus?.charges_enabled ? (
+                      <>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        {t('settingsPage.payment.stripeConnect.continueSetup')}
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        {t('settingsPage.payment.stripeConnect.connectButton')}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </Card>
           </TabsContent>

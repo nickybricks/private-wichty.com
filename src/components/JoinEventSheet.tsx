@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -12,7 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Gift } from "lucide-react";
+import { Loader2, User, Gift, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 interface JoinEventSheetProps {
@@ -20,6 +21,10 @@ interface JoinEventSheetProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   onSuccess: (participantId: string) => void;
+  isPaidEvent?: boolean;
+  priceCents?: number;
+  currency?: string;
+  eventName?: string;
 }
 
 export function JoinEventSheet({
@@ -27,12 +32,23 @@ export function JoinEventSheet({
   onOpenChange,
   eventId,
   onSuccess,
+  isPaidEvent = false,
+  priceCents = 0,
+  currency = 'eur',
+  eventName = '',
 }: JoinEventSheetProps) {
-  const { t } = useTranslation('event');
+  const { t, i18n } = useTranslation('event');
   const { t: ta } = useTranslation('auth');
   const [name, setName] = useState("");
   const [wish, setWish] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const formatPrice = (cents: number, curr: string) => {
+    return new Intl.NumberFormat(i18n.language === 'de' ? 'de-DE' : 'en-US', {
+      style: 'currency',
+      currency: curr.toUpperCase(),
+    }).format(cents / 100);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +67,35 @@ export function JoinEventSheet({
         return;
       }
 
+      // For paid events, redirect to Stripe checkout
+      if (isPaidEvent && priceCents > 0) {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const { data, error } = await supabase.functions.invoke('create-event-checkout', {
+          body: {
+            event_id: eventId,
+            participant_name: name.trim(),
+            participant_wish: wish.trim(),
+          },
+          headers: session ? {
+            Authorization: `Bearer ${session.access_token}`,
+          } : undefined,
+        });
+
+        if (error) throw error;
+
+        if (data?.url) {
+          // Open checkout in new tab
+          window.open(data.url, '_blank');
+          toast.success(i18n.language === 'de' 
+            ? 'Zahlung wird im neuen Tab geöffnet...' 
+            : 'Opening payment in new tab...');
+          onOpenChange(false);
+        }
+        return;
+      }
+
+      // For free events, directly add participant
       const { data, error } = await supabase
         .from("participants")
         .insert({
@@ -67,9 +112,9 @@ export function JoinEventSheet({
       onSuccess(data.id);
       setName("");
       setWish("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error joining event:", error);
-      toast.error(t('join.error'));
+      toast.error(error.message || t('join.error'));
     } finally {
       setLoading(false);
     }
@@ -83,6 +128,12 @@ export function JoinEventSheet({
           <SheetDescription>
             {t('join.description')}
           </SheetDescription>
+          {isPaidEvent && priceCents > 0 && (
+            <Badge variant="secondary" className="w-fit gap-1.5">
+              <CreditCard className="h-3 w-3" />
+              {formatPrice(priceCents, currency)}
+            </Badge>
+          )}
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -130,6 +181,13 @@ export function JoinEventSheet({
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 {t('join.loading')}
+              </>
+            ) : isPaidEvent && priceCents > 0 ? (
+              <>
+                <CreditCard className="mr-2 h-5 w-5" />
+                {i18n.language === 'de' 
+                  ? `${formatPrice(priceCents, currency)} zahlen & beitreten` 
+                  : `Pay ${formatPrice(priceCents, currency)} & join`}
               </>
             ) : (
               t('join.button')
