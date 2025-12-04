@@ -155,7 +155,7 @@ export default function Settings() {
     }
   };
 
-  const handleSettingChange = async (field: string, value: string | boolean) => {
+  const handleSettingChange = async (field: string, value: string | boolean, successMessage?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -166,6 +166,7 @@ export default function Settings() {
         .eq("id", user.id);
 
       if (error) throw error;
+      if (successMessage) toast.success(successMessage);
     } catch (error) {
       console.error("Error saving setting:", error);
       toast.error("Fehler beim Speichern der Einstellung");
@@ -174,12 +175,18 @@ export default function Settings() {
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
-    handleSettingChange('theme', newTheme);
+    const themeLabels: Record<string, string> = {
+      system: 'System',
+      light: 'Hell',
+      dark: 'Dunkel'
+    };
+    handleSettingChange('theme', newTheme, `Oberflächenanzeige auf "${themeLabels[newTheme]}" geändert`);
   };
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
-    handleSettingChange('language', lang);
+    const langLabels: Record<string, string> = { de: 'Deutsch', en: 'English' };
+    handleSettingChange('language', lang, `Sprache auf "${langLabels[lang]}" geändert`);
   };
 
   const handleNotificationChange = async (
@@ -201,6 +208,7 @@ export default function Settings() {
         .eq("id", user.id);
 
       if (error) throw error;
+      toast.success(`Benachrichtigung erfolgreich ${value ? 'aktiviert' : 'deaktiviert'}!`);
     } catch (error) {
       console.error("Error saving notification setting:", error);
       toast.error("Fehler beim Speichern der Einstellung");
