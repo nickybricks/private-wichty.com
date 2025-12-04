@@ -584,45 +584,88 @@ export default function Settings() {
           <TabsContent value="einstellungen" className="space-y-6 mt-6">
             {/* Appearance */}
             <Card className="p-6 shadow-medium">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Monitor className="h-5 w-5" />
-                  <h3 className="font-semibold">{t('settingsPage.appearance.title')}</h3>
-                </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="font-semibold">{t('settingsPage.appearance.title')}</h3>
                 <RadioGroup 
                   value={theme} 
                   onValueChange={handleThemeChange}
-                  className="grid grid-cols-3 gap-3"
+                  className="flex gap-4 justify-center sm:justify-end"
                 >
-                  <Label
-                    htmlFor="theme-system"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
-                      theme === 'system' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
-                    }`}
-                  >
+                  {/* System/Auto */}
+                  <Label htmlFor="theme-system" className="cursor-pointer">
+                    <div className={`relative rounded-xl overflow-hidden transition-all ${
+                      theme === 'system' ? 'ring-[3px] ring-primary ring-offset-2' : 'ring-1 ring-border hover:ring-primary/50'
+                    }`}>
+                      <div className="w-20 h-14 relative">
+                        {/* Split view - left light, right dark */}
+                        <div className="absolute inset-0 flex">
+                          <div className="w-1/2 bg-gradient-to-br from-blue-400 to-blue-600" />
+                          <div className="w-1/2 bg-gradient-to-br from-slate-700 to-slate-900" />
+                        </div>
+                        {/* Window mockup */}
+                        <div className="absolute inset-1 rounded-lg overflow-hidden shadow-sm">
+                          <div className="absolute inset-0 flex">
+                            <div className="w-1/2 bg-white" />
+                            <div className="w-1/2 bg-slate-800" />
+                          </div>
+                          <div className="relative h-3 flex items-center px-1 gap-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          </div>
+                          <div className="relative mx-1 mt-0.5">
+                            <div className="flex">
+                              <div className="w-1/2 h-1.5 bg-blue-400 rounded-sm mr-0.5" />
+                              <div className="w-1/2 h-1.5 bg-blue-500 rounded-sm" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     <RadioGroupItem value="system" id="theme-system" className="sr-only" />
-                    <Monitor className="h-6 w-6" />
-                    <span className="text-sm font-medium">{t('settingsPage.appearance.system')}</span>
+                    <span className="block text-xs font-medium text-center mt-2">{t('settingsPage.appearance.system')}</span>
                   </Label>
-                  <Label
-                    htmlFor="theme-light"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
-                      theme === 'light' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
-                    }`}
-                  >
+
+                  {/* Light */}
+                  <Label htmlFor="theme-light" className="cursor-pointer">
+                    <div className={`relative rounded-xl overflow-hidden transition-all ${
+                      theme === 'light' ? 'ring-[3px] ring-primary ring-offset-2' : 'ring-1 ring-border hover:ring-primary/50'
+                    }`}>
+                      <div className="w-20 h-14 bg-gradient-to-br from-blue-400 to-blue-600 relative">
+                        {/* Window mockup */}
+                        <div className="absolute inset-1 rounded-lg bg-white overflow-hidden shadow-sm">
+                          <div className="h-3 bg-gray-100 flex items-center px-1 gap-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          </div>
+                          <div className="mx-1 mt-0.5 h-1.5 bg-blue-400 rounded-sm w-3/4" />
+                        </div>
+                      </div>
+                    </div>
                     <RadioGroupItem value="light" id="theme-light" className="sr-only" />
-                    <Sun className="h-6 w-6" />
-                    <span className="text-sm font-medium">{t('settingsPage.appearance.light')}</span>
+                    <span className="block text-xs font-medium text-center mt-2">{t('settingsPage.appearance.light')}</span>
                   </Label>
-                  <Label
-                    htmlFor="theme-dark"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
-                      theme === 'dark' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
-                    }`}
-                  >
+
+                  {/* Dark */}
+                  <Label htmlFor="theme-dark" className="cursor-pointer">
+                    <div className={`relative rounded-xl overflow-hidden transition-all ${
+                      theme === 'dark' ? 'ring-[3px] ring-primary ring-offset-2' : 'ring-1 ring-border hover:ring-primary/50'
+                    }`}>
+                      <div className="w-20 h-14 bg-gradient-to-br from-slate-700 to-slate-900 relative">
+                        {/* Window mockup */}
+                        <div className="absolute inset-1 rounded-lg bg-slate-800 overflow-hidden shadow-sm">
+                          <div className="h-3 bg-slate-700 flex items-center px-1 gap-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          </div>
+                          <div className="mx-1 mt-0.5 h-1.5 bg-blue-500 rounded-sm w-3/4" />
+                        </div>
+                      </div>
+                    </div>
                     <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
-                    <Moon className="h-6 w-6" />
-                    <span className="text-sm font-medium">{t('settingsPage.appearance.dark')}</span>
+                    <span className="block text-xs font-medium text-center mt-2">{t('settingsPage.appearance.dark')}</span>
                   </Label>
                 </RadioGroup>
               </div>
