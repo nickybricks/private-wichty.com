@@ -10,6 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell
 } from "lucide-react";
@@ -584,32 +591,28 @@ export default function Settings() {
                   <Globe className="h-5 w-5" />
                   <h3 className="font-semibold">Sprache</h3>
                 </div>
-                <RadioGroup 
-                  value={i18n.language} 
+                <Select 
+                  value={i18n.language.startsWith('de') ? 'de' : 'en'} 
                   onValueChange={(lang) => i18n.changeLanguage(lang)}
-                  className="grid grid-cols-2 gap-3"
                 >
-                  <Label
-                    htmlFor="lang-de"
-                    className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      i18n.language === 'de' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <RadioGroupItem value="de" id="lang-de" className="sr-only" />
-                    <span className="text-2xl">🇩🇪</span>
-                    <span className="font-medium">Deutsch</span>
-                  </Label>
-                  <Label
-                    htmlFor="lang-en"
-                    className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      i18n.language === 'en' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <RadioGroupItem value="en" id="lang-en" className="sr-only" />
-                    <span className="text-2xl">🇬🇧</span>
-                    <span className="font-medium">English</span>
-                  </Label>
-                </RadioGroup>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="de">
+                      <span className="flex items-center gap-2">
+                        <span>🇩🇪</span>
+                        <span>Deutsch</span>
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="en">
+                      <span className="flex items-center gap-2">
+                        <span>🇬🇧</span>
+                        <span>English</span>
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </Card>
 
