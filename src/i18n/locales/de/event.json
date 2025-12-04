@@ -16,7 +16,16 @@
     "join": "Teilnehmen",
     "requestJoin": "Beitrittsanfrage",
     "buyTicket": "Ticket kaufen",
-    "joined": "Du nimmst teil ✓"
+    "joined": "Du nimmst teil ✓",
+    "leave": "Doch nicht teilnehmen"
+  },
+  "leaveSuccess": "Du nimmst nicht mehr teil",
+  "leaveError": "Fehler beim Abmelden",
+  "leave": {
+    "title": "Nicht mehr teilnehmen?",
+    "description": "Möchtest du wirklich nicht mehr an diesem Event teilnehmen?",
+    "yes": "Ja, abmelden",
+    "no": "Nein, bleiben"
   },
   "host": {
     "title": "Host",
