@@ -11,6 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { LocationInput } from "@/components/LocationInput";
 import { 
   Loader2, 
   Image as ImageIcon, 
@@ -319,11 +320,10 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                     <MapPin className="h-4 w-4" />
                     <span>Location</span>
                   </div>
-                  <Input
-                    type="text"
-                    placeholder={i18n.language === 'de' ? 'Ort hinzufügen (optional)' : 'Add location (optional)'}
+                  <LocationInput
                     value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    onChange={(value) => setLocation(value)}
+                    placeholder={i18n.language === 'de' ? 'Ort hinzufügen (optional)' : 'Add location (optional)'}
                   />
                 </div>
 
