@@ -94,6 +94,9 @@ export default function Settings() {
         setAvatarUrl(profile.avatar_url || "");
         setPhoneNumber(profile.phone_number || "");
         setPhoneVerified(profile.phone_verified || false);
+        setNotifyParticipating(profile.notify_participating ?? true);
+        setNotifyOrganizing(profile.notify_organizing ?? true);
+        setNotifyProductUpdates(profile.notify_product_updates ?? false);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -146,6 +149,35 @@ export default function Settings() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNotificationChange = async (
+    field: 'notify_participating' | 'notify_organizing' | 'notify_product_updates',
+    value: boolean
+  ) => {
+    // Update local state immediately
+    if (field === 'notify_participating') setNotifyParticipating(value);
+    if (field === 'notify_organizing') setNotifyOrganizing(value);
+    if (field === 'notify_product_updates') setNotifyProductUpdates(value);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ [field]: value })
+        .eq("id", user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error saving notification setting:", error);
+      toast.error("Fehler beim Speichern der Einstellung");
+      // Revert on error
+      if (field === 'notify_participating') setNotifyParticipating(!value);
+      if (field === 'notify_organizing') setNotifyOrganizing(!value);
+      if (field === 'notify_product_updates') setNotifyProductUpdates(!value);
     }
   };
 
@@ -637,7 +669,7 @@ export default function Settings() {
                     <Switch
                       id="notify-participating"
                       checked={notifyParticipating}
-                      onCheckedChange={setNotifyParticipating}
+                      onCheckedChange={(checked) => handleNotificationChange('notify_participating', checked)}
                     />
                   </div>
 
@@ -653,7 +685,7 @@ export default function Settings() {
                     <Switch
                       id="notify-organizing"
                       checked={notifyOrganizing}
-                      onCheckedChange={setNotifyOrganizing}
+                      onCheckedChange={(checked) => handleNotificationChange('notify_organizing', checked)}
                     />
                   </div>
 
@@ -669,7 +701,7 @@ export default function Settings() {
                     <Switch
                       id="notify-product"
                       checked={notifyProductUpdates}
-                      onCheckedChange={setNotifyProductUpdates}
+                      onCheckedChange={(checked) => handleNotificationChange('notify_product_updates', checked)}
                     />
                   </div>
                 </div>
