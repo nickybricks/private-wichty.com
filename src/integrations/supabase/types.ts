@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           capacity_unlimited: boolean | null
           created_at: string
+          currency: string | null
           description: string | null
           end_time: string | null
           event_date: string | null
@@ -28,6 +29,7 @@ export type Database = {
           is_public: boolean | null
           location: string | null
           name: string
+          price_cents: number | null
           requires_approval: boolean | null
           status: Database["public"]["Enums"]["event_status"]
           target_participants: number
@@ -37,6 +39,7 @@ export type Database = {
         Insert: {
           capacity_unlimited?: boolean | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           end_time?: string | null
           event_date?: string | null
@@ -47,6 +50,7 @@ export type Database = {
           is_public?: boolean | null
           location?: string | null
           name: string
+          price_cents?: number | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
@@ -56,6 +60,7 @@ export type Database = {
         Update: {
           capacity_unlimited?: boolean | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           end_time?: string | null
           event_date?: string | null
@@ -66,6 +71,7 @@ export type Database = {
           is_public?: boolean | null
           location?: string | null
           name?: string
+          price_cents?: number | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
@@ -136,6 +142,8 @@ export type Database = {
           notify_product_updates: boolean | null
           phone_number: string | null
           phone_verified: boolean | null
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean | null
           theme: string | null
           updated_at: string
           username: string | null
@@ -153,6 +161,8 @@ export type Database = {
           notify_product_updates?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           theme?: string | null
           updated_at?: string
           username?: string | null
@@ -170,6 +180,8 @@ export type Database = {
           notify_product_updates?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           theme?: string | null
           updated_at?: string
           username?: string | null

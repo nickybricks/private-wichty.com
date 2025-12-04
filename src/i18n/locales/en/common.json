@@ -94,7 +94,21 @@
     },
     "payment": {
       "title": "Payment Settings",
-      "description": "Manage your payment methods and billing here."
+      "description": "Manage your payment methods and billing here.",
+      "stripeConnect": {
+        "title": "Stripe Connect",
+        "description": "Connect your Stripe account to receive payments for paid events.",
+        "notConnected": "Not connected",
+        "connected": "Connected",
+        "connectButton": "Connect with Stripe",
+        "continueSetup": "Continue setup",
+        "chargesEnabled": "Payments enabled",
+        "payoutsEnabled": "Payouts enabled",
+        "setupIncomplete": "Setup incomplete",
+        "connecting": "Connecting...",
+        "error": "Error connecting to Stripe",
+        "platformFee": "5% platform fee per transaction"
+      }
     },
     "ticketSales": {
       "title": "Ticket Sales",
