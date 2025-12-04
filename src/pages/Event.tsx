@@ -317,8 +317,8 @@ export default function Event() {
     if (isParticipant) {
       return (
         <Button 
-          size="lg" 
-          className="w-full h-14 text-lg" 
+          size="sm" 
+          className="bg-[#1D1D1F] hover:bg-[#1D1D1F]/90 text-white border-none" 
           variant="outline"
           onClick={() => setShowLeaveConfirm(true)}
         >
