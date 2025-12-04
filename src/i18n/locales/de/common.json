@@ -40,5 +40,76 @@
     "marketing": "Marketing-Cookies",
     "marketingDesc": "Werden verwendet, um relevante Werbung anzuzeigen.",
     "save": "Speichern"
+  },
+  "settingsPage": {
+    "title": "Einstellungen",
+    "tabs": {
+      "profile": "Profil",
+      "settings": "Einstellungen",
+      "payment": "Zahlung",
+      "tickets": "Ticketverkauf"
+    },
+    "profile": {
+      "title": "Profilinformationen",
+      "avatar": "Profilbild",
+      "changeAvatar": "Ändern",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "username": "Benutzername",
+      "email": "E-Mail-Adresse",
+      "phone": "Telefonnummer",
+      "phoneVerify": "Verifizieren",
+      "phoneVerified": "Verifiziert",
+      "phoneCode": "Bestätigungscode",
+      "phoneCodePlaceholder": "6-stelliger Code",
+      "phoneCodeVerify": "Bestätigen",
+      "changePassword": "Passwort ändern",
+      "changePasswordDesc": "Wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+      "sendResetLink": "Link senden",
+      "resetLinkSent": "Link gesendet",
+      "save": "Speichern",
+      "deleteAccount": "Konto löschen",
+      "deleteAccountTitle": "Konto wirklich löschen?",
+      "deleteAccountDesc": "Diese Aktion kann nicht rückgängig gemacht werden. Dein Konto und alle zugehörigen Daten werden permanent gelöscht.",
+      "deleteAccountCancel": "Abbrechen",
+      "deleteAccountConfirm": "Ja, Konto löschen"
+    },
+    "appearance": {
+      "title": "Oberflächenanzeige",
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "languageSection": {
+      "title": "Sprache"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "participating": "Teilgenommene Veranstaltungen",
+      "participatingDesc": "Updates zu Events, an denen du teilnimmst",
+      "organizing": "Organisierte Veranstaltungen",
+      "organizingDesc": "Benachrichtigungen wenn sich Gäste registrieren",
+      "productUpdates": "Produkt-Updates",
+      "productUpdatesDesc": "Neuigkeiten und Updates von Wichty"
+    },
+    "payment": {
+      "title": "Zahlungseinstellungen",
+      "description": "Hier kannst du deine Zahlungsmethoden und Abrechnungen verwalten."
+    },
+    "ticketSales": {
+      "title": "Ticketverkauf",
+      "description": "Hier kannst du deine Ticketverkäufe verwalten und einsehen."
+    },
+    "toasts": {
+      "profileSaved": "Profil gespeichert!",
+      "themeChanged": "Oberflächenanzeige auf \"{theme}\" geändert",
+      "languageChanged": "Sprache auf \"{language}\" geändert",
+      "notificationEnabled": "Benachrichtigung erfolgreich aktiviert!",
+      "notificationDisabled": "Benachrichtigung erfolgreich deaktiviert!",
+      "errorSaving": "Fehler beim Speichern der Einstellung",
+      "codeSent": "Bestätigungscode gesendet!",
+      "phoneVerified": "Telefonnummer verifiziert!",
+      "resetLinkSent": "Link zum Zurücksetzen wurde gesendet!"
+    }
   }
 }
