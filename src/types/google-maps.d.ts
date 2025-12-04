@@ -1,4 +1,29 @@
 declare namespace google.maps {
+  class Geocoder {
+    geocode(
+      request: GeocoderRequest,
+      callback: (results: GeocoderResult[] | null, status: GeocoderStatus) => void
+    ): void;
+  }
+
+  interface GeocoderRequest {
+    address?: string;
+    placeId?: string;
+  }
+
+  interface GeocoderResult {
+    geometry: {
+      location: LatLng;
+    };
+  }
+
+  interface LatLng {
+    lat(): number;
+    lng(): number;
+  }
+
+  type GeocoderStatus = "OK" | "ZERO_RESULTS" | "ERROR";
+
   namespace places {
     class AutocompleteService {
       getPlacePredictions(

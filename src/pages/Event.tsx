@@ -11,6 +11,7 @@ import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { ParticipantsList } from "@/components/ParticipantsList";
 import { DrawAnimation } from "@/components/DrawAnimation";
 import { EditEventSheet } from "@/components/EditEventSheet";
+import { LocationMapPreview } from "@/components/LocationMapPreview";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -251,15 +252,19 @@ export default function Event() {
             </span>
           </div>
           
-          {/* Location */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-              <MapPin className="h-5 w-5 text-muted-foreground" />
+          {/* Location with Map */}
+          {event.location ? (
+            <LocationMapPreview location={event.location} />
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {t('noLocation')}
+              </span>
             </div>
-            <span className={`text-sm ${event.location ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {event.location || t('noLocation')}
-            </span>
-          </div>
+          )}
         </div>
 
         {/* Event Status Card */}
