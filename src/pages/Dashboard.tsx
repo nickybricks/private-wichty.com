@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Plus, Gift, MapPin } from "lucide-react";
+import { Loader2, Plus, Calendar, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -234,7 +234,7 @@ export default function Dashboard() {
           if (filteredEvents.length === 0) {
             return (
               <Card className="p-12 text-center shadow-medium">
-                <Gift className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">
                   {filter === 'upcoming' ? t('empty.title') : t('empty.pastTitle')}
                 </h3>
@@ -269,7 +269,7 @@ export default function Dashboard() {
                       />
                     ) : (
                       <div className="w-20 h-20 md:w-24 md:h-24 bg-muted rounded-xl flex items-center justify-center">
-                        <Gift className="h-8 w-8 text-muted-foreground" />
+                        <Calendar className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
                   </div>

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -13,14 +12,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Gift, CreditCard } from "lucide-react";
+import { Loader2, User, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 interface JoinEventSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventId: string;
-  onSuccess: (participantId: string) => void;
+  onSuccess: () => void;
   isPaidEvent?: boolean;
   priceCents?: number;
   currency?: string;
@@ -40,7 +39,6 @@ export function JoinEventSheet({
   const { t, i18n } = useTranslation('event');
   const { t: ta } = useTranslation('auth');
   const [name, setName] = useState("");
-  const [wish, setWish] = useState("");
   const [loading, setLoading] = useState(false);
 
   const formatPrice = (cents: number, curr: string) => {
@@ -53,7 +51,7 @@ export function JoinEventSheet({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !wish.trim()) {
+    if (!name.trim()) {
       toast.error(ta('errors.fillAllFields'));
       return;
     }
@@ -75,7 +73,6 @@ export function JoinEventSheet({
           body: {
             event_id: eventId,
             participant_name: name.trim(),
-            participant_wish: wish.trim(),
           },
           headers: session ? {
             Authorization: `Bearer ${session.access_token}`,
@@ -85,7 +82,6 @@ export function JoinEventSheet({
         if (error) throw error;
 
         if (data?.url) {
-          // Open checkout in new tab
           window.open(data.url, '_blank');
           toast.success(i18n.language === 'de' 
             ? 'Zahlung wird im neuen Tab geöffnet...' 
@@ -96,22 +92,18 @@ export function JoinEventSheet({
       }
 
       // For free events, directly add participant
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("participants")
         .insert({
           event_id: eventId,
           name: name.trim(),
-          wish: wish.trim(),
           user_id: user.id,
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
 
-      onSuccess(data.id);
+      onSuccess();
       setName("");
-      setWish("");
     } catch (error: any) {
       console.error("Error joining event:", error);
       toast.error(error.message || t('join.error'));
@@ -122,7 +114,7 @@ export function JoinEventSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[90vh] sm:h-auto">
+      <SheetContent side="bottom" className="h-auto">
         <SheetHeader className="space-y-3 pb-6">
           <SheetTitle className="text-2xl">{t('join.title')}</SheetTitle>
           <SheetDescription>
@@ -136,7 +128,7 @@ export function JoinEventSheet({
           )}
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 pb-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-base">
               {t('join.yourName')}
@@ -149,23 +141,6 @@ export function JoinEventSheet({
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('join.namePlaceholder')}
                 className="pl-10"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="wish" className="text-base">
-              {t('join.yourWish')}
-            </Label>
-            <div className="relative">
-              <Gift className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Textarea
-                id="wish"
-                value={wish}
-                onChange={(e) => setWish(e.target.value)}
-                placeholder={t('join.wishPlaceholder')}
-                className="pl-10 min-h-[120px] resize-none"
                 required
               />
             </div>
