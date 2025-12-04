@@ -835,6 +835,17 @@ export default function Settings() {
 
           {/* Zahlungseinstellungen Tab */}
           <TabsContent value="zahlung" className="mt-6 space-y-6">
+            <Card className="p-6 shadow-medium">
+              <div className="text-center py-8 text-muted-foreground">
+                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <h3 className="font-medium mb-2">{t('settingsPage.payment.title')}</h3>
+                <p className="text-sm">{t('settingsPage.payment.description')}</p>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Ticketverkauf Tab */}
+          <TabsContent value="tickets" className="mt-6 space-y-6">
             {/* Stripe Connect */}
             <Card className="p-6 shadow-medium">
               <div className="space-y-4">
@@ -913,6 +924,11 @@ export default function Settings() {
                         <ExternalLink className="mr-2 h-4 w-4" />
                         {t('settingsPage.payment.stripeConnect.continueSetup')}
                       </>
+                    ) : stripeConnectStatus?.charges_enabled ? (
+                      <>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        {t('settingsPage.payment.stripeConnect.manageDashboard')}
+                      </>
                     ) : (
                       <>
                         <ExternalLink className="mr-2 h-4 w-4" />
@@ -921,17 +937,6 @@ export default function Settings() {
                     )}
                   </Button>
                 </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* Ticketverkauf Tab */}
-          <TabsContent value="tickets" className="mt-6">
-            <Card className="p-6 shadow-medium">
-              <div className="text-center py-8 text-muted-foreground">
-                <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">{t('settingsPage.ticketSales.title')}</h3>
-                <p className="text-sm">{t('settingsPage.ticketSales.description')}</p>
               </div>
             </Card>
           </TabsContent>
