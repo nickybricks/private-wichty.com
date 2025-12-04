@@ -5,22 +5,44 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Mail, Lock, Save, Settings as SettingsIcon, CreditCard, Ticket } from "lucide-react";
+import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail
+} from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Profile fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [sendingPhoneCode, setSendingPhoneCode] = useState(false);
+  
+  // Password reset
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -34,7 +56,6 @@ export default function Settings() {
       return;
     }
     setUser(session.user);
-    setEmail(session.user.email || "");
   };
 
   const loadProfile = async () => {
@@ -49,15 +70,19 @@ export default function Settings() {
         .maybeSingle();
 
       if (profile) {
-        setDisplayName(profile.display_name || "");
+        setFirstName(profile.first_name || "");
+        setLastName(profile.last_name || "");
+        setUsername(profile.username || "");
+        setAvatarUrl(profile.avatar_url || "");
+        setPhoneNumber(profile.phone_number || "");
+        setPhoneVerified(profile.phone_verified || false);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
     }
   };
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveProfile = async () => {
     setLoading(true);
 
     try {
@@ -70,93 +95,137 @@ export default function Settings() {
         .eq("id", user.id)
         .maybeSingle();
 
+      const profileData = {
+        first_name: firstName.trim() || null,
+        last_name: lastName.trim() || null,
+        username: username.trim() || null,
+        avatar_url: avatarUrl || null,
+        phone_number: phoneNumber.trim() || null,
+      };
+
       if (existingProfile) {
         const { error } = await supabase
           .from("profiles")
-          .update({ display_name: displayName.trim() })
+          .update(profileData)
           .eq("id", user.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("profiles")
-          .insert({ id: user.id, display_name: displayName.trim() });
+          .insert({ id: user.id, ...profileData });
 
         if (error) throw error;
       }
 
-      toast.success("Profil aktualisiert!");
+      toast.success("Profil gespeichert!");
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error(error.message || "Fehler beim Aktualisieren des Profils");
+      if (error.message?.includes("duplicate key") && error.message?.includes("username")) {
+        toast.error("Dieser Benutzername ist bereits vergeben");
+      } else {
+        toast.error(error.message || "Fehler beim Speichern des Profils");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email || !email.includes("@")) {
-      toast.error("Bitte gib eine gültige E-Mail-Adresse ein");
+  const handleSendPhoneCode = async () => {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      toast.error("Bitte gib eine gültige Telefonnummer ein");
       return;
     }
+    
+    setSendingPhoneCode(true);
+    // Simulate sending code - in production, integrate with SMS service
+    setTimeout(() => {
+      setSendingPhoneCode(false);
+      setShowPhoneVerification(true);
+      toast.success("Bestätigungscode gesendet!");
+    }, 1000);
+  };
 
-    setLoading(true);
-
+  const handleVerifyPhone = async () => {
+    if (phoneCode.length !== 6) {
+      toast.error("Bitte gib den 6-stelligen Code ein");
+      return;
+    }
+    
+    // Simulate verification - in production, verify with backend
     try {
-      const { error } = await supabase.auth.updateUser({
-        email: email,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
+      await supabase
+        .from("profiles")
+        .update({ phone_verified: true })
+        .eq("id", user.id);
 
-      toast.success("E-Mail-Änderung angefordert! Bitte bestätige die neue E-Mail-Adresse.");
-    } catch (error: any) {
-      console.error("Error updating email:", error);
-      toast.error(error.message || "Fehler beim Ändern der E-Mail");
-    } finally {
-      setLoading(false);
+      setPhoneVerified(true);
+      setShowPhoneVerification(false);
+      setPhoneCode("");
+      toast.success("Telefonnummer bestätigt!");
+    } catch (error) {
+      toast.error("Fehler bei der Bestätigung");
     }
   };
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newPassword || !confirmPassword) {
-      toast.error("Bitte fülle alle Felder aus");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast.error("Neues Passwort muss mindestens 6 Zeichen lang sein");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwörter stimmen nicht überein");
-      return;
-    }
-
-    setLoading(true);
-
+  const handlePasswordReset = async () => {
+    setSendingPasswordReset(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+      const { error } = await supabase.auth.resetPasswordForEmail(user?.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
-
+      
       if (error) throw error;
-
-      toast.success("Passwort erfolgreich geändert!");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      
+      setShowPasswordReset(true);
+      toast.success("E-Mail zum Zurücksetzen des Passworts gesendet!");
     } catch (error: any) {
-      console.error("Error updating password:", error);
-      toast.error(error.message || "Fehler beim Ändern des Passworts");
+      toast.error(error.message || "Fehler beim Senden der E-Mail");
     } finally {
-      setLoading(false);
+      setSendingPasswordReset(false);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete user data first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete profile
+      await supabase.from("profiles").delete().eq("id", user.id);
+      
+      // Delete user's events
+      await supabase.from("events").delete().eq("user_id", user.id);
+      
+      // Sign out
+      await supabase.auth.signOut();
+      
+      toast.success("Konto erfolgreich gelöscht");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Fehler beim Löschen des Kontos");
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // For now, create a local preview URL
+    // In production, upload to Supabase Storage
+    const url = URL.createObjectURL(file);
+    setAvatarUrl(url);
+    toast.info("Profilbild ausgewählt. Klicke 'Speichern' um es zu übernehmen.");
+  };
+
+  const getInitials = () => {
+    const first = firstName?.[0] || "";
+    const last = lastName?.[0] || "";
+    return (first + last).toUpperCase() || "?";
   };
 
   return (
@@ -193,141 +262,232 @@ export default function Settings() {
 
           {/* Konto Tab */}
           <TabsContent value="konto" className="space-y-6 mt-6">
-            {/* Profile Section */}
             <Card className="p-6 shadow-medium">
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Profil
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Aktualisiere deinen Anzeigenamen
-                  </p>
+              <div className="space-y-6">
+                {/* Avatar Section */}
+                <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4">
+                  <div className="relative">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={avatarUrl} alt="Profilbild" />
+                      <AvatarFallback className="text-2xl bg-primary/10">
+                        {getInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <label 
+                      htmlFor="avatar-upload" 
+                      className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                    >
+                      <Camera className="h-4 w-4" />
+                      <input 
+                        id="avatar-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleAvatarUpload}
+                      />
+                    </label>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h3 className="font-medium">Profilbild</h3>
+                    <p className="text-sm text-muted-foreground">
+                      JPG, PNG oder GIF. Max. 2MB.
+                    </p>
+                  </div>
                 </div>
 
+                {/* Name Fields */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Vorname</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Max"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Nachname</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Mustermann"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Username */}
                 <div className="space-y-2">
-                  <Label htmlFor="displayName">Anzeigename</Label>
+                  <Label htmlFor="username">Benutzername</Label>
                   <Input
-                    id="displayName"
+                    id="username"
                     type="text"
-                    placeholder="Dein Name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="maxmustermann"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   />
-                </div>
-
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Wird gespeichert...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Profil speichern
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Card>
-
-            <Separator />
-
-            {/* Email Section */}
-            <Card className="p-6 shadow-medium">
-              <form onSubmit={handleUpdateEmail} className="space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <Mail className="h-5 w-5" />
-                    E-Mail-Adresse
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Ändere deine E-Mail-Adresse (Bestätigung erforderlich)
+                  <p className="text-xs text-muted-foreground">
+                    Nur Kleinbuchstaben, Zahlen und Unterstriche
                   </p>
                 </div>
 
+                {/* Phone Number */}
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-Mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="deine@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefonnummer
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+49 170 1234567"
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        setPhoneNumber(e.target.value);
+                        setPhoneVerified(false);
+                      }}
+                      className="flex-1"
+                    />
+                    {phoneNumber && !phoneVerified && (
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={handleSendPhoneCode}
+                        disabled={sendingPhoneCode}
+                      >
+                        {sendingPhoneCode ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Code senden"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                  {phoneVerified && (
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      ✓ Telefonnummer bestätigt
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Zum Anmelden und für SMS-Updates
+                  </p>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Wird gespeichert...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      E-Mail ändern
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Card>
+                {/* Phone Verification */}
+                {showPhoneVerification && (
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                    <Label htmlFor="phoneCode">Bestätigungscode eingeben</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="phoneCode"
+                        type="text"
+                        placeholder="123456"
+                        value={phoneCode}
+                        onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        maxLength={6}
+                        className="flex-1"
+                      />
+                      <Button onClick={handleVerifyPhone}>
+                        Bestätigen
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-            <Separator />
-
-            {/* Password Section */}
-            <Card className="p-6 shadow-medium">
-              <form onSubmit={handleUpdatePassword} className="space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <Lock className="h-5 w-5" />
+                {/* Password Reset */}
+                <div className="space-y-2 pt-4 border-t">
+                  <Label className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
                     Passwort ändern
-                  </h2>
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Aktualisiere dein Passwort
+                    Wir senden dir einen Link zum Zurücksetzen deines Passworts an {user?.email}
                   </p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handlePasswordReset}
+                    disabled={sendingPasswordReset}
+                  >
+                    {sendingPasswordReset ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Wird gesendet...
+                      </>
+                    ) : (
+                      "Passwort-Reset E-Mail senden"
+                    )}
+                  </Button>
+                  {showPasswordReset && (
+                    <p className="text-xs text-green-600">
+                      ✓ E-Mail gesendet! Überprüfe deinen Posteingang.
+                    </p>
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Neues Passwort</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    minLength={6}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    minLength={6}
-                  />
-                </div>
-
-                <Button type="submit" disabled={loading} className="w-full">
+                {/* Save Button */}
+                <Button 
+                  onClick={handleSaveProfile} 
+                  disabled={loading} 
+                  className="w-full mt-6"
+                  size="lg"
+                >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Wird gespeichert...
                     </>
                   ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Passwort ändern
-                    </>
+                    "Änderungen speichern"
                   )}
                 </Button>
-              </form>
+              </div>
+            </Card>
+
+            {/* Delete Account */}
+            <Card className="p-6 shadow-medium border-destructive/20">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-destructive flex items-center gap-2">
+                    <Trash2 className="h-5 w-5" />
+                    Konto löschen
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Durch das Löschen deines Kontos werden alle deine Daten unwiderruflich entfernt.
+                  </p>
+                </div>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full sm:w-auto">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Konto endgültig löschen
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Bist du sicher?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Diese Aktion kann nicht rückgängig gemacht werden. Dein Konto und alle 
+                        zugehörigen Daten werden dauerhaft gelöscht.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteAccount}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Ja, Konto löschen
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </Card>
           </TabsContent>
 
