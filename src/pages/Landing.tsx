@@ -219,9 +219,7 @@ export default function Landing() {
 
       {/* CTA Section - Compact */}
       <section className="max-w-[var(--max-width-wide)] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
-        <div className="relative p-8 sm:p-12 lg:p-16 text-center space-y-4 sm:space-y-6 rounded-3xl overflow-hidden shadow-strong bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+        <div className="relative p-8 sm:p-12 lg:p-16 text-center space-y-4 sm:space-y-6 rounded-3xl overflow-hidden shadow-strong bg-card border border-border">
           <div className="relative z-10">
             <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4" style={{ stroke: 'url(#icon-gradient)' }} />
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
