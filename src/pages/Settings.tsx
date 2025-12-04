@@ -97,6 +97,9 @@ export default function Settings() {
         setNotifyParticipating(profile.notify_participating ?? true);
         setNotifyOrganizing(profile.notify_organizing ?? true);
         setNotifyProductUpdates(profile.notify_product_updates ?? false);
+        // Apply saved theme and language
+        if (profile.theme) setTheme(profile.theme);
+        if (profile.language) i18n.changeLanguage(profile.language);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -150,6 +153,33 @@ export default function Settings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSettingChange = async (field: string, value: string | boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ [field]: value })
+        .eq("id", user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error saving setting:", error);
+      toast.error("Fehler beim Speichern der Einstellung");
+    }
+  };
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    handleSettingChange('theme', newTheme);
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
+    handleSettingChange('language', lang);
   };
 
   const handleNotificationChange = async (
@@ -579,13 +609,13 @@ export default function Settings() {
                 </div>
                 <RadioGroup 
                   value={theme} 
-                  onValueChange={setTheme}
+                  onValueChange={handleThemeChange}
                   className="grid grid-cols-3 gap-3"
                 >
                   <Label
                     htmlFor="theme-system"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
+                      theme === 'system' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
                     }`}
                   >
                     <RadioGroupItem value="system" id="theme-system" className="sr-only" />
@@ -594,8 +624,8 @@ export default function Settings() {
                   </Label>
                   <Label
                     htmlFor="theme-light"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      theme === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
+                      theme === 'light' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
                     }`}
                   >
                     <RadioGroupItem value="light" id="theme-light" className="sr-only" />
@@ -604,8 +634,8 @@ export default function Settings() {
                   </Label>
                   <Label
                     htmlFor="theme-dark"
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                      theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg cursor-pointer transition-all ${
+                      theme === 'dark' ? 'border-[3px] border-primary bg-primary/5 shadow-sm' : 'border border-border hover:border-primary/50'
                     }`}
                   >
                     <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
@@ -625,7 +655,7 @@ export default function Settings() {
                 </div>
                 <Select 
                   value={i18n.language.startsWith('de') ? 'de' : 'en'} 
-                  onValueChange={(lang) => i18n.changeLanguage(lang)}
+                  onValueChange={handleLanguageChange}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />

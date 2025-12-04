@@ -111,12 +111,14 @@ export type Database = {
           display_name: string | null
           first_name: string | null
           id: string
+          language: string | null
           last_name: string | null
           notify_organizing: boolean | null
           notify_participating: boolean | null
           notify_product_updates: boolean | null
           phone_number: string | null
           phone_verified: boolean | null
+          theme: string | null
           updated_at: string
           username: string | null
         }
@@ -126,12 +128,14 @@ export type Database = {
           display_name?: string | null
           first_name?: string | null
           id: string
+          language?: string | null
           last_name?: string | null
           notify_organizing?: boolean | null
           notify_participating?: boolean | null
           notify_product_updates?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean | null
+          theme?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -141,12 +145,14 @@ export type Database = {
           display_name?: string | null
           first_name?: string | null
           id?: string
+          language?: string | null
           last_name?: string | null
           notify_organizing?: boolean | null
           notify_participating?: boolean | null
           notify_product_updates?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean | null
+          theme?: string | null
           updated_at?: string
           username?: string | null
         }
