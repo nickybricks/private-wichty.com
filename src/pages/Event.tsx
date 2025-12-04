@@ -314,12 +314,13 @@ export default function Event() {
   };
 
   const getCTAButton = () => {
+    const baseClasses = "w-full h-10 text-sm font-medium shadow-sm";
+    
     if (isParticipant) {
       return (
         <Button 
           size="sm" 
-          className="bg-[#1D1D1F] hover:bg-[#1D1D1F]/90 text-white border-none" 
-          variant="outline"
+          className={`${baseClasses} bg-[#1D1D1F] hover:bg-[#1D1D1F]/90 text-white border-none`}
           onClick={() => setShowLeaveConfirm(true)}
         >
           {t('cta.leave')}
@@ -330,11 +331,11 @@ export default function Event() {
     if (event?.is_paid && event.price_cents > 0) {
       return (
         <Button 
-          size="lg" 
-          className="w-full h-14 text-lg shadow-medium"
+          size="sm" 
+          className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
         >
-          <CreditCard className="mr-2 h-5 w-5" />
+          <CreditCard className="mr-2 h-4 w-4" />
           {t('cta.buyTicket')} · {formatPrice(event.price_cents, event.currency)}
         </Button>
       );
@@ -343,8 +344,8 @@ export default function Event() {
     if (event?.requires_approval) {
       return (
         <Button 
-          size="lg" 
-          className="w-full h-14 text-lg shadow-medium"
+          size="sm" 
+          className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
         >
           {t('cta.requestJoin')}
@@ -354,8 +355,8 @@ export default function Event() {
 
     return (
       <Button 
-        size="lg" 
-        className="w-full h-14 text-lg shadow-medium"
+        size="sm" 
+        className={baseClasses}
         onClick={() => setShowJoinSheet(true)}
       >
         {t('cta.join')}
