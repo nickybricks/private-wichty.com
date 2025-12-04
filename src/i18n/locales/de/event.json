@@ -11,6 +11,7 @@
   "oclock": "Uhr",
   "free": "Kostenfrei",
   "joinSuccess": "Erfolgreich beigetreten!",
+  "editEventButton": "Event bearbeiten",
   "cta": {
     "join": "Teilnehmen",
     "requestJoin": "Beitrittsanfrage",
@@ -53,5 +54,28 @@
     "success": "Event aktualisiert!",
     "error": "Fehler beim Aktualisieren",
     "minParticipants": "Mindestens {{count}} Teilnehmer (aktuelle Anzahl)"
+  },
+  "editEvent": {
+    "title": "Event bearbeiten",
+    "tabs": {
+      "details": "Details",
+      "guests": "Gäste",
+      "analytics": "Analyse"
+    },
+    "name": "Event-Name",
+    "namePlaceholder": "z.B. Sommerparty 2024",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibe dein Event...",
+    "paidEvent": "Kostenpflichtiges Event",
+    "price": "Preis",
+    "priceLockedHint": "Preise können nach dem ersten Ticketverkauf nicht mehr geändert werden.",
+    "requiresApproval": "Genehmigung erforderlich",
+    "requiresApprovalHint": "Teilnehmer müssen genehmigt werden, bevor sie beitreten können.",
+    "guestList": "Gästeliste",
+    "noGuests": "Noch keine Gäste angemeldet",
+    "overview": "Übersicht",
+    "totalGuests": "Gäste insgesamt",
+    "revenue": "Einnahmen",
+    "analyticsComingSoon": "Detaillierte Analysen kommen bald"
   }
 }

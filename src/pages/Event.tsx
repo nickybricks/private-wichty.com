@@ -13,9 +13,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Loader2, Settings, Calendar, MapPin, CreditCard, Share2, User } from "lucide-react";
+import { Loader2, Calendar, MapPin, CreditCard, Share2, User, Pencil } from "lucide-react";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
-import { EditEventSheet } from "@/components/EditEventSheet";
 import { LocationMapPreview } from "@/components/LocationMapPreview";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -63,7 +62,6 @@ export default function Event() {
   const [loading, setLoading] = useState(true);
   const [showJoinSheet, setShowJoinSheet] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
-  const [showEditSheet, setShowEditSheet] = useState(false);
   const [showParticipantsList, setShowParticipantsList] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [hostProfile, setHostProfile] = useState<HostProfile | null>(null);
@@ -343,6 +341,21 @@ export default function Event() {
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
         
+        {/* Edit Event Button for Host */}
+        {isHost && (
+          <div className="flex justify-end">
+            <Button 
+              variant="outline"
+              size="sm"
+              className="bg-[#FFB86C] hover:bg-[#FFB86C]/90 text-foreground border-none shadow-sm"
+              onClick={() => navigate(`/event/${id}/edit`)}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {t('editEventButton')}
+            </Button>
+          </div>
+        )}
+
         {/* Event Image - Square */}
         <div className="w-full aspect-square rounded-xl overflow-hidden shadow-strong bg-muted relative">
           {event.image_url ? (
@@ -357,8 +370,8 @@ export default function Event() {
             </div>
           )}
           
-          {/* Action buttons on image */}
-          <div className="absolute top-4 right-4 flex gap-2">
+          {/* Share button on image */}
+          <div className="absolute top-4 right-4">
             <Button 
               variant="secondary" 
               size="icon"
@@ -367,16 +380,6 @@ export default function Event() {
             >
               <Share2 className="h-4 w-4" />
             </Button>
-            {isHost && (
-              <Button 
-                variant="secondary" 
-                size="icon"
-                className="bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
-                onClick={() => setShowEditSheet(true)}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         </div>
         
@@ -534,23 +537,6 @@ export default function Event() {
         </SheetContent>
       </Sheet>
 
-      {/* Edit Event Sheet */}
-      {isHost && (
-        <EditEventSheet
-          open={showEditSheet}
-          onOpenChange={setShowEditSheet}
-          event={{
-            id: event.id,
-            target_participants: event.target_participants,
-            event_date: event.event_date,
-            event_time: event.event_time,
-            location: event.location,
-            image_url: event.image_url,
-          }}
-          currentParticipantCount={participants.length}
-          onSuccess={fetchEventData}
-        />
-      )}
       <Footer />
     </div>
   );
