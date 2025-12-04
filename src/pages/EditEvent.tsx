@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -15,18 +15,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Loader2, 
   CalendarIcon, 
-  MapPin, 
   Clock, 
   Image as ImageIcon, 
-  X, 
   Users,
   CreditCard,
   BarChart3,
   Settings2,
-  Trash2
+  Trash2,
+  Globe,
+  Lock,
+  UserCheck,
+  Infinity,
+  AlertCircle,
+  MapPin
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -49,6 +54,7 @@ interface Event {
   currency: string;
   requires_approval: boolean;
   capacity_unlimited: boolean;
+  is_public: boolean;
 }
 
 interface Participant {
@@ -63,6 +69,7 @@ export default function EditEvent() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('event');
   const { t: tf } = useTranslation('forms');
+  const { t: tc } = useTranslation('common');
   
   const [user, setUser] = useState<any>(null);
   const [event, setEvent] = useState<Event | null>(null);
@@ -70,18 +77,21 @@ export default function EditEvent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasTicketSales, setHasTicketSales] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState<boolean | null>(null);
+  const [checkingStripe, setCheckingStripe] = useState(false);
   
   // Form state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
   const [eventDate, setEventDate] = useState<Date | undefined>();
-  const [eventTime, setEventTime] = useState("");
+  const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
-  const [targetParticipants, setTargetParticipants] = useState("");
-  const [capacityUnlimited, setCapacityUnlimited] = useState(false);
+  const [capacityUnlimited, setCapacityUnlimited] = useState(true);
+  const [maxCapacity, setMaxCapacity] = useState("");
   const [isPaid, setIsPaid] = useState(false);
-  const [priceCents, setPriceCents] = useState("");
+  const [price, setPrice] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -101,6 +111,31 @@ export default function EditEvent() {
     }
     setUser(session.user);
     fetchEventData(session.user.id);
+    checkStripeStatus(session.access_token);
+  };
+
+  const checkStripeStatus = async (accessToken: string) => {
+    setCheckingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-connect-status', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking Stripe status:', error);
+        setStripeConnected(false);
+        return;
+      }
+
+      setStripeConnected(data?.charges_enabled === true);
+    } catch (error) {
+      console.error('Error checking Stripe status:', error);
+      setStripeConnected(false);
+    } finally {
+      setCheckingStripe(false);
+    }
   };
 
   const fetchEventData = async (userId: string) => {
@@ -130,14 +165,15 @@ export default function EditEvent() {
       // Set form state
       setName(eventData.name);
       setDescription(eventData.description || "");
+      setIsPublic(eventData.is_public ?? true);
       setEventDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
-      setEventTime(eventData.event_time || "");
+      setStartTime(eventData.event_time || "");
       setEndTime(eventData.end_time || "");
       setLocation(eventData.location || "");
-      setTargetParticipants(eventData.target_participants.toString());
-      setCapacityUnlimited(eventData.capacity_unlimited || false);
+      setCapacityUnlimited(eventData.capacity_unlimited ?? true);
+      setMaxCapacity(eventData.capacity_unlimited ? "" : eventData.target_participants.toString());
       setIsPaid(eventData.is_paid || false);
-      setPriceCents(eventData.price_cents ? (eventData.price_cents / 100).toString() : "");
+      setPrice(eventData.price_cents ? (eventData.price_cents / 100).toString() : "");
       setRequiresApproval(eventData.requires_approval || false);
       setImagePreview(eventData.image_url);
 
@@ -162,6 +198,19 @@ export default function EditEvent() {
     }
   };
 
+  const handlePaidToggle = (checked: boolean) => {
+    if (hasTicketSales) return;
+    if (checked && stripeConnected === false) {
+      toast.error(
+        i18n.language === 'de' 
+          ? 'Bitte verbinde zuerst Stripe in den Einstellungen' 
+          : 'Please connect Stripe in settings first'
+      );
+      return;
+    }
+    setIsPaid(checked);
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -183,15 +232,19 @@ export default function EditEvent() {
     }
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setRemoveImage(true);
-  };
-
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error(i18n.language === 'de' ? 'Bitte gib einen Event-Namen ein' : 'Please enter an event name');
+      return;
+    }
+
+    if (!capacityUnlimited && (!maxCapacity || parseInt(maxCapacity) < 1)) {
+      toast.error(i18n.language === 'de' ? 'Bitte gib eine gültige Kapazität ein' : 'Please enter a valid capacity');
+      return;
+    }
+
+    if (isPaid && !hasTicketSales && (!price || parseFloat(price) <= 0)) {
+      toast.error(i18n.language === 'de' ? 'Bitte gib einen gültigen Preis ein' : 'Please enter a valid price');
       return;
     }
 
@@ -223,12 +276,13 @@ export default function EditEvent() {
       const updateData: any = {
         name: name.trim(),
         description: description.trim() || null,
+        is_public: isPublic,
         event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
-        event_time: eventTime || null,
+        event_time: startTime || null,
         end_time: endTime || null,
         location: location.trim() || null,
-        target_participants: parseInt(targetParticipants) || 2,
         capacity_unlimited: capacityUnlimited,
+        target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
         requires_approval: requiresApproval,
         image_url: imageUrl,
       };
@@ -236,7 +290,7 @@ export default function EditEvent() {
       // Only allow price changes if no ticket sales
       if (!hasTicketSales) {
         updateData.is_paid = isPaid;
-        updateData.price_cents = isPaid ? Math.round(parseFloat(priceCents || "0") * 100) : 0;
+        updateData.price_cents = isPaid ? Math.round(parseFloat(price || "0") * 100) : 0;
       }
 
       const { error } = await supabase
@@ -317,7 +371,7 @@ export default function EditEvent() {
     <div className="min-h-screen bg-background">
       <Header user={user} showBackButton={true} />
       <div className="p-4 md:p-8">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-lg">
           <h1 className="text-2xl font-bold mb-6">{t('editEvent.title')}</h1>
 
           <Tabs defaultValue="details" className="w-full">
@@ -337,38 +391,27 @@ export default function EditEvent() {
             </TabsList>
 
             {/* Details Tab */}
-            <TabsContent value="details" className="space-y-6">
-              {/* Event Image */}
-              <div className="space-y-2">
-                <Label className="text-base">{t('edit.eventImage')}</Label>
-                <div className="flex items-center justify-center w-full">
+            <TabsContent value="details" className="space-y-5">
+              {/* Event Preview Card Style */}
+              <div className="rounded-2xl border border-border overflow-hidden bg-card">
+                {/* Image Upload Area */}
+                <label
+                  htmlFor="edit-image"
+                  className="block relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors"
+                >
                   {imagePreview ? (
-                    <div className="relative w-full">
-                      <img
-                        src={imagePreview}
-                        alt="Event"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8"
-                        onClick={handleRemoveImage}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <img
+                      src={imagePreview}
+                      alt={t('edit.eventImage')}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
-                    <label
-                      htmlFor="edit-image"
-                      className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors"
-                    >
-                      <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        {t('edit.uploadImage')}
+                        {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
                       </p>
-                    </label>
+                    </div>
                   )}
                   <Input
                     id="edit-image"
@@ -377,146 +420,274 @@ export default function EditEvent() {
                     className="hidden"
                     onChange={handleImageChange}
                   />
-                </div>
-                {imagePreview && (
-                  <label
-                    htmlFor="edit-image"
-                    className="block text-center text-sm text-primary cursor-pointer hover:underline"
-                  >
-                    {t('edit.changeImage')}
-                  </label>
-                )}
-              </div>
+                </label>
 
-              {/* Event Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">{t('editEvent.name')}</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('editEvent.namePlaceholder')}
-                  className="h-12"
-                />
-              </div>
+                {/* Event Details */}
+                <div className="p-4 space-y-4">
+                  {/* Public/Private Toggle */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={isPublic ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsPublic(true)}
+                      className="gap-1.5"
+                    >
+                      <Globe className="h-4 w-4" />
+                      {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!isPublic ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsPublic(false)}
+                      className="gap-1.5"
+                    >
+                      <Lock className="h-4 w-4" />
+                      {i18n.language === 'de' ? 'Privat' : 'Private'}
+                    </Button>
+                  </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">{t('editEvent.description')}</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('editEvent.descriptionPlaceholder')}
-                  rows={4}
-                />
-              </div>
+                  {/* Event Name */}
+                  <Input
+                    type="text"
+                    placeholder={tf('createEvent.eventNamePlaceholder')}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    required
+                  />
 
-              {/* Date & Time */}
-              <div className="space-y-2">
-                <Label>{t('edit.dateTime')}</Label>
-                <div className="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "flex-1 h-12 justify-start text-left font-normal",
-                          !eventDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-5 w-5" />
-                        {eventDate ? format(eventDate, "dd.MM.yyyy", { locale: dateLocale }) : t('edit.date')}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={eventDate}
-                        onSelect={setEventDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="relative w-28">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                    <Input
-                      type="time"
-                      value={eventTime}
-                      onChange={(e) => setEventTime(e.target.value)}
-                      className="pl-10 h-12"
+                  {/* Date & Time */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{i18n.language === 'de' ? 'Datum & Uhrzeit' : 'Date & Time'}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "justify-start text-left font-normal",
+                              !eventDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {eventDate ? format(eventDate, "EEE, dd. MMM yyyy", { locale: dateLocale }) : (i18n.language === 'de' ? 'Datum wählen' : 'Select date')}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={eventDate}
+                            onSelect={setEventDate}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <div className="flex items-center gap-1">
+                        <div className="relative">
+                          <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="pl-8 w-28"
+                          />
+                        </div>
+                        <span className="text-muted-foreground">—</span>
+                        <Input
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-24"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>Location</span>
+                    </div>
+                    <LocationInput
+                      value={location}
+                      onChange={(value) => setLocation(value)}
+                      placeholder={i18n.language === 'de' ? 'Ort hinzufügen (optional)' : 'Add location (optional)'}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">
+                      {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
+                    </Label>
+                    <Textarea
+                      placeholder={i18n.language === 'de' ? 'Event-Beschreibung hinzufügen (optional)' : 'Add event description (optional)'}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={3}
+                      className="resize-none"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Location */}
-              <div className="space-y-2">
-                <Label>{t('edit.location')}</Label>
-                <LocationInput
-                  value={location}
-                  onChange={setLocation}
-                  placeholder={t('edit.locationPlaceholder')}
-                />
-              </div>
+              {/* Event Options */}
+              <div className="rounded-2xl border border-border overflow-hidden bg-card">
+                <div className="p-4 space-y-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
+                  </h3>
 
-              {/* Price Section */}
-              <Card className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <Label>{t('editEvent.paidEvent')}</Label>
-                  </div>
-                  <Switch
-                    checked={isPaid}
-                    onCheckedChange={setIsPaid}
-                    disabled={hasTicketSales}
-                  />
-                </div>
-                {isPaid && (
-                  <div className="space-y-2">
-                    <Label htmlFor="price">{t('editEvent.price')}</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={priceCents}
-                        onChange={(e) => setPriceCents(e.target.value)}
-                        className="pl-8 h-12"
-                        disabled={hasTicketSales}
-                      />
+                  {/* Paid/Free */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">
+                          {i18n.language === 'de' ? 'Zahlungen akzeptieren' : 'Accept payments'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {isPaid 
+                            ? (i18n.language === 'de' ? 'Teilnehmer zahlen für das Event' : 'Attendees pay for the event')
+                            : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
+                        </p>
+                      </div>
                     </div>
-                    {hasTicketSales && (
-                      <p className="text-sm text-muted-foreground">
-                        {t('editEvent.priceLockedHint')}
-                      </p>
+                    <Switch 
+                      checked={isPaid} 
+                      onCheckedChange={handlePaidToggle}
+                      disabled={checkingStripe || hasTicketSales}
+                    />
+                  </div>
+
+                  {/* Stripe not connected warning */}
+                  {stripeConnected === false && !hasTicketSales && (
+                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="flex items-center justify-between">
+                        <span>
+                          {i18n.language === 'de' 
+                            ? 'Verbinde Stripe um kostenpflichtige Events zu erstellen' 
+                            : 'Connect Stripe to create paid events'}
+                        </span>
+                        <Link to="/settings">
+                          <Button variant="outline" size="sm" className="ml-2">
+                            {tc('stripe.connect')}
+                          </Button>
+                        </Link>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Price Input when paid */}
+                  {isPaid && (
+                    <div className="pl-8 space-y-2">
+                      <Label className="text-sm">
+                        {i18n.language === 'de' ? 'Preis pro Teilnehmer' : 'Price per attendee'}
+                      </Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                        <Input
+                          type="number"
+                          min="0.50"
+                          step="0.50"
+                          placeholder="10.00"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="pl-8"
+                          disabled={hasTicketSales}
+                        />
+                      </div>
+                      {hasTicketSales ? (
+                        <p className="text-sm text-muted-foreground">
+                          {t('editEvent.priceLockedHint')}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          {i18n.language === 'de' ? '5% Plattformgebühr werden abgezogen' : '5% platform fee will be deducted'}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Requires Approval */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <UserCheck className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">
+                          {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+                  </div>
+
+                  {/* Capacity */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">
+                            {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {capacityUnlimited 
+                              ? (i18n.language === 'de' ? 'Unbegrenzte Teilnehmer' : 'Unlimited attendees')
+                              : (i18n.language === 'de' ? 'Begrenzte Plätze' : 'Limited spots')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant={capacityUnlimited ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCapacityUnlimited(true)}
+                        >
+                          <Infinity className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={!capacityUnlimited ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCapacityUnlimited(false)}
+                        >
+                          <Users className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {!capacityUnlimited && (
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder={i18n.language === 'de' ? 'Max. Teilnehmer' : 'Max attendees'}
+                        value={maxCapacity}
+                        onChange={(e) => setMaxCapacity(e.target.value)}
+                        className="w-full"
+                      />
                     )}
                   </div>
-                )}
-              </Card>
-
-              {/* Approval Required */}
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('editEvent.requiresApproval')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('editEvent.requiresApprovalHint')}</p>
-                  </div>
-                  <Switch
-                    checked={requiresApproval}
-                    onCheckedChange={setRequiresApproval}
-                  />
                 </div>
-              </Card>
+              </div>
 
               {/* Save Button */}
               <Button
                 onClick={handleSave}
-                className="w-full h-12"
+                size="lg"
+                className="w-full h-12 text-lg shadow-medium"
                 disabled={saving}
               >
                 {saving ? (
