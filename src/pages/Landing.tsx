@@ -27,7 +27,7 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-[1080px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold tracking-tight">Wichty</span>
@@ -52,7 +52,7 @@ export default function Landing() {
       </header>
 
       {/* Hero Section - Mobile First with Event Form */}
-      <section className="relative max-w-[1080px] mx-auto px-4 sm:px-6 pt-8 sm:pt-16 pb-12 sm:pb-20">
+      <section className="relative max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-8 sm:pt-16 pb-12 sm:pb-20">
         {/* Gradient Background Decoration */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -124,7 +124,7 @@ export default function Landing() {
       </section>
 
       {/* Benefits Section - Compact */}
-      <section id="benefits" className="max-w-[1080px] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+      <section id="benefits" className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
         <div className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight">
             {t('whyUs.title')}
@@ -178,7 +178,7 @@ export default function Landing() {
       </section>
 
       {/* Blog Teaser Section */}
-      <section className="max-w-[1080px] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+      <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
@@ -209,7 +209,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section - Compact */}
-      <section className="max-w-[900px] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+      <section className="max-w-[var(--max-width-wide)] mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
         <div className="relative p-8 sm:p-12 lg:p-16 text-center space-y-4 sm:space-y-6 rounded-3xl overflow-hidden shadow-strong bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
