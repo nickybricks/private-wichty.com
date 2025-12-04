@@ -362,7 +362,7 @@ export default function Event() {
             <Button 
               variant="secondary" 
               size="icon"
-              className="bg-background/80 backdrop-blur-sm hover:bg-background"
+              className="bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
               onClick={copyEventLink}
             >
               <Share2 className="h-4 w-4" />
@@ -371,7 +371,7 @@ export default function Event() {
               <Button 
                 variant="secondary" 
                 size="icon"
-                className="bg-background/80 backdrop-blur-sm hover:bg-background"
+                className="bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
                 onClick={() => setShowEditSheet(true)}
               >
                 <Settings className="h-4 w-4" />
@@ -397,19 +397,15 @@ export default function Event() {
             </span>
           </div>
           
-          {/* Location */}
-          {event.location ? (
-            <LocationMapPreview location={event.location} />
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {t('noLocation')}
-              </span>
+          {/* Location (just address, map at bottom) */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
             </div>
-          )}
+            <span className={`text-sm ${event.location ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {event.location || t('noLocation')}
+            </span>
+          </div>
 
           {/* Price */}
           <div className="flex items-center gap-3">
@@ -452,8 +448,10 @@ export default function Event() {
           )}
 
           {/* CTA Button */}
-          <div className="pt-2">
-            {getCTAButton()}
+          <div className="pt-2 flex justify-center">
+            <div className="w-full max-w-sm">
+              {getCTAButton()}
+            </div>
           </div>
 
           {/* Description */}
@@ -493,6 +491,11 @@ export default function Event() {
                 </div>
               </div>
             </Card>
+          )}
+
+          {/* Map at the bottom */}
+          {event.location && (
+            <LocationMapPreview location={event.location} showMapOnly />
           )}
         </div>
         </div>
