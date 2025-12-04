@@ -267,10 +267,15 @@ export default function Settings() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Use upsert to create profile if it doesn't exist
       const { error } = await supabase
         .from("profiles")
-        .update({ [field]: value })
-        .eq("id", user.id);
+        .upsert({ 
+          id: user.id, 
+          [field]: value 
+        }, { 
+          onConflict: 'id' 
+        });
 
       if (error) throw error;
       toast.success(value ? t('settingsPage.toasts.notificationEnabled') : t('settingsPage.toasts.notificationDisabled'));
