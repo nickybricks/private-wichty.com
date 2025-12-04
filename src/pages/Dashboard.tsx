@@ -185,7 +185,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header user={user} />
       
-      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 animate-fade-in">
+      <div className="max-w-[var(--max-width)] mx-auto p-4 md:p-8 space-y-6 animate-fade-in">
         {/* Dashboard Header */}
         <div className="space-y-4">
           <div>
