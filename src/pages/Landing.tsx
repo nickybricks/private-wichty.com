@@ -232,11 +232,10 @@ export default function Landing() {
             </p>
             <Button
               size="lg"
-              variant="outline"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="text-base sm:text-lg h-12 sm:h-14 px-6 sm:px-8 bg-background hover:bg-accent shadow-medium hover:shadow-strong hover:scale-105 transition-all"
+              className="text-base sm:text-lg h-12 sm:h-14 px-6 sm:px-8 shadow-strong hover:shadow-xl hover:scale-105 transition-all"
             >
-              <Sparkles className="mr-2 h-5 w-5 text-primary" />
+              <Sparkles className="mr-2 h-5 w-5" />
               {t('cta.button')}
             </Button>
           </div>
