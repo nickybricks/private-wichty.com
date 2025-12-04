@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail
+import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -26,6 +30,8 @@ import {
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   
@@ -43,6 +49,11 @@ export default function Settings() {
   // Password reset
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
+
+  // Settings
+  const [notifyParticipating, setNotifyParticipating] = useState(true);
+  const [notifyOrganizing, setNotifyOrganizing] = useState(true);
+  const [notifyProductUpdates, setNotifyProductUpdates] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -519,12 +530,146 @@ export default function Settings() {
           </TabsContent>
 
           {/* Einstellungen Tab */}
-          <TabsContent value="einstellungen" className="mt-6">
+          <TabsContent value="einstellungen" className="space-y-6 mt-6">
+            {/* Appearance */}
             <Card className="p-6 shadow-medium">
-              <div className="text-center py-8 text-muted-foreground">
-                <SettingsIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">Allgemeine Einstellungen</h3>
-                <p className="text-sm">Hier werden bald weitere Einstellungsmöglichkeiten verfügbar sein.</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Monitor className="h-5 w-5" />
+                  <h3 className="font-semibold">Oberflächenanzeige</h3>
+                </div>
+                <RadioGroup 
+                  value={theme} 
+                  onValueChange={setTheme}
+                  className="grid grid-cols-3 gap-3"
+                >
+                  <Label
+                    htmlFor="theme-system"
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="system" id="theme-system" className="sr-only" />
+                    <Monitor className="h-6 w-6" />
+                    <span className="text-sm font-medium">System</span>
+                  </Label>
+                  <Label
+                    htmlFor="theme-light"
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      theme === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="light" id="theme-light" className="sr-only" />
+                    <Sun className="h-6 w-6" />
+                    <span className="text-sm font-medium">Hell</span>
+                  </Label>
+                  <Label
+                    htmlFor="theme-dark"
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
+                    <Moon className="h-6 w-6" />
+                    <span className="text-sm font-medium">Dunkel</span>
+                  </Label>
+                </RadioGroup>
+              </div>
+            </Card>
+
+            {/* Language */}
+            <Card className="p-6 shadow-medium">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <h3 className="font-semibold">Sprache</h3>
+                </div>
+                <RadioGroup 
+                  value={i18n.language} 
+                  onValueChange={(lang) => i18n.changeLanguage(lang)}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  <Label
+                    htmlFor="lang-de"
+                    className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      i18n.language === 'de' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="de" id="lang-de" className="sr-only" />
+                    <span className="text-2xl">🇩🇪</span>
+                    <span className="font-medium">Deutsch</span>
+                  </Label>
+                  <Label
+                    htmlFor="lang-en"
+                    className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      i18n.language === 'en' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="en" id="lang-en" className="sr-only" />
+                    <span className="text-2xl">🇬🇧</span>
+                    <span className="font-medium">English</span>
+                  </Label>
+                </RadioGroup>
+              </div>
+            </Card>
+
+            {/* Notifications */}
+            <Card className="p-6 shadow-medium">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  <h3 className="font-semibold">Benachrichtigungen</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-participating" className="font-medium">
+                        Teilgenommene Veranstaltungen
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Updates zu Events, an denen du teilnimmst
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-participating"
+                      checked={notifyParticipating}
+                      onCheckedChange={setNotifyParticipating}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-organizing" className="font-medium">
+                        Organisierte Veranstaltungen
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Benachrichtigungen wenn sich Gäste registrieren
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-organizing"
+                      checked={notifyOrganizing}
+                      onCheckedChange={setNotifyOrganizing}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notify-product" className="font-medium">
+                        Produkt-Updates
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Neuigkeiten und Updates von Wichty
+                      </p>
+                    </div>
+                    <Switch
+                      id="notify-product"
+                      checked={notifyProductUpdates}
+                      onCheckedChange={setNotifyProductUpdates}
+                    />
+                  </div>
+                </div>
               </div>
             </Card>
           </TabsContent>
