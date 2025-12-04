@@ -21,8 +21,8 @@ export function DrawAnimation({ participantId, onComplete }: DrawAnimationProps)
 
   const performDraw = async () => {
     try {
-      // Call the draw function
-      const { data, error } = await supabase.rpc("perform_draw", {
+      // Call the spin function
+      const { data, error } = await supabase.rpc("spin_wheel", {
         p_participant_id: participantId,
       });
 
@@ -38,13 +38,13 @@ export function DrawAnimation({ participantId, onComplete }: DrawAnimationProps)
       const { data: participant, error: participantError } = await supabase
         .from("participants")
         .select("name, wish")
-        .eq("id", data)
+        .eq("id", data as string)
         .single();
 
       if (participantError) throw participantError;
 
-      setAssignedName(participant.name);
-      setAssignedWish(participant.wish);
+      setAssignedName(participant?.name || "");
+      setAssignedWish(participant?.wish || "");
 
       // Show animation for 2 seconds before revealing result
       setTimeout(() => {

@@ -14,16 +14,127 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          event_date: string | null
+          event_time: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          name: string
+          status: Database["public"]["Enums"]["event_status"]
+          target_participants: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date?: string | null
+          event_time?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["event_status"]
+          target_participants?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string | null
+          event_time?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          target_participants?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      participants: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          event_id: string
+          has_spun: boolean
+          id: string
+          name: string
+          user_id: string | null
+          wish: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          event_id: string
+          has_spun?: boolean
+          id?: string
+          name: string
+          user_id?: string | null
+          wish?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          event_id?: string
+          has_spun?: boolean
+          id?: string
+          name?: string
+          user_id?: string | null
+          wish?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      perform_draw: { Args: { p_event_id: string }; Returns: boolean }
+      spin_wheel: { Args: { p_participant_id: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      event_status: "waiting" | "active" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +261,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_status: ["waiting", "active", "completed"],
+    },
   },
 } as const
