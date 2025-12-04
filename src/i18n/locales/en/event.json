@@ -11,6 +11,7 @@
   "oclock": "",
   "free": "Free",
   "joinSuccess": "Successfully joined!",
+  "editEventButton": "Edit event",
   "cta": {
     "join": "Join",
     "requestJoin": "Request to join",
@@ -53,5 +54,28 @@
     "success": "Event updated!",
     "error": "Error updating",
     "minParticipants": "At least {{count}} participants (current count)"
+  },
+  "editEvent": {
+    "title": "Edit event",
+    "tabs": {
+      "details": "Details",
+      "guests": "Guests",
+      "analytics": "Analytics"
+    },
+    "name": "Event name",
+    "namePlaceholder": "e.g. Summer Party 2024",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your event...",
+    "paidEvent": "Paid event",
+    "price": "Price",
+    "priceLockedHint": "Prices cannot be changed after the first ticket sale.",
+    "requiresApproval": "Approval required",
+    "requiresApprovalHint": "Participants must be approved before they can join.",
+    "guestList": "Guest list",
+    "noGuests": "No guests registered yet",
+    "overview": "Overview",
+    "totalGuests": "Total guests",
+    "revenue": "Revenue",
+    "analyticsComingSoon": "Detailed analytics coming soon"
   }
 }
