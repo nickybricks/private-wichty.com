@@ -13,6 +13,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Loader2, Calendar, MapPin, CreditCard, Share2, User, Pencil } from "lucide-react";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { LocationMapPreview } from "@/components/LocationMapPreview";
@@ -63,6 +73,8 @@ export default function Event() {
   const [showJoinSheet, setShowJoinSheet] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [showParticipantsList, setShowParticipantsList] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [hostProfile, setHostProfile] = useState<HostProfile | null>(null);
 
@@ -276,11 +288,41 @@ export default function Event() {
     return null;
   };
 
+  const handleLeaveEvent = async () => {
+    if (!user || !id) return;
+    
+    setIsLeaving(true);
+    try {
+      const { error } = await supabase
+        .from("participants")
+        .delete()
+        .eq("event_id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setIsParticipant(false);
+      setShowLeaveConfirm(false);
+      toast.success(t('leaveSuccess'));
+      fetchEventData();
+    } catch (error) {
+      console.error("Error leaving event:", error);
+      toast.error(t('leaveError'));
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
   const getCTAButton = () => {
     if (isParticipant) {
       return (
-        <Button size="lg" className="w-full h-14 text-lg" disabled variant="secondary">
-          {t('cta.joined')}
+        <Button 
+          size="lg" 
+          className="w-full h-14 text-lg" 
+          variant="outline"
+          onClick={() => setShowLeaveConfirm(true)}
+        >
+          {t('cta.leave')}
         </Button>
       );
     }
@@ -536,6 +578,28 @@ export default function Event() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Leave Event Confirmation */}
+      <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('leave.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('leave.no')}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleLeaveEvent}
+              disabled={isLeaving}
+            >
+              {isLeaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {t('leave.yes')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

@@ -16,7 +16,16 @@
     "join": "Join",
     "requestJoin": "Request to join",
     "buyTicket": "Buy ticket",
-    "joined": "You're attending ✓"
+    "joined": "You're attending ✓",
+    "leave": "Cancel attendance"
+  },
+  "leaveSuccess": "You're no longer attending",
+  "leaveError": "Error leaving event",
+  "leave": {
+    "title": "Cancel attendance?",
+    "description": "Are you sure you don't want to attend this event anymore?",
+    "yes": "Yes, cancel",
+    "no": "No, stay"
   },
   "host": {
     "title": "Host",
