@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, CreditCard } from "lucide-react";
+import { Loader2, User, CreditCard, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface JoinEventSheetProps {
@@ -24,6 +24,13 @@ interface JoinEventSheetProps {
   priceCents?: number;
   currency?: string;
   eventName?: string;
+}
+
+interface UserProfile {
+  display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
 }
 
 export function JoinEventSheet({
@@ -40,6 +47,60 @@ export function JoinEventSheet({
   const { t: ta } = useTranslation('auth');
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch user profile when sheet opens
+  useEffect(() => {
+    if (open) {
+      fetchUserProfile();
+    }
+  }, [open]);
+
+  const fetchUserProfile = async () => {
+    setLoadingProfile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setUserProfile(null);
+        setUserId(null);
+        return;
+      }
+
+      setUserId(user.id);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, first_name, last_name, username")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setUserProfile(profile);
+        // Pre-fill name from profile
+        const profileName = getProfileDisplayName(profile);
+        if (profileName) {
+          setName(profileName);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const getProfileDisplayName = (profile: UserProfile | null): string => {
+    if (!profile) return "";
+    if (profile.first_name && profile.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    if (profile.display_name) return profile.display_name;
+    if (profile.first_name) return profile.first_name;
+    if (profile.username) return profile.username;
+    return "";
+  };
 
   const formatPrice = (cents: number, curr: string) => {
     return new Intl.NumberFormat(i18n.language === 'de' ? 'de-DE' : 'en-US', {
@@ -48,23 +109,22 @@ export function JoinEventSheet({
     }).format(cents / 100);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleJoin = async () => {
+    const displayName = name.trim() || getProfileDisplayName(userProfile);
+    
+    if (!displayName) {
+      toast.error(i18n.language === 'de' ? 'Bitte gib deinen Namen ein' : 'Please enter your name');
+      return;
+    }
 
-    if (!name.trim()) {
-      toast.error(ta('errors.fillAllFields'));
+    if (!userId) {
+      toast.error(ta('errors.pleaseLogin'));
       return;
     }
 
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error(ta('errors.pleaseLogin'));
-        return;
-      }
-
       // For paid events, redirect to Stripe checkout
       if (isPaidEvent && priceCents > 0) {
         const { data: { session } } = await supabase.auth.getSession();
@@ -72,7 +132,7 @@ export function JoinEventSheet({
         const { data, error } = await supabase.functions.invoke('create-event-checkout', {
           body: {
             event_id: eventId,
-            participant_name: name.trim(),
+            participant_name: displayName,
           },
           headers: session ? {
             Authorization: `Bearer ${session.access_token}`,
@@ -96,8 +156,8 @@ export function JoinEventSheet({
         .from("participants")
         .insert({
           event_id: eventId,
-          name: name.trim(),
-          user_id: user.id,
+          name: displayName,
+          user_id: userId,
         });
 
       if (error) throw error;
@@ -112,14 +172,29 @@ export function JoinEventSheet({
     }
   };
 
+  const profileName = getProfileDisplayName(userProfile);
+  const hasProfile = !!profileName;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto">
         <SheetHeader className="space-y-3 pb-6">
           <SheetTitle className="text-2xl">{t('join.title')}</SheetTitle>
-          <SheetDescription>
-            {t('join.description')}
-          </SheetDescription>
+          {isPaidEvent && priceCents > 0 ? (
+            <SheetDescription>
+              {i18n.language === 'de' 
+                ? 'Schließe den Kauf ab, um am Event teilzunehmen.' 
+                : 'Complete your purchase to join the event.'}
+            </SheetDescription>
+          ) : (
+            <SheetDescription>
+              {hasProfile 
+                ? (i18n.language === 'de' 
+                    ? `Du wirst als "${profileName}" teilnehmen.` 
+                    : `You'll join as "${profileName}".`)
+                : t('join.description')}
+            </SheetDescription>
+          )}
           {isPaidEvent && priceCents > 0 && (
             <Badge variant="secondary" className="w-fit gap-1.5">
               <CreditCard className="h-3 w-3" />
@@ -128,29 +203,50 @@ export function JoinEventSheet({
           )}
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 pb-6">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-base">
-              {t('join.yourName')}
-            </Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('join.namePlaceholder')}
-                className="pl-10"
-                required
-              />
+        <div className="space-y-6 pb-6">
+          {loadingProfile ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          </div>
+          ) : hasProfile ? (
+            // User has a profile - show confirmation
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">{profileName}</p>
+                <p className="text-sm text-muted-foreground">
+                  {i18n.language === 'de' ? 'Dein Profil' : 'Your profile'}
+                </p>
+              </div>
+              <Check className="h-5 w-5 text-green-500" />
+            </div>
+          ) : (
+            // No profile name - ask for name
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-base">
+                {t('join.yourName')}
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('join.namePlaceholder')}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+          )}
 
           <Button
-            type="submit"
+            onClick={handleJoin}
             size="lg"
             className="w-full h-12 text-lg shadow-medium"
-            disabled={loading}
+            disabled={loading || loadingProfile}
           >
             {loading ? (
               <>
@@ -161,14 +257,14 @@ export function JoinEventSheet({
               <>
                 <CreditCard className="mr-2 h-5 w-5" />
                 {i18n.language === 'de' 
-                  ? `${formatPrice(priceCents, currency)} zahlen & beitreten` 
-                  : `Pay ${formatPrice(priceCents, currency)} & join`}
+                  ? `${formatPrice(priceCents, currency)} zahlen` 
+                  : `Pay ${formatPrice(priceCents, currency)}`}
               </>
             ) : (
               t('join.button')
             )}
           </Button>
-        </form>
+        </div>
       </SheetContent>
     </Sheet>
   );
