@@ -75,8 +75,8 @@
       "deleteAccountConfirm": "Ja, Konto löschen"
     },
     "appearance": {
-      "title": "Oberflächenanzeige",
-      "system": "System",
+      "title": "Erscheinungsbild",
+      "system": "Automatisch",
       "light": "Hell",
       "dark": "Dunkel"
     },
