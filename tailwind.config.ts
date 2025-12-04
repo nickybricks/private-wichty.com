@@ -47,6 +47,15 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Zusätzliche Markenfarben
+        violet: {
+          DEFAULT: "hsl(270 100% 50%)",
+          light: "hsl(270 100% 70%)",
+        },
+        cyan: {
+          DEFAULT: "hsl(182 100% 40%)",
+          light: "hsl(182 100% 60%)",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
