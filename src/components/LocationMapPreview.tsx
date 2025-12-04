@@ -6,9 +6,10 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyC5O6oJjt66t69ylhhi2I2VJAUS46iy2JY";
 interface LocationMapPreviewProps {
   location: string;
   className?: string;
+  showMapOnly?: boolean;
 }
 
-export function LocationMapPreview({ location, className }: LocationMapPreviewProps) {
+export function LocationMapPreview({ location, className, showMapOnly = false }: LocationMapPreviewProps) {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const geocoderRef = useRef<any>(null);
@@ -70,6 +71,37 @@ export function LocationMapPreview({ location, className }: LocationMapPreviewPr
   const mapUrl = coordinates
     ? `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=600x200&scale=2&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=${GOOGLE_MAPS_API_KEY}`
     : null;
+
+  // Show only the map
+  if (showMapOnly) {
+    return (
+      <div className={className}>
+        {mapUrl && !loading && (
+          <button
+            type="button"
+            onClick={openGoogleMaps}
+            className="relative w-full h-40 rounded-xl overflow-hidden group cursor-pointer"
+          >
+            <img
+              src={mapUrl}
+              alt={`Map of ${location}`}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 px-3 py-1.5 rounded-md flex items-center gap-1.5 text-sm font-medium shadow-md">
+                <ExternalLink className="h-4 w-4" />
+                Google Maps
+              </div>
+            </div>
+          </button>
+        )}
+
+        {loading && (
+          <div className="w-full h-40 rounded-xl bg-muted animate-pulse" />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
