@@ -37,7 +37,7 @@ import {
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -175,18 +175,14 @@ export default function Settings() {
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
-    const themeLabels: Record<string, string> = {
-      system: 'System',
-      light: 'Hell',
-      dark: 'Dunkel'
-    };
-    handleSettingChange('theme', newTheme, `Oberflächenanzeige auf "${themeLabels[newTheme]}" geändert`);
+    const themeLabel = t(`settingsPage.appearance.${newTheme}`);
+    handleSettingChange('theme', newTheme, t('settingsPage.toasts.themeChanged', { theme: themeLabel }));
   };
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
     const langLabels: Record<string, string> = { de: 'Deutsch', en: 'English' };
-    handleSettingChange('language', lang, `Sprache auf "${langLabels[lang]}" geändert`);
+    handleSettingChange('language', lang, t('settingsPage.toasts.languageChanged', { language: langLabels[lang] }));
   };
 
   const handleNotificationChange = async (
@@ -208,10 +204,10 @@ export default function Settings() {
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success(`Benachrichtigung erfolgreich ${value ? 'aktiviert' : 'deaktiviert'}!`);
+      toast.success(value ? t('settingsPage.toasts.notificationEnabled') : t('settingsPage.toasts.notificationDisabled'));
     } catch (error) {
       console.error("Error saving notification setting:", error);
-      toast.error("Fehler beim Speichern der Einstellung");
+      toast.error(t('settingsPage.toasts.errorSaving'));
       // Revert on error
       if (field === 'notify_participating') setNotifyParticipating(!value);
       if (field === 'notify_organizing') setNotifyOrganizing(!value);
@@ -344,10 +340,7 @@ export default function Settings() {
       
       <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Einstellungen</h1>
-          <p className="text-muted-foreground mt-1">
-            Verwalte dein Profil und deine Account-Einstellungen
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('settingsPage.title')}</h1>
         </div>
 
         <Tabs defaultValue="konto" className="w-full">
@@ -356,25 +349,25 @@ export default function Settings() {
               value="konto" 
               className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
             >
-              Konto
+              {t('settingsPage.tabs.profile')}
             </TabsTrigger>
             <TabsTrigger 
               value="einstellungen" 
               className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
             >
-              Einstellungen
+              {t('settingsPage.tabs.settings')}
             </TabsTrigger>
             <TabsTrigger 
               value="zahlung" 
               className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
             >
-              Zahlung
+              {t('settingsPage.tabs.payment')}
             </TabsTrigger>
             <TabsTrigger 
               value="tickets" 
               className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
             >
-              Ticketverkauf
+              {t('settingsPage.tabs.tickets')}
             </TabsTrigger>
           </TabsList>
 
@@ -386,7 +379,7 @@ export default function Settings() {
                 <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4">
                   <div className="relative">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src={avatarUrl} alt="Profilbild" className="object-cover" />
+                      <AvatarImage src={avatarUrl} alt={t('settingsPage.profile.avatar')} className="object-cover" />
                       <AvatarFallback className="text-2xl bg-primary/10">
                         {getInitials()}
                       </AvatarFallback>
@@ -406,14 +399,14 @@ export default function Settings() {
                     </label>
                   </div>
                   <div className="text-center sm:text-left">
-                    <h3 className="font-medium">Profilbild</h3>
+                    <h3 className="font-medium">{t('settingsPage.profile.avatar')}</h3>
                   </div>
                 </div>
 
                 {/* Name Fields */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">Vorname</Label>
+                    <Label htmlFor="firstName">{t('settingsPage.profile.firstName')}</Label>
                     <Input
                       id="firstName"
                       type="text"
@@ -423,7 +416,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Nachname</Label>
+                    <Label htmlFor="lastName">{t('settingsPage.profile.lastName')}</Label>
                     <Input
                       id="lastName"
                       type="text"
@@ -436,7 +429,7 @@ export default function Settings() {
 
                 {/* Username */}
                 <div className="space-y-2">
-                  <Label htmlFor="username">Benutzername</Label>
+                  <Label htmlFor="username">{t('settingsPage.profile.username')}</Label>
                   <Input
                     id="username"
                     type="text"
@@ -444,16 +437,13 @@ export default function Settings() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Nur Kleinbuchstaben, Zahlen und Unterstriche
-                  </p>
                 </div>
 
                 {/* Phone Number */}
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    Telefonnummer
+                    {t('settingsPage.profile.phone')}
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -477,37 +467,34 @@ export default function Settings() {
                         {sendingPhoneCode ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          "Code senden"
+                          t('settingsPage.profile.phoneVerify')
                         )}
                       </Button>
                     )}
                   </div>
                   {phoneVerified && (
                     <p className="text-xs text-green-600 flex items-center gap-1">
-                      ✓ Telefonnummer bestätigt
+                      ✓ {t('settingsPage.profile.phoneVerified')}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Zum Anmelden und für SMS-Updates
-                  </p>
                 </div>
 
                 {/* Phone Verification */}
                 {showPhoneVerification && (
                   <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                    <Label htmlFor="phoneCode">Bestätigungscode eingeben</Label>
+                    <Label htmlFor="phoneCode">{t('settingsPage.profile.phoneCode')}</Label>
                     <div className="flex gap-2">
                       <Input
                         id="phoneCode"
                         type="text"
-                        placeholder="123456"
+                        placeholder={t('settingsPage.profile.phoneCodePlaceholder')}
                         value={phoneCode}
                         onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         maxLength={6}
                         className="flex-1"
                       />
                       <Button onClick={handleVerifyPhone}>
-                        Bestätigen
+                        {t('settingsPage.profile.phoneCodeVerify')}
                       </Button>
                     </div>
                   </div>
@@ -517,10 +504,10 @@ export default function Settings() {
                 <div className="space-y-2 pt-4 border-t">
                   <Label className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    Passwort ändern
+                    {t('settingsPage.profile.changePassword')}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Wir senden dir einen Link zum Zurücksetzen deines Passworts an {user?.email}
+                    {t('settingsPage.profile.changePasswordDesc')}
                   </p>
                   <Button 
                     type="button" 
@@ -529,19 +516,13 @@ export default function Settings() {
                     disabled={sendingPasswordReset}
                   >
                     {sendingPasswordReset ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Wird gesendet...
-                      </>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : showPasswordReset ? (
+                      t('settingsPage.profile.resetLinkSent')
                     ) : (
-                      "Passwort-Reset E-Mail senden"
+                      t('settingsPage.profile.sendResetLink')
                     )}
                   </Button>
-                  {showPasswordReset && (
-                    <p className="text-xs text-green-600">
-                      ✓ E-Mail gesendet! Überprüfe deinen Posteingang.
-                    </p>
-                  )}
                 </div>
 
                 {/* Save Button */}
@@ -552,12 +533,9 @@ export default function Settings() {
                   size="lg"
                 >
                   {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Wird gespeichert...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Änderungen speichern"
+                    t('settingsPage.profile.save')
                   )}
                 </Button>
               </div>
@@ -569,35 +547,31 @@ export default function Settings() {
                 <div>
                   <h3 className="text-lg font-semibold text-destructive flex items-center gap-2">
                     <Trash2 className="h-5 w-5" />
-                    Konto löschen
+                    {t('settingsPage.profile.deleteAccount')}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Durch das Löschen deines Kontos werden alle deine Daten unwiderruflich entfernt.
-                  </p>
                 </div>
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full sm:w-auto">
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Konto endgültig löschen
+                      {t('settingsPage.profile.deleteAccount')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Bist du sicher?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('settingsPage.profile.deleteAccountTitle')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Diese Aktion kann nicht rückgängig gemacht werden. Dein Konto und alle 
-                        zugehörigen Daten werden dauerhaft gelöscht.
+                        {t('settingsPage.profile.deleteAccountDesc')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogCancel>{t('settingsPage.profile.deleteAccountCancel')}</AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={handleDeleteAccount}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        Ja, Konto löschen
+                        {t('settingsPage.profile.deleteAccountConfirm')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -613,7 +587,7 @@ export default function Settings() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Monitor className="h-5 w-5" />
-                  <h3 className="font-semibold">Oberflächenanzeige</h3>
+                  <h3 className="font-semibold">{t('settingsPage.appearance.title')}</h3>
                 </div>
                 <RadioGroup 
                   value={theme} 
@@ -628,7 +602,7 @@ export default function Settings() {
                   >
                     <RadioGroupItem value="system" id="theme-system" className="sr-only" />
                     <Monitor className="h-6 w-6" />
-                    <span className="text-sm font-medium">System</span>
+                    <span className="text-sm font-medium">{t('settingsPage.appearance.system')}</span>
                   </Label>
                   <Label
                     htmlFor="theme-light"
@@ -638,7 +612,7 @@ export default function Settings() {
                   >
                     <RadioGroupItem value="light" id="theme-light" className="sr-only" />
                     <Sun className="h-6 w-6" />
-                    <span className="text-sm font-medium">Hell</span>
+                    <span className="text-sm font-medium">{t('settingsPage.appearance.light')}</span>
                   </Label>
                   <Label
                     htmlFor="theme-dark"
@@ -648,7 +622,7 @@ export default function Settings() {
                   >
                     <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
                     <Moon className="h-6 w-6" />
-                    <span className="text-sm font-medium">Dunkel</span>
+                    <span className="text-sm font-medium">{t('settingsPage.appearance.dark')}</span>
                   </Label>
                 </RadioGroup>
               </div>
@@ -659,7 +633,7 @@ export default function Settings() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Globe className="h-5 w-5" />
-                  <h3 className="font-semibold">Sprache</h3>
+                  <h3 className="font-semibold">{t('settingsPage.languageSection.title')}</h3>
                 </div>
                 <Select 
                   value={i18n.language.startsWith('de') ? 'de' : 'en'} 
@@ -691,17 +665,17 @@ export default function Settings() {
               <div className="space-y-6">
                 <div className="flex items-center gap-2">
                   <Bell className="h-5 w-5" />
-                  <h3 className="font-semibold">Benachrichtigungen</h3>
+                  <h3 className="font-semibold">{t('settingsPage.notifications.title')}</h3>
                 </div>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="notify-participating" className="font-medium">
-                        Teilgenommene Veranstaltungen
+                        {t('settingsPage.notifications.participating')}
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Updates zu Events, an denen du teilnimmst
+                        {t('settingsPage.notifications.participatingDesc')}
                       </p>
                     </div>
                     <Switch
@@ -714,10 +688,10 @@ export default function Settings() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="notify-organizing" className="font-medium">
-                        Organisierte Veranstaltungen
+                        {t('settingsPage.notifications.organizing')}
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Benachrichtigungen wenn sich Gäste registrieren
+                        {t('settingsPage.notifications.organizingDesc')}
                       </p>
                     </div>
                     <Switch
@@ -730,10 +704,10 @@ export default function Settings() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="notify-product" className="font-medium">
-                        Produkt-Updates
+                        {t('settingsPage.notifications.productUpdates')}
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Neuigkeiten und Updates von Wichty
+                        {t('settingsPage.notifications.productUpdatesDesc')}
                       </p>
                     </div>
                     <Switch
@@ -752,8 +726,8 @@ export default function Settings() {
             <Card className="p-6 shadow-medium">
               <div className="text-center py-8 text-muted-foreground">
                 <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">Zahlungseinstellungen</h3>
-                <p className="text-sm">Hier kannst du deine Zahlungsmethoden und Abrechnungen verwalten.</p>
+                <h3 className="font-medium mb-2">{t('settingsPage.payment.title')}</h3>
+                <p className="text-sm">{t('settingsPage.payment.description')}</p>
               </div>
             </Card>
           </TabsContent>
@@ -763,8 +737,8 @@ export default function Settings() {
             <Card className="p-6 shadow-medium">
               <div className="text-center py-8 text-muted-foreground">
                 <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">Ticketverkauf</h3>
-                <p className="text-sm">Hier kannst du deine Ticketverkäufe verwalten und einsehen.</p>
+                <h3 className="font-medium mb-2">{t('settingsPage.ticketSales.title')}</h3>
+                <p className="text-sm">{t('settingsPage.ticketSales.description')}</p>
               </div>
             </Card>
           </TabsContent>

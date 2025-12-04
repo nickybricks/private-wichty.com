@@ -40,5 +40,76 @@
     "marketing": "Marketing Cookies",
     "marketingDesc": "Used to display relevant advertising.",
     "save": "Save"
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "tabs": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "payment": "Payment",
+      "tickets": "Ticket Sales"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "avatar": "Profile Picture",
+      "changeAvatar": "Change",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "username": "Username",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "phoneVerify": "Verify",
+      "phoneVerified": "Verified",
+      "phoneCode": "Verification Code",
+      "phoneCodePlaceholder": "6-digit code",
+      "phoneCodeVerify": "Confirm",
+      "changePassword": "Change Password",
+      "changePasswordDesc": "We will send you a link to reset your password.",
+      "sendResetLink": "Send Link",
+      "resetLinkSent": "Link Sent",
+      "save": "Save",
+      "deleteAccount": "Delete Account",
+      "deleteAccountTitle": "Delete account permanently?",
+      "deleteAccountDesc": "This action cannot be undone. Your account and all associated data will be permanently deleted.",
+      "deleteAccountCancel": "Cancel",
+      "deleteAccountConfirm": "Yes, Delete Account"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "languageSection": {
+      "title": "Language"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "participating": "Events You Attend",
+      "participatingDesc": "Updates for events you're participating in",
+      "organizing": "Events You Organize",
+      "organizingDesc": "Notifications when guests register",
+      "productUpdates": "Product Updates",
+      "productUpdatesDesc": "News and updates from Wichty"
+    },
+    "payment": {
+      "title": "Payment Settings",
+      "description": "Manage your payment methods and billing here."
+    },
+    "ticketSales": {
+      "title": "Ticket Sales",
+      "description": "Manage and view your ticket sales here."
+    },
+    "toasts": {
+      "profileSaved": "Profile saved!",
+      "themeChanged": "Appearance changed to \"{theme}\"",
+      "languageChanged": "Language changed to \"{language}\"",
+      "notificationEnabled": "Notification successfully enabled!",
+      "notificationDisabled": "Notification successfully disabled!",
+      "errorSaving": "Error saving setting",
+      "codeSent": "Verification code sent!",
+      "phoneVerified": "Phone number verified!",
+      "resetLinkSent": "Password reset link sent!"
+    }
   }
 }
