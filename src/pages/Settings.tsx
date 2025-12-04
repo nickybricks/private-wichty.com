@@ -215,11 +215,33 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // For now, create a local preview URL
-    // In production, upload to Supabase Storage
-    const url = URL.createObjectURL(file);
-    setAvatarUrl(url);
-    toast.info("Profilbild ausgewählt. Klicke 'Speichern' um es zu übernehmen.");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Nicht angemeldet");
+
+      // Create unique file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl + '?t=' + Date.now()); // Cache bust
+      toast.success("Profilbild hochgeladen!");
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.message || "Fehler beim Hochladen des Profilbilds");
+    }
   };
 
   const getInitials = () => {
@@ -276,7 +298,7 @@ export default function Settings() {
                 <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4">
                   <div className="relative">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src={avatarUrl} alt="Profilbild" />
+                      <AvatarImage src={avatarUrl} alt="Profilbild" className="object-cover" />
                       <AvatarFallback className="text-2xl bg-primary/10">
                         {getInitials()}
                       </AvatarFallback>
@@ -297,9 +319,6 @@ export default function Settings() {
                   </div>
                   <div className="text-center sm:text-left">
                     <h3 className="font-medium">Profilbild</h3>
-                    <p className="text-sm text-muted-foreground">
-                      JPG, PNG oder GIF. Max. 2MB.
-                    </p>
                   </div>
                 </div>
 
