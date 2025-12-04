@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationInput } from "@/components/LocationInput";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Loader2, 
   Image as ImageIcon, 
@@ -23,7 +24,8 @@ import {
   Users,
   CreditCard,
   UserCheck,
-  Infinity
+  Infinity,
+  AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,6 +45,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('forms');
   const { t: ta } = useTranslation('auth');
+  const { t: tc } = useTranslation('common');
   
   // Basic info
   const [name, setName] = useState("");
@@ -67,8 +70,59 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [maxCapacity, setMaxCapacity] = useState("");
   
   const [loading, setLoading] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState<boolean | null>(null);
+  const [checkingStripe, setCheckingStripe] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
+
+  // Check Stripe connection status when drawer opens
+  useEffect(() => {
+    if (open) {
+      checkStripeStatus();
+    }
+  }, [open]);
+
+  const checkStripeStatus = async () => {
+    setCheckingStripe(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setStripeConnected(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('check-connect-status', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking Stripe status:', error);
+        setStripeConnected(false);
+        return;
+      }
+
+      setStripeConnected(data?.charges_enabled === true);
+    } catch (error) {
+      console.error('Error checking Stripe status:', error);
+      setStripeConnected(false);
+    } finally {
+      setCheckingStripe(false);
+    }
+  };
+
+  const handlePaidToggle = (checked: boolean) => {
+    if (checked && stripeConnected === false) {
+      toast.error(
+        i18n.language === 'de' 
+          ? 'Bitte verbinde zuerst Stripe in den Einstellungen' 
+          : 'Please connect Stripe in settings first'
+      );
+      return;
+    }
+    setIsPaid(checked);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -374,8 +428,31 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                       </p>
                     </div>
                   </div>
-                  <Switch checked={isPaid} onCheckedChange={setIsPaid} />
+                  <Switch 
+                    checked={isPaid} 
+                    onCheckedChange={handlePaidToggle}
+                    disabled={checkingStripe}
+                  />
                 </div>
+
+                {/* Stripe not connected warning */}
+                {stripeConnected === false && (
+                  <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="flex items-center justify-between">
+                      <span>
+                        {i18n.language === 'de' 
+                          ? 'Verbinde Stripe um kostenpflichtige Events zu erstellen' 
+                          : 'Connect Stripe to create paid events'}
+                      </span>
+                      <Link to="/settings">
+                        <Button variant="outline" size="sm" className="ml-2">
+                          {tc('stripe.connect')}
+                        </Button>
+                      </Link>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 {/* Price Input when paid */}
                 {isPaid && (
