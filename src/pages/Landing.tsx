@@ -29,7 +29,16 @@ export default function Landing() {
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
+            <svg width="0" height="0" className="absolute">
+              <defs>
+                <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#FFB86C" />
+                  <stop offset="50%" stopColor="#FF6788" />
+                  <stop offset="100%" stopColor="#C088FF" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <Sparkles className="h-6 w-6" style={{ stroke: 'url(#icon-gradient)' }} />
             <span className="text-xl font-bold tracking-tight">Wichty</span>
           </div>
           <div className="flex items-center gap-3">

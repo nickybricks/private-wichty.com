@@ -143,4 +143,23 @@ All colors MUST be HSL.
     outline: none;
     box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px #FF6788;
   }
+
+  /* Gradient icon effect using mask */
+  .icon-gradient {
+    background: var(--gradient-accent);
+    -webkit-mask: var(--icon-mask);
+    mask: var(--icon-mask);
+  }
+
+  /* Gradient icon wrapper */
+  .icon-gradient-wrapper {
+    display: inline-flex;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .icon-gradient-wrapper svg {
+    stroke: url(#icon-gradient);
+  }
 }
