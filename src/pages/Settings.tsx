@@ -241,21 +241,29 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="konto" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 p-1">
-            <TabsTrigger value="konto" className="text-xs sm:text-sm py-2">
-              <User className="h-4 w-4 mr-1.5 hidden sm:inline" />
+          <TabsList className="h-auto bg-transparent p-0 gap-6 flex justify-start border-b border-border rounded-none w-full">
+            <TabsTrigger 
+              value="konto" 
+              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+            >
               Konto
             </TabsTrigger>
-            <TabsTrigger value="einstellungen" className="text-xs sm:text-sm py-2">
-              <SettingsIcon className="h-4 w-4 mr-1.5 hidden sm:inline" />
+            <TabsTrigger 
+              value="einstellungen" 
+              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+            >
               Einstellungen
             </TabsTrigger>
-            <TabsTrigger value="zahlung" className="text-xs sm:text-sm py-2">
-              <CreditCard className="h-4 w-4 mr-1.5 hidden sm:inline" />
+            <TabsTrigger 
+              value="zahlung" 
+              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+            >
               Zahlung
             </TabsTrigger>
-            <TabsTrigger value="tickets" className="text-xs sm:text-sm py-2">
-              <Ticket className="h-4 w-4 mr-1.5 hidden sm:inline" />
+            <TabsTrigger 
+              value="tickets" 
+              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+            >
               Ticketverkauf
             </TabsTrigger>
           </TabsList>
