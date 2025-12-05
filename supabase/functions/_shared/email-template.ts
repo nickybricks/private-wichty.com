@@ -3,31 +3,31 @@
 
 export const EMAIL_BRANDING = {
   colors: {
-    background: '#f5f5f5',
-    card: '#ffffff',
-    buttonBg: '#1a1a1a',
-    buttonText: '#ffffff',
-    textPrimary: '#1a1a1a',
-    textSecondary: '#333',
-    textMuted: '#666',
-    textLight: '#999',
-    border: '#eee',
-    badgeBg: '#f0f0f0',
+    background: "#f5f5f5",
+    card: "#ffffff",
+    buttonBg: "#1a1a1a",
+    buttonText: "#ffffff",
+    textPrimary: "#1a1a1a",
+    textSecondary: "#333",
+    textMuted: "#666",
+    textLight: "#999",
+    border: "#eee",
+    badgeBg: "#f0f0f0",
   },
   styles: {
-    cardBorderRadius: '16px',
-    buttonBorderRadius: '12px',
-    badgeBorderRadius: '20px',
-    maxWidth: '480px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    cardBorderRadius: "16px",
+    buttonBorderRadius: "12px",
+    badgeBorderRadius: "20px",
+    maxWidth: "480px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   sender: {
-    tickets: 'wichty <tickets@wichty.com>',
-    noreply: 'wichty <noreply@wichty.com>',
+    tickets: "Wichty <tickets@wichty.com>",
+    noreply: "Wichty <noreply@wichty.com>",
   },
   footer: {
-    de: 'Gesendet mit ❤️ von wichty.de',
-    en: 'Sent with ❤️ by wichty.de',
+    de: "Gesendet mit ❤️ von wichty.com",
+    en: "Sent with ❤️ by wichty.com",
   },
 };
 
@@ -39,12 +39,12 @@ export interface EmailContent {
   buttonText: string;
   buttonUrl: string;
   footerText?: string;
-  language?: 'de' | 'en';
+  language?: "de" | "en";
 }
 
 export function generateEmailHtml(content: EmailContent): string {
   const { colors, styles } = EMAIL_BRANDING;
-  const language = content.language || 'de';
+  const language = content.language || "de";
   const footerBranding = EMAIL_BRANDING.footer[language];
 
   return `
@@ -77,7 +77,9 @@ export function generateEmailHtml(content: EmailContent): string {
                 </td>
               </tr>
               
-              ${content.subtitle ? `
+              ${
+                content.subtitle
+                  ? `
               <!-- Subtitle -->
               <tr>
                 <td style="padding: 0 24px 24px; text-align: center;">
@@ -86,7 +88,9 @@ export function generateEmailHtml(content: EmailContent): string {
                   </p>
                 </td>
               </tr>
-              ` : ''}
+              `
+                  : ""
+              }
               
               <!-- Message -->
               <tr>
@@ -116,11 +120,15 @@ export function generateEmailHtml(content: EmailContent): string {
               <!-- Footer -->
               <tr>
                 <td style="padding: 24px; text-align: center;">
-                  ${content.footerText ? `
+                  ${
+                    content.footerText
+                      ? `
                   <p style="margin: 0 0 8px; font-size: 12px; color: ${colors.textLight};">
                     ${content.footerText}
                   </p>
-                  ` : ''}
+                  `
+                      : ""
+                  }
                   <p style="margin: 0; font-size: 12px; color: ${colors.textLight};">
                     ${footerBranding}
                   </p>
@@ -143,10 +151,10 @@ export function generateTicketEmailHtml(content: {
   timeText?: string | null;
   location?: string | null;
   ticketUrl: string;
-  language: 'de' | 'en';
+  language: "de" | "en";
 }): string {
   const { colors, styles } = EMAIL_BRANDING;
-  const isGerman = content.language === 'de';
+  const isGerman = content.language === "de";
   const footerBranding = EMAIL_BRANDING.footer[content.language];
 
   return `
@@ -182,16 +190,24 @@ export function generateTicketEmailHtml(content: {
               <!-- Event Details -->
               <tr>
                 <td style="padding: 0 24px 24px; text-align: center;">
-                  ${content.dateText ? `
+                  ${
+                    content.dateText
+                      ? `
                     <p style="margin: 0 0 8px; font-size: 14px; color: ${colors.textMuted};">
-                      📅 ${content.dateText}${content.timeText ? ` • ${content.timeText} ${isGerman ? 'Uhr' : ''}` : ''}
+                      📅 ${content.dateText}${content.timeText ? ` • ${content.timeText} ${isGerman ? "Uhr" : ""}` : ""}
                     </p>
-                  ` : ''}
-                  ${content.location ? `
+                  `
+                      : ""
+                  }
+                  ${
+                    content.location
+                      ? `
                     <p style="margin: 0; font-size: 14px; color: ${colors.textMuted};">
                       📍 ${content.location}
                     </p>
-                  ` : ''}
+                  `
+                      : ""
+                  }
                 </td>
               </tr>
               
@@ -199,9 +215,11 @@ export function generateTicketEmailHtml(content: {
               <tr>
                 <td style="padding: 0 24px 24px; text-align: center;">
                   <p style="margin: 0; font-size: 16px; color: ${colors.textSecondary};">
-                    ${isGerman 
-                      ? `Hey ${content.participantName}, du bist dabei! 🎉` 
-                      : `Hey ${content.participantName}, you're in! 🎉`}
+                    ${
+                      isGerman
+                        ? `Hey ${content.participantName}, du bist dabei! 🎉`
+                        : `Hey ${content.participantName}, you're in! 🎉`
+                    }
                   </p>
                 </td>
               </tr>
@@ -210,7 +228,7 @@ export function generateTicketEmailHtml(content: {
               <tr>
                 <td style="padding: 0 24px 32px; text-align: center;">
                   <a href="${content.ticketUrl}" style="display: inline-block; background-color: ${colors.buttonBg}; color: ${colors.buttonText}; text-decoration: none; padding: 14px 32px; border-radius: ${styles.buttonBorderRadius}; font-size: 16px; font-weight: 600;">
-                    ${isGerman ? 'Ticket ansehen' : 'View Ticket'}
+                    ${isGerman ? "Ticket ansehen" : "View Ticket"}
                   </a>
                 </td>
               </tr>
@@ -226,9 +244,7 @@ export function generateTicketEmailHtml(content: {
               <tr>
                 <td style="padding: 24px; text-align: center;">
                   <p style="margin: 0 0 8px; font-size: 12px; color: ${colors.textLight};">
-                    ${isGerman 
-                      ? 'Zeige dieses Ticket am Eingang vor.' 
-                      : 'Show this ticket at the entrance.'}
+                    ${isGerman ? "Zeige dieses Ticket am Eingang vor." : "Show this ticket at the entrance."}
                   </p>
                   <p style="margin: 0; font-size: 12px; color: ${colors.textLight};">
                     ${footerBranding}
