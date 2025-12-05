@@ -349,23 +349,33 @@ export default function Settings() {
 
   const handleDeleteAccount = async () => {
     try {
-      // Delete user data first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error(t('auth:errors.pleaseLogin'));
+        return;
+      }
 
-      // Delete profile
-      await supabase.from("profiles").delete().eq("id", user.id);
-      
-      // Delete user's events
-      await supabase.from("events").delete().eq("user_id", user.id);
-      
-      // Sign out
+      toast.loading(t('auth:deleteAccount.deleting'));
+
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Sign out locally after successful deletion
       await supabase.auth.signOut();
       
-      toast.success("Konto erfolgreich gelöscht");
+      toast.dismiss();
+      toast.success(t('auth:deleteAccount.success'));
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message || "Fehler beim Löschen des Kontos");
+      toast.dismiss();
+      console.error('Error deleting account:', error);
+      toast.error(t('auth:deleteAccount.error'));
     }
   };
 
