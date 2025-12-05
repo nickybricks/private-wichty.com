@@ -455,12 +455,17 @@ export default function EditEvent() {
                   </div>
 
                   {/* Event Name */}
-                  <Input
-                    type="text"
+                  <Textarea
                     placeholder={tf('createEvent.eventNamePlaceholder')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
+                    rows={1}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = target.scrollHeight + 'px';
+                    }}
                     required
                   />
 
@@ -470,33 +475,33 @@ export default function EditEvent() {
                     onClick={() => setDateTimePopupOpen(true)}
                     className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <CalendarIcon className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         {eventDate ? (
                           <>
-                            <p className="font-medium">
+                            <p className="font-medium truncate">
                               {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground truncate">
                               {startTime || "00:00"} — {endTime || "00:00"}
                             </p>
                           </>
                         ) : (
                           <>
-                            <p className="font-medium text-muted-foreground">
+                            <p className="font-medium text-muted-foreground truncate">
                               {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground truncate">
                               {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
                             </p>
                           </>
                         )}
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
                   </button>
 
                   {/* Location - Clickable Field */}
@@ -505,31 +510,31 @@ export default function EditEvent() {
                     onClick={() => setLocationPopupOpen(true)}
                     className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <MapPin className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <MapPin className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         {location ? (
                           <>
-                            <p className="font-medium">{location}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location'}
+                            <p className="font-medium truncate">{location.split(',')[0]}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
                             </p>
                           </>
                         ) : (
                           <>
-                            <p className="font-medium text-muted-foreground">
+                            <p className="font-medium text-muted-foreground truncate">
                               {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground truncate">
                               {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
                             </p>
                           </>
                         )}
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
                   </button>
 
                   {/* Description */}
