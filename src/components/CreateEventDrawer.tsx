@@ -251,7 +251,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[95vh]">
+      <DrawerContent fullScreenOnMobile className="md:max-h-[95vh] md:h-auto">
         <div className="mx-auto w-full max-w-lg overflow-y-auto px-4 pb-8">
           <DrawerHeader className="text-center pb-2">
             <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
