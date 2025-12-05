@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -10,14 +10,33 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { BlogCard } from "@/components/BlogCard";
 import { getAllBlogPosts } from "@/data/blogPosts";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { Header } from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Landing() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landing');
   const { t: tc } = useTranslation('common');
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const lang = i18n.language as 'de' | 'en';
   const blogPosts = getAllBlogPosts(lang).slice(0, 3);
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleAuthSuccess = (userId: string) => {
     setShowAuthDialog(false);
@@ -129,33 +148,37 @@ export default function Landing() {
       </Helmet>
 
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <svg width="0" height="0" className="absolute">
-              <defs>
-                <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#FFB86C" />
-                  <stop offset="50%" stopColor="#FF6788" />
-                  <stop offset="100%" stopColor="#C088FF" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <Sparkles className="h-6 w-6" style={{ stroke: 'url(#icon-gradient)' }} />
-            <span className="text-xl font-bold tracking-tight">Wichty</span>
+      {/* Header - Show logged-in header if user exists */}
+      {user ? (
+        <Header user={user} />
+      ) : (
+        <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+          <div className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg width="0" height="0" className="absolute">
+                <defs>
+                  <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#FFB86C" />
+                    <stop offset="50%" stopColor="#FF6788" />
+                    <stop offset="100%" stopColor="#C088FF" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <Sparkles className="h-6 w-6" style={{ stroke: 'url(#icon-gradient)' }} />
+              <span className="text-xl font-bold tracking-tight">Wichty</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <LanguageToggle />
+              <Button
+                onClick={() => setShowAuthDialog(true)}
+                className="shadow-medium hover:shadow-strong transition-all"
+              >
+                {tc('header.login')}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <Button
-              onClick={() => setShowAuthDialog(true)}
-              className="shadow-medium hover:shadow-strong transition-all"
-            >
-              {tc('header.login')}
-            </Button>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Hero Section - Mobile First with Event Form */}
       <section className="relative max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-8 sm:pt-16 pb-12 sm:pb-20">
