@@ -59,6 +59,7 @@ export function TicketsEditPopup({
         <TicketCategories
           eventId={eventId}
           isPaidEvent={isPaidEvent}
+          stripeConnected={stripeConnected}
         />
 
         <Button 

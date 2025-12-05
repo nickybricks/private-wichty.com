@@ -31,10 +31,11 @@ interface TicketCategory {
 interface TicketCategoriesProps {
   eventId: string;
   isPaidEvent: boolean;
+  stripeConnected?: boolean | null;
   onCategoriesChange?: (categories: TicketCategory[]) => void;
 }
 
-export function TicketCategories({ eventId, isPaidEvent, onCategoriesChange }: TicketCategoriesProps) {
+export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCategoriesChange }: TicketCategoriesProps) {
   const { i18n } = useTranslation();
   const [categories, setCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,7 +229,10 @@ export function TicketCategories({ eventId, isPaidEvent, onCategoriesChange }: T
                 <div className="space-y-2">
                   <Label className="text-sm">{i18n.language === 'de' ? 'Preis' : 'Price'}</Label>
                   <div className="relative">
-                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Euro className={cn(
+                      "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4",
+                      stripeConnected === false ? "text-muted-foreground/40" : "text-muted-foreground"
+                    )} />
                     <Input
                       type="number"
                       min="0"
@@ -237,10 +241,17 @@ export function TicketCategories({ eventId, isPaidEvent, onCategoriesChange }: T
                       onChange={(e) => handleUpdateCategory(category.id, { 
                         price_cents: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0 
                       })}
-                      className="pl-9"
+                      className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
                       placeholder="0.00"
+                      disabled={stripeConnected === false}
+                      title={stripeConnected === false ? (i18n.language === 'de' ? 'Stripe verbinden um Preise zu setzen' : 'Connect Stripe to set prices') : undefined}
                     />
                   </div>
+                  {stripeConnected === false && (
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -301,17 +312,29 @@ export function TicketCategories({ eventId, isPaidEvent, onCategoriesChange }: T
             <div className="space-y-2">
               <Label className="text-sm">{i18n.language === 'de' ? 'Preis' : 'Price'}</Label>
               <div className="relative">
-                <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Euro className={cn(
+                  "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4",
+                  stripeConnected === false ? "text-muted-foreground/40" : "text-muted-foreground"
+                )} />
                 <Input
                   type="number"
                   min="0"
                   step="0.50"
                   value={newCategory.price}
                   onChange={(e) => setNewCategory({ ...newCategory, price: e.target.value })}
-                  className="pl-9"
-                  placeholder={i18n.language === 'de' ? '0 = Kostenlos' : '0 = Free'}
+                  className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
+                  placeholder={stripeConnected === false 
+                    ? (i18n.language === 'de' ? 'Stripe verbinden' : 'Connect Stripe')
+                    : (i18n.language === 'de' ? '0 = Kostenlos' : '0 = Free')
+                  }
+                  disabled={stripeConnected === false}
                 />
               </div>
+              {stripeConnected === false && (
+                <p className="text-xs text-muted-foreground">
+                  {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
