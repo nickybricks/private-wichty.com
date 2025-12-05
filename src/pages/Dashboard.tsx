@@ -259,13 +259,13 @@ export default function Dashboard() {
               {filteredEvents.map((event) => (
               <Card
                 key={event.id}
-                className="p-5 shadow-medium hover:shadow-strong transition-shadow cursor-pointer"
+                className="p-5 shadow-medium hover:shadow-strong transition-shadow cursor-pointer overflow-hidden"
                 onClick={() => {
                   setSelectedEventId(event.id);
                   setEventPreviewOpen(true);
                 }}
               >
-                <div className="flex gap-4">
+                <div className="flex gap-4 overflow-hidden">
                   {/* Image */}
                   <div className="flex-shrink-0">
                     {event.image_url ? (
