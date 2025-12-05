@@ -20,6 +20,7 @@ interface Event {
   user_id: string;
   image_url: string | null;
   event_date: string | null;
+  event_time: string | null;
   location: string | null;
 }
 
@@ -281,11 +282,12 @@ export default function Dashboard() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex-1 min-w-0 overflow-hidden space-y-1">
                     {/* Date/Time */}
                     {event.event_date && (
                       <p className="text-sm text-muted-foreground">
                         {formatDate(event.event_date)}
+                        {event.event_time && ` • ${event.event_time.slice(0, 5)}`}
                       </p>
                     )}
 
@@ -294,7 +296,7 @@ export default function Dashboard() {
 
                     {/* Location */}
                     {event.location && (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <div className="flex items-center gap-1.5 text-muted-foreground max-w-full">
                         <MapPin className="h-4 w-4 flex-shrink-0" />
                         <span className="text-sm truncate">{event.location}</span>
                       </div>
