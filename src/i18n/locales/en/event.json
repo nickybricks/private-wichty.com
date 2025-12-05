@@ -12,6 +12,10 @@
   "free": "Free",
   "joinSuccess": "Successfully joined!",
   "editEventButton": "Edit event",
+  "tickets": {
+    "title": "Tickets",
+    "generalAdmission": "General Admission"
+  },
   "cta": {
     "join": "Join",
     "requestJoin": "Request to join",
