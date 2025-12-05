@@ -412,35 +412,23 @@ export default function Settings() {
     <div className="min-h-screen bg-background">
       <Header user={user} />
       
-      <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-6">
+      <div className="max-w-[820px] mx-auto p-4 md:p-8 space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('settingsPage.title')}</h1>
         </div>
 
         <Tabs defaultValue="konto" className="w-full">
-          <TabsList className="h-auto bg-transparent p-0 gap-6 flex justify-start border-b border-border rounded-none w-full">
-            <TabsTrigger 
-              value="konto" 
-              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
-            >
+          <TabsList className="flex justify-start gap-2 mb-6 w-auto bg-muted p-1 rounded-lg">
+            <TabsTrigger value="konto">
               {t('settingsPage.tabs.profile')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="einstellungen" 
-              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <TabsTrigger value="einstellungen">
               {t('settingsPage.tabs.settings')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="zahlung" 
-              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <TabsTrigger value="zahlung">
               {t('settingsPage.tabs.payment')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="tickets" 
-              className="text-sm px-0 pb-3 pt-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <TabsTrigger value="tickets">
               {t('settingsPage.tabs.tickets')}
             </TabsTrigger>
           </TabsList>
