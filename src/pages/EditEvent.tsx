@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DateTimePopup } from "@/components/event-form/DateTimePopup";
+import { LocationPopup } from "@/components/event-form/LocationPopup";
 import { 
   Loader2, 
   CalendarIcon, 
@@ -32,11 +32,11 @@ import {
   Infinity,
   AlertCircle,
   MapPin,
-  Ticket
+  Ticket,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { LocationInput } from "@/components/LocationInput";
 import { TicketCategories } from "@/components/TicketCategories";
 
 interface Event {
@@ -98,6 +98,10 @@ export default function EditEvent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
+
+  // Popup states
+  const [dateTimePopupOpen, setDateTimePopupOpen] = useState(false);
+  const [locationPopupOpen, setLocationPopupOpen] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -460,70 +464,73 @@ export default function EditEvent() {
                     required
                   />
 
-                  {/* Date & Time */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CalendarIcon className="h-4 w-4" />
-                      <span>{i18n.language === 'de' ? 'Datum & Uhrzeit' : 'Date & Time'}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className={cn(
-                              "justify-start text-left font-normal",
-                              !eventDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {eventDate ? format(eventDate, "EEE, dd. MMM yyyy", { locale: dateLocale }) : (i18n.language === 'de' ? 'Datum wählen' : 'Select date')}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={eventDate}
-                            onSelect={setEventDate}
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <div className="flex items-center gap-1">
-                        <div className="relative">
-                          <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="time"
-                            value={startTime}
-                            onChange={(e) => setStartTime(e.target.value)}
-                            className="pl-8 w-28"
-                          />
-                        </div>
-                        <span className="text-muted-foreground">—</span>
-                        <Input
-                          type="time"
-                          value={endTime}
-                          onChange={(e) => setEndTime(e.target.value)}
-                          className="w-24"
-                        />
+                  {/* Date & Time - Clickable Field */}
+                  <button
+                    type="button"
+                    onClick={() => setDateTimePopupOpen(true)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <CalendarIcon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        {eventDate ? (
+                          <>
+                            <p className="font-medium">
+                              {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {startTime || "00:00"} — {endTime || "00:00"}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium text-muted-foreground">
+                              {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
-                  </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
 
-                  {/* Location */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span>Location</span>
+                  {/* Location - Clickable Field */}
+                  <button
+                    type="button"
+                    onClick={() => setLocationPopupOpen(true)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        {location ? (
+                          <>
+                            <p className="font-medium">{location}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location'}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium text-muted-foreground">
+                              {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
+                            </p>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <LocationInput
-                      value={location}
-                      onChange={(value) => setLocation(value)}
-                      placeholder={i18n.language === 'de' ? 'Ort hinzufügen (optional)' : 'Add location (optional)'}
-                    />
-                  </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
 
                   {/* Description */}
                   <div className="space-y-2">
@@ -796,6 +803,26 @@ export default function EditEvent() {
           </Tabs>
         </div>
       </div>
+
+      {/* Popups */}
+      <DateTimePopup
+        open={dateTimePopupOpen}
+        onOpenChange={setDateTimePopupOpen}
+        date={eventDate}
+        startTime={startTime}
+        endTime={endTime}
+        onConfirm={(date, start, end) => {
+          setEventDate(date);
+          setStartTime(start);
+          setEndTime(end);
+        }}
+      />
+      <LocationPopup
+        open={locationPopupOpen}
+        onOpenChange={setLocationPopupOpen}
+        location={location}
+        onConfirm={setLocation}
+      />
     </div>
   );
 }
