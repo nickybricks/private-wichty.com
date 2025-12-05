@@ -381,262 +381,270 @@ export default function EditEvent() {
     <div className="min-h-screen bg-background">
       <Header user={user} showBackButton={true} />
       <div className="p-4 md:p-8">
-        <div className="mx-auto max-w-lg">
+        <div className="mx-auto max-w-[820px]">
           <h1 className="text-2xl font-bold mb-6">{t('editEvent.title')}</h1>
 
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="flex justify-start gap-2 mb-6 w-auto bg-muted p-1 rounded-lg">
               <TabsTrigger value="details" className="flex items-center gap-2">
                 <Settings2 className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('editEvent.tabs.details')}</span>
+                {t('editEvent.tabs.details')}
               </TabsTrigger>
               <TabsTrigger value="guests" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('editEvent.tabs.guests')}</span>
+                {t('editEvent.tabs.guests')}
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('editEvent.tabs.analytics')}</span>
+                {t('editEvent.tabs.analytics')}
               </TabsTrigger>
             </TabsList>
 
             {/* Details Tab */}
             <TabsContent value="details" className="space-y-6">
-              {/* Image Upload Area - Square */}
-              <label
-                htmlFor="edit-image"
-                className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
-              >
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt={t('edit.eventImage')}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
-                    </p>
-                  </div>
-                )}
-                <Input
-                  id="edit-image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </label>
-
-              {/* Event Details */}
-              <div className="space-y-4">
-                {/* Public/Private Toggle */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={isPublic ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsPublic(true)}
-                    className="gap-1.5"
+              {/* Desktop: Two-column layout */}
+              <div className="md:grid md:grid-cols-2 md:gap-8">
+                {/* Left Column: Image Upload */}
+                <div>
+                  <label
+                    htmlFor="edit-image"
+                    className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
                   >
-                    <Globe className="h-4 w-4" />
-                    {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={!isPublic ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsPublic(false)}
-                    className="gap-1.5"
-                  >
-                    <Lock className="h-4 w-4" />
-                    {i18n.language === 'de' ? 'Privat' : 'Private'}
-                  </Button>
-                </div>
-
-                  {/* Event Name */}
-                  <Textarea
-                    placeholder={tf('createEvent.eventNamePlaceholder')}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
-                    rows={1}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = 'auto';
-                      target.style.height = target.scrollHeight + 'px';
-                    }}
-                    required
-                  />
-
-                  {/* Date & Time - Clickable Field */}
-                  <button
-                    type="button"
-                    onClick={() => setDateTimePopupOpen(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        {eventDate ? (
-                          <>
-                            <p className="font-medium truncate">
-                              {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {startTime || "00:00"} — {endTime || "00:00"}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-medium text-muted-foreground truncate">
-                              {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                  </button>
-
-                  {/* Location - Clickable Field */}
-                  <button
-                    type="button"
-                    onClick={() => setLocationPopupOpen(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        {location ? (
-                          <>
-                            <p className="font-medium truncate">{location.split(',')[0]}</p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-medium text-muted-foreground truncate">
-                              {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                  </button>
-
-                  {/* Description - Clickable Field */}
-                  <button
-                    type="button"
-                    onClick={() => setDescriptionPopupOpen(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">
-                          {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {description || (i18n.language === 'de' ? 'Beschreibung hinzufügen' : 'Add description')}
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt={t('edit.eventImage')}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
                         </p>
                       </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                  </button>
+                    )}
+                    <Input
+                      id="edit-image"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </label>
                 </div>
 
-              {/* Event Options */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
-                </h3>
-
-                {/* Tickets - Clickable Field */}
-                <button
-                  type="button"
-                  onClick={() => setTicketsPopupOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <Ticket className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">
-                        {i18n.language === 'de' ? 'Tickets' : 'Tickets'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {i18n.language === 'de' ? 'Ticket-Kategorien verwalten' : 'Manage ticket categories'}
-                      </p>
+                {/* Right Column: Event Details */}
+                <div className="space-y-6 mt-6 md:mt-0">
+                  {/* Event Details */}
+                  <div className="space-y-4">
+                    {/* Public/Private Toggle */}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant={isPublic ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setIsPublic(true)}
+                        className="gap-1.5"
+                      >
+                        <Globe className="h-4 w-4" />
+                        {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={!isPublic ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setIsPublic(false)}
+                        className="gap-1.5"
+                      >
+                        <Lock className="h-4 w-4" />
+                        {i18n.language === 'de' ? 'Privat' : 'Private'}
+                      </Button>
                     </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </button>
 
-                {/* Requires Approval */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <UserCheck className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">
-                        {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
-                      </p>
-                    </div>
+                    {/* Event Name */}
+                    <Textarea
+                      placeholder={tf('createEvent.eventNamePlaceholder')}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                      required
+                    />
+
+                    {/* Date & Time - Clickable Field */}
+                    <button
+                      type="button"
+                      onClick={() => setDateTimePopupOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          {eventDate ? (
+                            <>
+                              <p className="font-medium truncate">
+                                {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {startTime || "00:00"} — {endTime || "00:00"}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-medium text-muted-foreground truncate">
+                                {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
+
+                    {/* Location - Clickable Field */}
+                    <button
+                      type="button"
+                      onClick={() => setLocationPopupOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          {location ? (
+                            <>
+                              <p className="font-medium truncate">{location.split(',')[0]}</p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-medium text-muted-foreground truncate">
+                                {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
+
+                    {/* Description - Clickable Field */}
+                    <button
+                      type="button"
+                      onClick={() => setDescriptionPopupOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">
+                            {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {description || (i18n.language === 'de' ? 'Beschreibung hinzufügen' : 'Add description')}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
                   </div>
-                  <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+
+                  {/* Event Options */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                      {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
+                    </h3>
+
+                    {/* Tickets - Clickable Field */}
+                    <button
+                      type="button"
+                      onClick={() => setTicketsPopupOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Ticket className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium">
+                            {i18n.language === 'de' ? 'Tickets' : 'Tickets'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {i18n.language === 'de' ? 'Ticket-Kategorien verwalten' : 'Manage ticket categories'}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
+
+                    {/* Requires Approval */}
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <UserCheck className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">
+                            {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+                    </div>
+
+                    {/* Capacity - Clickable Field */}
+                    <button
+                      type="button"
+                      onClick={() => setCapacityPopupOpen(true)}
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Users className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium">
+                            {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {capacityUnlimited 
+                              ? (i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited')
+                              : `${maxCapacity || '0'} ${i18n.language === 'de' ? 'Plätze' : 'spots'}`}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
+                  </div>
+
+                  {/* Save Button */}
+                  <Button
+                    onClick={handleSave}
+                    size="lg"
+                    className="w-full h-12 text-lg shadow-medium"
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        {t('edit.saving')}
+                      </>
+                    ) : (
+                      t('edit.save')
+                    )}
+                  </Button>
                 </div>
-
-                {/* Capacity - Clickable Field */}
-                <button
-                  type="button"
-                  onClick={() => setCapacityPopupOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <Users className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">
-                        {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {capacityUnlimited 
-                          ? (i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited')
-                          : `${maxCapacity || '0'} ${i18n.language === 'de' ? 'Plätze' : 'spots'}`}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </button>
               </div>
-
-              {/* Save Button */}
-              <Button
-                onClick={handleSave}
-                size="lg"
-                className="w-full h-12 text-lg shadow-medium"
-                disabled={saving}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    {t('edit.saving')}
-                  </>
-                ) : (
-                  t('edit.save')
-                )}
-              </Button>
             </TabsContent>
 
             {/* Guests Tab */}
