@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.generate-event-description]
 verify_jwt = false
+
+[functions.send-ticket-confirmation]
+verify_jwt = false

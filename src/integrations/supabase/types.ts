@@ -238,6 +238,54 @@ export type Database = {
           },
         ]
       }
+      tickets: {
+        Row: {
+          checked_in_at: string | null
+          created_at: string
+          event_id: string
+          id: string
+          participant_id: string | null
+          status: string
+          ticket_category_id: string | null
+          ticket_code: string
+        }
+        Insert: {
+          checked_in_at?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          participant_id?: string | null
+          status?: string
+          ticket_category_id?: string | null
+          ticket_code: string
+        }
+        Update: {
+          checked_in_at?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          participant_id?: string | null
+          status?: string
+          ticket_category_id?: string | null
+          ticket_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_ticket_category_id_fkey"
+            columns: ["ticket_category_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

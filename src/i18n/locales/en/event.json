@@ -90,5 +90,18 @@
     "totalGuests": "Total guests",
     "revenue": "Revenue",
     "analyticsComingSoon": "Detailed analytics coming soon"
+  },
+  "ticketPage": {
+    "badge": "TICKET",
+    "guest": "Guest",
+    "status": "Status",
+    "going": "Going",
+    "checkedIn": "Checked in",
+    "ticket": "Ticket",
+    "getDirections": "Get Directions",
+    "addToWallet": "Add to Wallet",
+    "addToCalendar": "Add to Calendar",
+    "ticketOf": "Ticket {{current}} of {{total}}",
+    "goHome": "Go to Home"
   }
 }

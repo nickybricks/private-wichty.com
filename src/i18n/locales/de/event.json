@@ -90,5 +90,18 @@
     "totalGuests": "Gäste insgesamt",
     "revenue": "Einnahmen",
     "analyticsComingSoon": "Detaillierte Analysen kommen bald"
+  },
+  "ticketPage": {
+    "badge": "TICKET",
+    "guest": "Gast",
+    "status": "Status",
+    "going": "Dabei",
+    "checkedIn": "Eingecheckt",
+    "ticket": "Ticket",
+    "getDirections": "Route planen",
+    "addToWallet": "Zum Wallet hinzufügen",
+    "addToCalendar": "Zum Kalender hinzufügen",
+    "ticketOf": "Ticket {{current}} von {{total}}",
+    "goHome": "Zur Startseite"
   }
 }
