@@ -31,11 +31,13 @@ import {
   UserCheck,
   Infinity,
   AlertCircle,
-  MapPin
+  MapPin,
+  Ticket
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { LocationInput } from "@/components/LocationInput";
+import { TicketCategories } from "@/components/TicketCategories";
 
 interface Event {
   id: string;
@@ -617,6 +619,25 @@ export default function EditEvent() {
                       )}
                     </div>
                   )}
+
+                  {/* Ticket Categories */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center gap-3">
+                      <Ticket className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">
+                          {i18n.language === 'de' ? 'Ticket-Kategorien' : 'Ticket Categories'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {i18n.language === 'de' ? 'Verschiedene Ticket-Arten mit unterschiedlichen Preisen' : 'Different ticket types with various prices'}
+                        </p>
+                      </div>
+                    </div>
+                    <TicketCategories 
+                      eventId={id!} 
+                      isPaidEvent={isPaid}
+                    />
+                  </div>
 
                   {/* Requires Approval */}
                   <div className="flex items-center justify-between">
