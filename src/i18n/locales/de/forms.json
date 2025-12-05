@@ -20,6 +20,18 @@
     "success": "Event erstellt!",
     "successCreated": "Event erfolgreich erstellt!"
   },
+  "eventForm": {
+    "dateTime": "Datum & Uhrzeit",
+    "startTime": "Start",
+    "endTime": "Ende",
+    "confirm": "Bestätigen",
+    "location": "Veranstaltungsort",
+    "locationHint": "Adresse oder Online-Meeting-Link eingeben",
+    "locationPlaceholder": "Nach Ort suchen...",
+    "addDateTime": "Datum & Uhrzeit hinzufügen",
+    "addLocation": "Veranstaltungsort hinzufügen",
+    "locationSubtitle": "Offline-Standort oder Link"
+  },
   "errors": {
     "enterEventName": "Bitte gib einen Event-Namen ein",
     "minParticipants": "Mindestens 2 Teilnehmer erforderlich",

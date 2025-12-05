@@ -20,6 +20,18 @@
     "success": "Event created!",
     "successCreated": "Event successfully created!"
   },
+  "eventForm": {
+    "dateTime": "Date & Time",
+    "startTime": "Start",
+    "endTime": "End",
+    "confirm": "Confirm",
+    "location": "Location",
+    "locationHint": "Enter an address or online meeting link",
+    "locationPlaceholder": "Search for a location...",
+    "addDateTime": "Add date & time",
+    "addLocation": "Add location",
+    "locationSubtitle": "Offline location or link"
+  },
   "errors": {
     "enterEventName": "Please enter an event name",
     "minParticipants": "At least 2 participants required",
