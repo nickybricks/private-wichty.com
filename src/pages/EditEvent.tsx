@@ -17,6 +17,7 @@ import { DateTimePopup } from "@/components/event-form/DateTimePopup";
 import { LocationPopup } from "@/components/event-form/LocationPopup";
 import { DescriptionPopup } from "@/components/event-form/DescriptionPopup";
 import { CapacityPopup } from "@/components/event-form/CapacityPopup";
+import { TicketsEditPopup } from "@/components/event-form/TicketsEditPopup";
 import { 
   Loader2, 
   CalendarIcon, 
@@ -34,7 +35,6 @@ import {
   FileText
 } from "lucide-react";
 import { toast } from "sonner";
-import { TicketCategories } from "@/components/TicketCategories";
 
 interface Event {
   id: string;
@@ -101,7 +101,9 @@ export default function EditEvent() {
   const [locationPopupOpen, setLocationPopupOpen] = useState(false);
   const [descriptionPopupOpen, setDescriptionPopupOpen] = useState(false);
   const [capacityPopupOpen, setCapacityPopupOpen] = useState(false);
+  const [ticketsPopupOpen, setTicketsPopupOpen] = useState(false);
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
+  const [ticketCategoriesCount, setTicketCategoriesCount] = useState(0);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -560,21 +562,25 @@ export default function EditEvent() {
                   {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
                 </h3>
 
-                {/* Ticket Categories */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Ticket className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                {/* Tickets - Clickable Field */}
+                <button
+                  type="button"
+                  onClick={() => setTicketsPopupOpen(true)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Ticket className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
                       <p className="font-medium">
-                        {i18n.language === 'de' ? 'Ticket-Kategorien' : 'Ticket Categories'}
+                        {i18n.language === 'de' ? 'Tickets' : 'Tickets'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? 'Ticket-Kategorien verwalten' : 'Manage ticket categories'}
                       </p>
                     </div>
                   </div>
-                  <TicketCategories 
-                    eventId={id!} 
-                    isPaidEvent={isPaid}
-                  />
-                </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                </button>
 
                 {/* Requires Approval */}
                 <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
@@ -745,6 +751,13 @@ export default function EditEvent() {
           setMaxCapacity(max);
           setWaitlistEnabled(waitlist);
         }}
+      />
+      <TicketsEditPopup
+        open={ticketsPopupOpen}
+        onOpenChange={setTicketsPopupOpen}
+        eventId={id!}
+        isPaidEvent={isPaid}
+        stripeConnected={stripeConnected}
       />
     </div>
   );
