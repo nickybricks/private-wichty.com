@@ -12,6 +12,10 @@
   "free": "Kostenfrei",
   "joinSuccess": "Erfolgreich beigetreten!",
   "editEventButton": "Event bearbeiten",
+  "tickets": {
+    "title": "Tickets",
+    "generalAdmission": "Eintritt"
+  },
   "cta": {
     "join": "Teilnehmen",
     "requestJoin": "Beitrittsanfrage",
@@ -28,7 +32,7 @@
     "no": "Nein, bleiben"
   },
   "host": {
-    "title": "Host",
+    "title": "Veranstalter",
     "viewEvents": "Events ansehen"
   },
   "participantsList": {

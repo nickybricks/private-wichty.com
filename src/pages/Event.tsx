@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Calendar, MapPin, CreditCard, Share2, User, Pencil } from "lucide-react";
+import { Loader2, Calendar, MapPin, CreditCard, Share2, User, Pencil, Ticket } from "lucide-react";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { LocationMapPreview } from "@/components/LocationMapPreview";
 import { Header } from "@/components/Header";
@@ -62,6 +62,15 @@ interface HostProfile {
   avatar_url: string | null;
 }
 
+interface TicketCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  currency: string;
+  max_quantity: number | null;
+}
+
 export default function Event() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -69,6 +78,7 @@ export default function Event() {
   const { t, i18n } = useTranslation('event');
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [showJoinSheet, setShowJoinSheet] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
@@ -170,6 +180,15 @@ export default function Event() {
         
         setHostProfile(profileData);
       }
+
+      // Fetch ticket categories
+      const { data: ticketsData } = await supabase
+        .from("ticket_categories")
+        .select("id, name, description, price_cents, currency, max_quantity")
+        .eq("event_id", id)
+        .order("sort_order", { ascending: true });
+      
+      setTicketCategories(ticketsData || []);
 
       const { data: participantsData, error: participantsError } = await supabase
         .from("participants")
@@ -313,13 +332,18 @@ export default function Event() {
     }
   };
 
+  const openGoogleMaps = (location: string) => {
+    const encodedLocation = encodeURIComponent(location);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
+  };
+
   const getCTAButton = () => {
-    const baseClasses = "w-full h-10 text-sm font-medium shadow-sm";
+    const baseClasses = "w-full h-12 text-sm font-medium shadow-sm";
     
     if (isParticipant) {
       return (
         <Button 
-          size="sm" 
+          size="lg" 
           className={`${baseClasses} bg-[#1D1D1F] hover:bg-[#1D1D1F]/90 text-white border-none`}
           onClick={() => setShowLeaveConfirm(true)}
         >
@@ -328,15 +352,22 @@ export default function Event() {
       );
     }
 
-    if (event?.is_paid && event.price_cents > 0) {
+    if (event?.is_paid && (event.price_cents > 0 || ticketCategories.length > 0)) {
+      const lowestPrice = ticketCategories.length > 0 
+        ? Math.min(...ticketCategories.map(tc => tc.price_cents))
+        : event.price_cents;
+      const currency = ticketCategories.length > 0 
+        ? ticketCategories[0].currency 
+        : event.currency;
+
       return (
         <Button 
-          size="sm" 
+          size="lg" 
           className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
         >
           <CreditCard className="mr-2 h-4 w-4" />
-          {t('cta.buyTicket')} · {formatPrice(event.price_cents, event.currency)}
+          {t('cta.buyTicket')} · {ticketCategories.length > 1 ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}{formatPrice(lowestPrice, currency)}
         </Button>
       );
     }
@@ -344,7 +375,7 @@ export default function Event() {
     if (event?.requires_approval) {
       return (
         <Button 
-          size="sm" 
+          size="lg" 
           className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
         >
@@ -355,7 +386,7 @@ export default function Event() {
 
     return (
       <Button 
-        size="sm" 
+        size="lg" 
         className={baseClasses}
         onClick={() => setShowJoinSheet(true)}
       >
@@ -384,7 +415,7 @@ export default function Event() {
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
         
-        {/* Edit Event Button for Host */}
+        {/* 1. Edit Event Button for Host - above image, right-aligned */}
         {isHost && (
           <div className="flex justify-end">
             <Button 
@@ -399,7 +430,7 @@ export default function Event() {
           </div>
         )}
 
-        {/* Event Image - Square */}
+        {/* 2. Event Image - Square */}
         <div className="w-full aspect-square rounded-xl overflow-hidden shadow-strong bg-muted relative">
           {event.image_url ? (
             <img
@@ -426,12 +457,12 @@ export default function Event() {
           </div>
         </div>
         
-        {/* Event Details - New Hierarchy */}
+        {/* Event Details - New Layout Order */}
         <div className="space-y-4">
-          {/* Title */}
+          {/* 3. Title */}
           <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
           
-          {/* Date */}
+          {/* 4. Date & Time */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -443,80 +474,87 @@ export default function Event() {
             </span>
           </div>
           
-          {/* Location (just address, map at bottom) */}
-          <div className="flex items-center gap-3">
+          {/* 5. Address/Location - clickable to open Google Maps */}
+          <button 
+            className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-1 -ml-1 transition-colors"
+            onClick={() => event.location && openGoogleMaps(event.location)}
+            disabled={!event.location}
+          >
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <MapPin className="h-5 w-5 text-muted-foreground" />
             </div>
-            <span className={`text-sm ${event.location ? 'text-foreground' : 'text-muted-foreground'}`}>
+            <span className={`text-sm ${event.location ? 'text-foreground underline underline-offset-2' : 'text-muted-foreground'}`}>
               {event.location || t('noLocation')}
             </span>
-          </div>
+          </button>
 
-          {/* Price */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-              <CreditCard className="h-5 w-5 text-muted-foreground" />
+          {/* 6. Tickets Section - bordered card with categories and CTA */}
+          <Card className="p-4 border-2 space-y-4">
+            <div className="flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-muted-foreground" />
+              <h3 className="font-semibold">{t('tickets.title')}</h3>
             </div>
-            <span className="text-sm font-medium">
-              {event.is_paid && event.price_cents > 0 
-                ? formatPrice(event.price_cents, event.currency)
-                : t('free')}
-            </span>
-          </div>
-
-          {/* Participants */}
-          {participants.length > 0 && (
-            <div 
-              className={`flex items-center gap-3 ${isParticipant ? 'cursor-pointer' : ''}`}
-              onClick={() => isParticipant && setShowParticipantsList(true)}
-            >
-              <div className="flex -space-x-2">
-                {participants.slice(0, 5).map((participant, index) => (
-                  <div
-                    key={participant.id}
-                    className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
-                    title={participant.name}
-                  >
-                    {getInitials(participant.name)}
+            
+            {ticketCategories.length > 0 ? (
+              <div className="space-y-3">
+                {ticketCategories.map((category) => (
+                  <div key={category.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{category.name}</p>
+                      {category.description && (
+                        <p className="text-xs text-muted-foreground truncate">{category.description}</p>
+                      )}
+                    </div>
+                    <span className="font-semibold text-sm ml-4">
+                      {category.price_cents === 0 
+                        ? t('free') 
+                        : formatPrice(category.price_cents, category.currency)}
+                    </span>
                   </div>
                 ))}
-                {participants.length > 5 && (
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium ring-2 ring-background">
-                    +{participants.length - 5}
-                  </div>
-                )}
               </div>
-              <span className="text-sm text-muted-foreground">
-                {t('participantsCount', { count: participants.length })}
-              </span>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-muted-foreground">{t('tickets.generalAdmission')}</span>
+                <span className="font-semibold text-sm">
+                  {event.is_paid && event.price_cents > 0 
+                    ? formatPrice(event.price_cents, event.currency)
+                    : t('free')}
+                </span>
+              </div>
+            )}
 
-          {/* CTA Button */}
-          <div className="pt-2 flex justify-center">
-            <div className="w-full max-w-sm">
-              {getCTAButton()}
-            </div>
-          </div>
+            {/* CTA Button inside tickets card */}
+            {getCTAButton()}
+          </Card>
 
-          {/* Description */}
+          {/* 7. Description */}
           {event.description && (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            <div className="pt-2">
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                 {event.description}
               </p>
             </div>
           )}
 
-          {/* Host */}
+          {/* 8. Address + Google Maps Card */}
+          {event.location && (
+            <div className="pt-2">
+              <LocationMapPreview location={event.location} />
+            </div>
+          )}
+
+          {/* 9. Host Section */}
           {hostProfile && (
-            <Card 
-              className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate(`/host/${hostProfile.id}`)}
-            >
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
+                {t('host.title')}
+              </p>
+              <button
+                className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors"
+                onClick={() => navigate(`/host/${hostProfile.id}`)}
+              >
+                <Avatar className="h-10 w-10">
                   {hostProfile.avatar_url ? (
                     <AvatarImage src={hostProfile.avatar_url} alt={getHostDisplayName() || 'Host'} />
                   ) : null}
@@ -525,23 +563,48 @@ export default function Event() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {t('host.title')}
-                  </p>
                   <p className="font-medium truncate">
-                    {getHostDisplayName() || (i18n.language === 'de' ? 'Unbekannt' : 'Unknown')}
+                    {hostProfile.username 
+                      ? `@${hostProfile.username}` 
+                      : getHostDisplayName() || (i18n.language === 'de' ? 'Unbekannt' : 'Unknown')}
                   </p>
-                  {hostProfile.username && hostProfile.first_name && (
-                    <p className="text-sm text-muted-foreground">@{hostProfile.username}</p>
-                  )}
                 </div>
-              </div>
-            </Card>
+              </button>
+            </div>
           )}
 
-          {/* Map at the bottom */}
-          {event.location && (
-            <LocationMapPreview location={event.location} showMapOnly />
+          {/* 10. Participants Section - 5 icons + "+X nehmen teil" */}
+          {participants.length > 0 && (
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
+                {t('participants')}
+              </p>
+              <button 
+                className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors"
+                onClick={() => setShowParticipantsList(true)}
+              >
+                <div className="flex -space-x-2">
+                  {participants.slice(0, 5).map((participant, index) => (
+                    <div
+                      key={participant.id}
+                      className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
+                      title={participant.name}
+                    >
+                      {getInitials(participant.name)}
+                    </div>
+                  ))}
+                </div>
+                {participants.length > 5 ? (
+                  <span className="text-sm font-medium">
+                    +{participants.length - 5} {i18n.language === 'de' ? 'nehmen teil' : 'attending'}
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {t('participantsCount', { count: participants.length })}
+                  </span>
+                )}
+              </button>
+            </div>
           )}
         </div>
         </div>
