@@ -384,13 +384,13 @@ export default function Event() {
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
         
-        {/* Edit Event Button for Host - right aligned, not full width */}
+        {/* Edit Event Button for Host */}
         {isHost && (
           <div className="flex justify-end">
             <Button 
               variant="outline"
               size="sm"
-              className="bg-[#FFB86C] hover:bg-[#FFB86C]/90 text-foreground border-none shadow-sm w-auto"
+              className="bg-[#FFB86C] hover:bg-[#FFB86C]/90 text-foreground border-none shadow-sm"
               onClick={() => navigate(`/event/${id}/edit`)}
             >
               <Pencil className="h-4 w-4 mr-2" />
@@ -399,7 +399,7 @@ export default function Event() {
           </div>
         )}
 
-        {/* 2. Event Image - Square */}
+        {/* Event Image - Square */}
         <div className="w-full aspect-square rounded-xl overflow-hidden shadow-strong bg-muted relative">
           {event.image_url ? (
             <img
@@ -426,12 +426,12 @@ export default function Event() {
           </div>
         </div>
         
-        {/* Event Details */}
+        {/* Event Details - New Hierarchy */}
         <div className="space-y-4">
-          {/* 3. Title */}
+          {/* Title */}
           <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
           
-          {/* 4. Date & Time */}
+          {/* Date */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -443,76 +443,85 @@ export default function Event() {
             </span>
           </div>
           
-          {/* 5. Location - Clickable, opens Google Maps */}
-          <button
-            className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg transition-colors p-1 -ml-1"
-            onClick={() => {
-              if (event.location) {
-                const encodedLocation = encodeURIComponent(event.location);
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
-              }
-            }}
-            disabled={!event.location}
-          >
+          {/* Location (just address, map at bottom) */}
+          <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <MapPin className="h-5 w-5 text-muted-foreground" />
             </div>
-            <span className={`text-sm ${event.location ? 'text-foreground underline underline-offset-2' : 'text-muted-foreground'}`}>
+            <span className={`text-sm ${event.location ? 'text-foreground' : 'text-muted-foreground'}`}>
               {event.location || t('noLocation')}
             </span>
-          </button>
+          </div>
 
-          {/* 6. Tickets Section - Bordered Card with CTA */}
-          <Card className="p-4 space-y-4">
-            {/* Price Info */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">
-                  {event.is_paid && event.price_cents > 0 
-                    ? formatPrice(event.price_cents, event.currency)
-                    : t('free')}
-                </p>
-              </div>
+          {/* Price */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
+              <CreditCard className="h-5 w-5 text-muted-foreground" />
             </div>
+            <span className="text-sm font-medium">
+              {event.is_paid && event.price_cents > 0 
+                ? formatPrice(event.price_cents, event.currency)
+                : t('free')}
+            </span>
+          </div>
 
-            {/* CTA Button */}
-            <div className="w-full">
+          {/* Participants */}
+          {participants.length > 0 && (
+            <div 
+              className={`flex items-center gap-3 ${isParticipant ? 'cursor-pointer' : ''}`}
+              onClick={() => isParticipant && setShowParticipantsList(true)}
+            >
+              <div className="flex -space-x-2">
+                {participants.slice(0, 5).map((participant, index) => (
+                  <div
+                    key={participant.id}
+                    className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
+                    title={participant.name}
+                  >
+                    {getInitials(participant.name)}
+                  </div>
+                ))}
+                {participants.length > 5 && (
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium ring-2 ring-background">
+                    +{participants.length - 5}
+                  </div>
+                )}
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {t('participantsCount', { count: participants.length })}
+              </span>
+            </div>
+          )}
+
+          {/* CTA Button */}
+          <div className="pt-2 flex justify-center">
+            <div className="w-full max-w-sm">
               {getCTAButton()}
             </div>
-          </Card>
+          </div>
 
-          {/* 7. Description */}
+          {/* Description */}
           {event.description && (
-            <div className="pt-2">
+            <div className="pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {event.description}
               </p>
             </div>
           )}
 
-          {/* 8. Address & Google Maps */}
-          {event.location && (
-            <div className="space-y-3">
-              <LocationMapPreview location={event.location} />
-            </div>
-          )}
-
-          {/* 9. Host - Icon same size as dashboard */}
+          {/* Host */}
           {hostProfile && (
             <Card 
               className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => navigate(`/host/${hostProfile.id}`)}
             >
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-12 w-12">
                   {hostProfile.avatar_url ? (
                     <AvatarImage src={hostProfile.avatar_url} alt={getHostDisplayName() || 'Host'} />
                   ) : null}
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    <User className="h-4 w-4" />
+                    <User className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
@@ -520,46 +529,19 @@ export default function Event() {
                     {t('host.title')}
                   </p>
                   <p className="font-medium truncate">
-                    {hostProfile.username ? `@${hostProfile.username}` : getHostDisplayName() || (i18n.language === 'de' ? 'Unbekannt' : 'Unknown')}
+                    {getHostDisplayName() || (i18n.language === 'de' ? 'Unbekannt' : 'Unknown')}
                   </p>
+                  {hostProfile.username && hostProfile.first_name && (
+                    <p className="text-sm text-muted-foreground">@{hostProfile.username}</p>
+                  )}
                 </div>
               </div>
             </Card>
           )}
 
-          {/* 10. Participants - 5 icons visible, then "+ X nehmen teil" */}
-          {participants.length > 0 && (
-            <Card 
-              className={`p-4 ${isParticipant ? 'cursor-pointer hover:bg-muted/50' : ''} transition-colors`}
-              onClick={() => isParticipant && setShowParticipantsList(true)}
-            >
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-                {t('participants')}
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {participants.slice(0, 5).map((participant, index) => (
-                    <div
-                      key={participant.id}
-                      className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
-                      title={participant.name}
-                    >
-                      {getInitials(participant.name)}
-                    </div>
-                  ))}
-                </div>
-                {participants.length > 5 && (
-                  <span className="text-sm text-muted-foreground">
-                    + {participants.length - 5} {i18n.language === 'de' ? 'nehmen teil' : 'attending'}
-                  </span>
-                )}
-                {participants.length <= 5 && (
-                  <span className="text-sm text-muted-foreground">
-                    {t('participantsCount', { count: participants.length })}
-                  </span>
-                )}
-              </div>
-            </Card>
+          {/* Map at the bottom */}
+          {event.location && (
+            <LocationMapPreview location={event.location} showMapOnly />
           )}
         </div>
         </div>
