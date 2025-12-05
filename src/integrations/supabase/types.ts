@@ -35,6 +35,7 @@ export type Database = {
           target_participants: number
           updated_at: string
           user_id: string
+          waitlist_enabled: boolean | null
         }
         Insert: {
           capacity_unlimited?: boolean | null
@@ -56,6 +57,7 @@ export type Database = {
           target_participants?: number
           updated_at?: string
           user_id: string
+          waitlist_enabled?: boolean | null
         }
         Update: {
           capacity_unlimited?: boolean | null
@@ -77,6 +79,7 @@ export type Database = {
           target_participants?: number
           updated_at?: string
           user_id?: string
+          waitlist_enabled?: boolean | null
         }
         Relationships: []
       }

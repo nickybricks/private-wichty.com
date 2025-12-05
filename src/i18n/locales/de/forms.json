@@ -25,12 +25,19 @@
     "startTime": "Start",
     "endTime": "Ende",
     "confirm": "Bestätigen",
+    "done": "Fertig",
     "location": "Veranstaltungsort",
     "locationHint": "Adresse oder Online-Meeting-Link eingeben",
     "locationPlaceholder": "Nach Ort suchen...",
     "addDateTime": "Datum & Uhrzeit hinzufügen",
     "addLocation": "Veranstaltungsort hinzufügen",
-    "locationSubtitle": "Offline-Standort oder Link"
+    "locationSubtitle": "Offline-Standort oder Link",
+    "description": "Beschreibung",
+    "addDescription": "Beschreibung hinzufügen",
+    "tickets": "Tickets",
+    "ticketsFree": "Kostenlos",
+    "capacity": "Kapazität",
+    "capacityUnlimited": "Unbegrenzt"
   },
   "errors": {
     "enterEventName": "Bitte gib einen Event-Namen ein",
