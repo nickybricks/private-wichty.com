@@ -65,6 +65,7 @@ const handler = async (req: Request): Promise<Response> => {
       || user.email.split('@')[0];
 
     const baseUrl = email_data.site_url || 'https://wichty.com';
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || 'https://yskajilatxzwtnunxxvs.supabase.co';
     
     let subject: string;
     let badge: string;
@@ -74,8 +75,9 @@ const handler = async (req: Request): Promise<Response> => {
     let buttonUrl: string;
     let footerText: string;
 
-    // Build the confirmation URL with token
-    const confirmUrl = `${baseUrl}/auth/confirm?token_hash=${email_data.token_hash}&type=${email_data.verification_type}`;
+    // Build the confirmation URL using Supabase's verification endpoint
+    // This URL will verify the token and redirect to the app
+    const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.verification_type}&redirect_to=${encodeURIComponent(baseUrl)}`;
 
     switch (email_data.email_action_type) {
       case 'signup':
@@ -100,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
           ? `Hey ${displayName}, klicke auf den Button unten, um dein Passwort zu ändern.`
           : `Hey ${displayName}, click the button below to change your password.`;
         buttonText = isGerman ? 'Passwort zurücksetzen' : 'Reset Password';
-        buttonUrl = `${baseUrl}/reset-password?token_hash=${email_data.token_hash}&type=recovery`;
+        buttonUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=recovery&redirect_to=${encodeURIComponent(baseUrl + '/reset-password')}`;
         footerText = isGerman 
           ? 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.'
           : "If you didn't request this, you can ignore this email.";
