@@ -121,6 +121,18 @@
     "invalidQR": "Ungültiger QR-Code",
     "cameraPermission": "Bitte erlaube den Kamerazugriff für den Scanner",
     "error": "Fehler beim Check-In",
-    "unknownGuest": "Unbekannter Gast"
+    "unknownGuest": "Unbekannter Gast",
+    "online": "Online",
+    "offline": "Offline-Modus",
+    "offlineMode": "Offline Check-In",
+    "pendingSync": "{{count}} ausstehend",
+    "downloadForOffline": "Tickets für Offline herunterladen",
+    "refreshOfflineData": "Daten aktualisieren",
+    "noOfflineData": "Keine Offline-Daten verfügbar",
+    "ticketsDownloaded": "{{count}} Tickets offline verfügbar",
+    "lastDownload": "Zuletzt aktualisiert",
+    "clearData": "Löschen",
+    "savedOffline": "Offline gespeichert",
+    "downloadFirst": "Bitte zuerst Tickets herunterladen"
   }
 }
