@@ -1,138 +1,64 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
-import { de, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Loader2, Calendar, MapPin, CreditCard, Share2, User, Pencil, Ticket } from "lucide-react";
-import { JoinEventSheet } from "@/components/JoinEventSheet";
-import { LocationMapPreview } from "@/components/LocationMapPreview";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Loader2 } from "lucide-react";
+import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 import { toast } from "sonner";
-
-interface Event {
-  id: string;
-  name: string;
-  description: string | null;
-  target_participants: number;
-  status: "waiting" | "active" | "completed";
-  image_url: string | null;
-  event_date: string | null;
-  event_time: string | null;
-  location: string | null;
-  user_id: string | null;
-  is_paid: boolean;
-  price_cents: number;
-  currency: string;
-  requires_approval: boolean;
-}
-
-interface Participant {
-  id: string;
-  name: string;
-  user_id: string;
-}
-
-interface HostProfile {
-  id: string;
-  display_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  username: string | null;
-  avatar_url: string | null;
-}
-
-interface TicketCategory {
-  id: string;
-  name: string;
-  description: string | null;
-  price_cents: number;
-  currency: string;
-  max_quantity: number | null;
-}
+import { useTranslation } from "react-i18next";
 
 export default function Event() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation('event');
-  const [event, setEvent] = useState<Event | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showJoinSheet, setShowJoinSheet] = useState(false);
-  const [isParticipant, setIsParticipant] = useState(false);
-  const [showParticipantsList, setShowParticipantsList] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [hostProfile, setHostProfile] = useState<HostProfile | null>(null);
-
-  const dateLocale = i18n.language === 'de' ? de : enUS;
+  const [loading, setLoading] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (!id) {
-      navigate("/");
+      navigate("/dashboard");
       return;
     }
 
-    checkAuth();
-    fetchEventData();
-    subscribeToChanges();
-    
-    handlePaymentSuccess();
+    checkAuthAndHandlePayment();
   }, [id]);
 
-  const handlePaymentSuccess = async () => {
+  const checkAuthAndHandlePayment = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      navigate(`/auth?redirect=/event/${id}`);
+      return;
+    }
+    
+    setUser(session.user);
+
+    // Handle payment success/cancel from Stripe redirect
     const paymentSuccess = searchParams.get('payment_success');
     const participantName = searchParams.get('name');
 
     if (paymentSuccess === 'true' && participantName) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
         const { data, error } = await supabase
           .from("participants")
           .insert({
             event_id: id,
             name: decodeURIComponent(participantName),
-            user_id: user.id,
+            user_id: session.user.id,
           })
           .select()
           .single();
 
-        if (error) {
-          if (error.code !== '23505') {
-            throw error;
-          }
-        } else if (data) {
-          setIsParticipant(true);
+        if (error && error.code !== '23505') {
+          throw error;
+        }
+        
+        if (data) {
           toast.success(t('joinSuccess'));
         }
 
         window.history.replaceState({}, '', `/event/${id}`);
-        fetchEventData();
       } catch (error) {
         console.error('Error adding participant after payment:', error);
       }
@@ -142,530 +68,36 @@ export default function Event() {
       toast.error(i18n.language === 'de' ? 'Zahlung abgebrochen' : 'Payment cancelled');
       window.history.replaceState({}, '', `/event/${id}`);
     }
+
+    setLoading(false);
+    setShowPreview(true);
   };
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate(`/auth?redirect=/event/${id}`);
-      return;
-    }
-    setUser(session.user);
-  };
-
-  const fetchEventData = async () => {
-    try {
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (eventError) throw eventError;
-      if (!eventData) {
-        toast.error(t('notFound'));
-        navigate("/");
-        return;
-      }
-
-      setEvent(eventData);
-
-      // Fetch host profile
-      if (eventData.user_id) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("id, display_name, first_name, last_name, username, avatar_url")
-          .eq("id", eventData.user_id)
-          .single();
-        
-        setHostProfile(profileData);
-      }
-
-      // Fetch ticket categories
-      const { data: ticketsData } = await supabase
-        .from("ticket_categories")
-        .select("id, name, description, price_cents, currency, max_quantity")
-        .eq("event_id", id)
-        .order("sort_order", { ascending: true });
-      
-      setTicketCategories(ticketsData || []);
-
-      const { data: participantsData, error: participantsError } = await supabase
-        .from("participants")
-        .select("id, name, user_id")
-        .eq("event_id", id)
-        .order("created_at", { ascending: true });
-
-      if (participantsError) throw participantsError;
-      setParticipants(participantsData || []);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const userParticipant = participantsData?.find((p) => p.user_id === user.id);
-        setIsParticipant(!!userParticipant);
-      }
-    } catch (error) {
-      console.error("Error fetching event:", error);
-      toast.error(t('loadingError'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const subscribeToChanges = () => {
-    const channel = supabase
-      .channel(`event-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "participants",
-          filter: `event_id=eq.${id}`,
-        },
-        () => {
-          fetchEventData();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "events",
-          filter: `id=eq.${id}`,
-        },
-        () => {
-          fetchEventData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  const handleJoinSuccess = () => {
-    setIsParticipant(true);
-    setShowJoinSheet(false);
-    toast.success(t('joinSuccess'));
-    fetchEventData();
-  };
-
-  const copyEventLink = () => {
-    const link = window.location.href;
-    navigator.clipboard.writeText(link);
-    toast.success(t('linkCopied'));
-  };
-
-  const formatEventDate = (date: string, time: string | null) => {
-    if (i18n.language === 'de') {
-      const dateStr = format(new Date(date), "EEEE, d. MMMM", { locale: de });
-      return time ? `${dateStr} ${t('at')} ${time.slice(0, 5)} ${t('oclock')}` : dateStr;
-    } else {
-      const dateStr = format(new Date(date), "EEEE, MMMM d", { locale: enUS });
-      return time ? `${dateStr} ${t('at')} ${time.slice(0, 5)}` : dateStr;
-    }
-  };
-
-  const formatPrice = (cents: number, currency: string) => {
-    return new Intl.NumberFormat(i18n.language === 'de' ? 'de-DE' : 'en-US', {
-      style: 'currency',
-      currency: currency?.toUpperCase() || 'EUR',
-    }).format(cents / 100);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const avatarColors = [
-    "bg-rose-500",
-    "bg-amber-500",
-    "bg-emerald-500",
-    "bg-sky-500",
-    "bg-violet-500",
-  ];
-
-  const getAvatarColor = (index: number) => {
-    return avatarColors[index % avatarColors.length];
-  };
-
-  const getHostDisplayName = () => {
-    if (!hostProfile) return null;
-    if (hostProfile.first_name && hostProfile.last_name) {
-      return `${hostProfile.first_name} ${hostProfile.last_name}`;
-    }
-    if (hostProfile.display_name) return hostProfile.display_name;
-    if (hostProfile.username) return `@${hostProfile.username}`;
-    return null;
-  };
-
-  const handleLeaveEvent = async () => {
-    if (!user || !id) return;
-    
-    setIsLeaving(true);
-    try {
-      const { error } = await supabase
-        .from("participants")
-        .delete()
-        .eq("event_id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      setIsParticipant(false);
-      setShowLeaveConfirm(false);
-      toast.success(t('leaveSuccess'));
-      fetchEventData();
-    } catch (error) {
-      console.error("Error leaving event:", error);
-      toast.error(t('leaveError'));
-    } finally {
-      setIsLeaving(false);
-    }
-  };
-
-  const openGoogleMaps = (location: string) => {
-    const encodedLocation = encodeURIComponent(location);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
-  };
-
-  const getCTAButton = () => {
-    const baseClasses = "w-full h-12 text-sm font-medium shadow-sm";
-    
-    if (isParticipant) {
-      return (
-        <Button 
-          size="lg" 
-          className={`${baseClasses} bg-[#1D1D1F] hover:bg-[#1D1D1F]/90 text-white border-none`}
-          onClick={() => setShowLeaveConfirm(true)}
-        >
-          {t('cta.leave')}
-        </Button>
-      );
-    }
-
-    if (event?.is_paid && (event.price_cents > 0 || ticketCategories.length > 0)) {
-      const lowestPrice = ticketCategories.length > 0 
-        ? Math.min(...ticketCategories.map(tc => tc.price_cents))
-        : event.price_cents;
-      const currency = ticketCategories.length > 0 
-        ? ticketCategories[0].currency 
-        : event.currency;
-
-      return (
-        <Button 
-          size="lg" 
-          className={baseClasses}
-          onClick={() => setShowJoinSheet(true)}
-        >
-          <CreditCard className="mr-2 h-4 w-4" />
-          {t('cta.buyTicket')} · {ticketCategories.length > 1 ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}{formatPrice(lowestPrice, currency)}
-        </Button>
-      );
-    }
-
-    if (event?.requires_approval) {
-      return (
-        <Button 
-          size="lg" 
-          className={baseClasses}
-          onClick={() => setShowJoinSheet(true)}
-        >
-          {t('cta.requestJoin')}
-        </Button>
-      );
-    }
-
-    return (
-      <Button 
-        size="lg" 
-        className={baseClasses}
-        onClick={() => setShowJoinSheet(true)}
-      >
-        {t('cta.join')}
-      </Button>
-    );
+  const handleClose = () => {
+    setShowPreview(false);
+    navigate("/dashboard");
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (!event) {
-    return null;
-  }
-
-  const isHost = user && event.user_id === user.id;
-
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} showBackButton={true} />
-      <div className="p-4 md:p-8">
-        <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
-        
-        {/* 1. Edit Event Button for Host - above image, right-aligned */}
-        {isHost && (
-          <div className="flex justify-end">
-            <Button 
-              variant="outline"
-              size="sm"
-              className="bg-[#FFB86C] hover:bg-[#FFB86C]/90 text-foreground border-none shadow-sm"
-              onClick={() => navigate(`/event/${id}/edit`)}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              {t('editEventButton')}
-            </Button>
-          </div>
-        )}
-
-        {/* 2. Event Image - Square */}
-        <div className="w-full aspect-square rounded-xl overflow-hidden shadow-strong bg-muted relative">
-          {event.image_url ? (
-            <img
-              src={event.image_url}
-              alt={event.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-              <Calendar className="h-24 w-24 text-muted-foreground" />
-            </div>
-          )}
-          
-          {/* Share button on image */}
-          <div className="absolute top-4 right-4">
-            <Button 
-              variant="secondary" 
-              size="icon"
-              className="bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
-              onClick={copyEventLink}
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Event Details - New Layout Order */}
-        <div className="space-y-4">
-          {/* 3. Title */}
-          <h1 className="text-2xl font-bold tracking-tight">{event.name}</h1>
-          
-          {/* 4. Date & Time */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <span className={`text-sm ${event.event_date ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {event.event_date 
-                ? formatEventDate(event.event_date, event.event_time)
-                : t('noDate')}
-            </span>
-          </div>
-          
-          {/* 5. Address/Location - clickable to open Google Maps */}
-          <button 
-            className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-1 -ml-1 transition-colors"
-            onClick={() => event.location && openGoogleMaps(event.location)}
-            disabled={!event.location}
-          >
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-              <MapPin className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <span className={`text-sm ${event.location ? 'text-foreground underline underline-offset-2' : 'text-muted-foreground'}`}>
-              {event.location || t('noLocation')}
-            </span>
-          </button>
-
-          {/* 6. Tickets Section - bordered card with categories and CTA */}
-          <Card className="p-4 border-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <Ticket className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold">{t('tickets.title')}</h3>
-            </div>
-            
-            {ticketCategories.length > 0 ? (
-              <div className="space-y-3">
-                {ticketCategories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{category.name}</p>
-                      {category.description && (
-                        <p className="text-xs text-muted-foreground truncate">{category.description}</p>
-                      )}
-                    </div>
-                    <span className="font-semibold text-sm ml-4">
-                      {category.price_cents === 0 
-                        ? t('free') 
-                        : formatPrice(category.price_cents, category.currency)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">{t('tickets.generalAdmission')}</span>
-                <span className="font-semibold text-sm">
-                  {event.is_paid && event.price_cents > 0 
-                    ? formatPrice(event.price_cents, event.currency)
-                    : t('free')}
-                </span>
-              </div>
-            )}
-
-            {/* CTA Button inside tickets card */}
-            {getCTAButton()}
-          </Card>
-
-          {/* 7. Description */}
-          {event.description && (
-            <div className="pt-2">
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                {event.description}
-              </p>
-            </div>
-          )}
-
-          {/* 8. Address + Google Maps Card */}
-          {event.location && (
-            <div className="pt-2">
-              <LocationMapPreview location={event.location} />
-            </div>
-          )}
-
-          {/* 9. Host Section */}
-          {hostProfile && (
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-                {t('host.title')}
-              </p>
-              <button
-                className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors"
-                onClick={() => navigate(`/host/${hostProfile.id}`)}
-              >
-                <Avatar className="h-10 w-10">
-                  {hostProfile.avatar_url ? (
-                    <AvatarImage src={hostProfile.avatar_url} alt={getHostDisplayName() || 'Host'} />
-                  ) : null}
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    <User className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {hostProfile.username 
-                      ? `@${hostProfile.username}` 
-                      : getHostDisplayName() || (i18n.language === 'de' ? 'Unbekannt' : 'Unknown')}
-                  </p>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {/* 10. Participants Section - 5 icons + "+X nehmen teil" */}
-          {participants.length > 0 && (
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-                {t('participants')}
-              </p>
-              <button 
-                className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors"
-                onClick={() => setShowParticipantsList(true)}
-              >
-                <div className="flex -space-x-2">
-                  {participants.slice(0, 5).map((participant, index) => (
-                    <div
-                      key={participant.id}
-                      className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
-                      title={participant.name}
-                    >
-                      {getInitials(participant.name)}
-                    </div>
-                  ))}
-                </div>
-                {participants.length > 5 ? (
-                  <span className="text-sm font-medium">
-                    +{participants.length - 5} {i18n.language === 'de' ? 'nehmen teil' : 'attending'}
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {t('participantsCount', { count: participants.length })}
-                  </span>
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-        </div>
-      </div>
-
-      {/* Join Sheet */}
-      <JoinEventSheet
-        open={showJoinSheet}
-        onOpenChange={setShowJoinSheet}
-        eventId={id!}
-        onSuccess={handleJoinSuccess}
-        isPaidEvent={event.is_paid}
-        priceCents={event.price_cents}
-        currency={event.currency}
-        eventName={event.name}
+      <EventPreviewSheet
+        eventId={id || null}
+        open={showPreview}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleClose();
+          }
+        }}
+        user={user}
       />
-
-      {/* Participants List Sheet */}
-      <Sheet open={showParticipantsList} onOpenChange={setShowParticipantsList}>
-        <SheetContent side="bottom" className="h-[70vh]">
-          <SheetHeader>
-            <SheetTitle>{t('participantsList.title')}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-2 overflow-y-auto max-h-[calc(70vh-100px)]">
-            {participants.map((participant, index) => (
-              <div key={participant.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div
-                  className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium`}
-                >
-                  {getInitials(participant.name)}
-                </div>
-                <span className="font-medium">{participant.name}</span>
-              </div>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Leave Event Confirmation */}
-      <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('leave.description')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('leave.no')}</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleLeaveEvent}
-              disabled={isLeaving}
-            >
-              {isLeaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t('leave.yes')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Footer />
     </div>
   );
 }
