@@ -366,9 +366,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                   className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <CalendarIcon className="h-4 w-4 text-primary" />
-                    </div>
+                    <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="min-w-0 flex-1">
                       {eventDate ? (
                         <>
@@ -401,9 +399,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                   className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <MapPin className="h-4 w-4 text-primary" />
-                    </div>
+                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="min-w-0 flex-1">
                       {location ? (
                         <>
