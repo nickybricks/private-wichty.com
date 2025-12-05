@@ -14,6 +14,7 @@ import { LocationPopup } from "@/components/event-form/LocationPopup";
 import { DescriptionPopup } from "@/components/event-form/DescriptionPopup";
 import { TicketsPopup } from "@/components/event-form/TicketsPopup";
 import { CapacityPopup } from "@/components/event-form/CapacityPopup";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Loader2, 
   Image as ImageIcon, 
@@ -25,7 +26,8 @@ import {
   UserCheck,
   Ticket,
   ChevronRight,
-  FileText
+  FileText,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -34,6 +36,12 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CreateEventDrawerProps {
   open: boolean;
@@ -45,6 +53,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const { t, i18n } = useTranslation('forms');
   const { t: ta } = useTranslation('auth');
   const { t: tc } = useTranslation('common');
+  const isMobile = useIsMobile();
   
   // Basic info
   const [name, setName] = useState("");
@@ -284,318 +293,342 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     }
   };
 
-  return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent fullScreenOnMobile className="md:max-h-[95vh] md:h-auto md:max-w-[820px] md:mx-auto">
-        <div className="mx-auto w-full overflow-y-auto px-4 pb-12">
-          <DrawerHeader className="text-center pb-2">
-            <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
-          </DrawerHeader>
-
-          <form onSubmit={handleCreateEvent} className="space-y-6">
-            {/* Desktop: Two-column layout */}
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              {/* Left Column: Image Upload */}
-              <div>
-                <label
-                  htmlFor="drawer-image"
-                  className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
-                >
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt={t('createEvent.preview')}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
-                      </p>
-                    </div>
-                  )}
-                  <Input
-                    id="drawer-image"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </label>
-              </div>
-
-              {/* Right Column: Event Details */}
-              <div className="space-y-4 mt-6 md:mt-0">
-              {/* Public/Private Toggle */}
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant={isPublic ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setIsPublic(true)}
-                  className="gap-1.5"
-                >
-                  <Globe className="h-4 w-4" />
-                  {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
-                </Button>
-                <Button
-                  type="button"
-                  variant={!isPublic ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setIsPublic(false)}
-                  className="gap-1.5"
-                  >
-                    <Lock className="h-4 w-4" />
-                    {i18n.language === 'de' ? 'Privat' : 'Private'}
-                  </Button>
-                </div>
-
-                {/* Event Name */}
-                <Textarea
-                  placeholder={t('createEvent.eventNamePlaceholder')}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
-                  rows={1}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = target.scrollHeight + 'px';
-                  }}
-                  required
+  const formContent = (
+    <>
+      <form onSubmit={handleCreateEvent} className="space-y-6">
+        {/* Desktop: Two-column layout */}
+        <div className="md:grid md:grid-cols-2 md:gap-8">
+          {/* Left Column: Image Upload */}
+          <div>
+            <label
+              htmlFor="drawer-image"
+              className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt={t('createEvent.preview')}
+                  className="h-full w-full object-cover"
                 />
-
-                {/* Date & Time - Clickable Field */}
-                <button
-                  type="button"
-                  onClick={() => setDateTimePopupOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      {eventDate ? (
-                        <>
-                          <p className="font-medium truncate">
-                            {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {startTime} — {endTime}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-medium text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </button>
-
-                {/* Location - Clickable Field */}
-                <button
-                  type="button"
-                  onClick={() => setLocationPopupOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      {location ? (
-                        <>
-                          <p className="font-medium truncate">{location.split(',')[0]}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-medium text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </button>
-
-                {/* Description - Clickable Field */}
-                <button
-                  type="button"
-                  onClick={() => setDescriptionPopupOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      {description ? (
-                        <>
-                          <p className="font-medium truncate">
-                            {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">{description}</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-medium text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Beschreibung hinzufügen' : 'Add description'}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {i18n.language === 'de' ? 'Was erwartet die Teilnehmer?' : 'What can attendees expect?'}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </button>
-
-                {/* Event Options */}
-                <div className="space-y-4 pt-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
-                  </h3>
-
-                  {/* Tickets - Clickable Field */}
-                  <button
-                    type="button"
-                    onClick={() => setTicketsPopupOpen(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Ticket className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Tickets' : 'Tickets'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {ticketCategories.length > 0
-                            ? `${ticketCategories.length} ${i18n.language === 'de' ? 'Kategorie(n)' : 'category(ies)'}`
-                            : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                  </button>
-
-                  {/* Requires Approval */}
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
-                    <div className="flex items-center gap-3">
-                      <UserCheck className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
-                  </div>
-
-                  {/* Capacity - Clickable Field */}
-                  <button
-                    type="button"
-                    onClick={() => setCapacityPopupOpen(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Users className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {capacityUnlimited 
-                            ? (i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited')
-                            : `${maxCapacity || '0'} ${i18n.language === 'de' ? 'Plätze' : 'spots'}`}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                  </button>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
+                  </p>
                 </div>
+              )}
+              <Input
+                id="drawer-image"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
+          </div>
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full h-12 text-lg shadow-medium"
-                  disabled={loading}
-                >
-                  {loading ? (
+          {/* Right Column: Event Details */}
+          <div className="space-y-4 mt-6 md:mt-0">
+          {/* Public/Private Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant={isPublic ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsPublic(true)}
+              className="gap-1.5"
+            >
+              <Globe className="h-4 w-4" />
+              {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
+            </Button>
+            <Button
+              type="button"
+              variant={!isPublic ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsPublic(false)}
+              className="gap-1.5"
+              >
+                <Lock className="h-4 w-4" />
+                {i18n.language === 'de' ? 'Privat' : 'Private'}
+              </Button>
+            </div>
+
+            {/* Event Name */}
+            <Textarea
+              placeholder={t('createEvent.eventNamePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = target.scrollHeight + 'px';
+              }}
+              required
+            />
+
+            {/* Date & Time - Clickable Field */}
+            <button
+              type="button"
+              onClick={() => setDateTimePopupOpen(true)}
+              className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {eventDate ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t('createEvent.loading')}
+                      <p className="font-medium truncate">
+                        {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {startTime} — {endTime}
+                      </p>
                     </>
                   ) : (
-                    t('createEvent.button')
+                    <>
+                      <p className="font-medium text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Datum & Uhrzeit hinzufügen' : 'Add date & time'}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Wann findet das Event statt?' : 'When does the event take place?'}
+                      </p>
+                    </>
                   )}
-                </Button>
+                </div>
               </div>
-            </div>
-          </form>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+            </button>
 
-          {/* Popups */}
-          <DateTimePopup
-            open={dateTimePopupOpen}
-            onOpenChange={setDateTimePopupOpen}
-            date={eventDate}
-            startTime={startTime}
-            endTime={endTime}
-            onConfirm={(date, start, end) => {
-              setEventDate(date);
-              setStartTime(start);
-              setEndTime(end);
-            }}
-          />
-          <LocationPopup
-            open={locationPopupOpen}
-            onOpenChange={setLocationPopupOpen}
-            location={location}
-            onConfirm={setLocation}
-          />
-          <DescriptionPopup
-            open={descriptionPopupOpen}
-            onOpenChange={setDescriptionPopupOpen}
-            description={description}
-            eventName={name}
-            location={location}
-            date={eventDate ? format(eventDate, "EEEE, d. MMMM yyyy", { locale: dateLocale }) : undefined}
-            onConfirm={setDescription}
-          />
-          <TicketsPopup
-            open={ticketsPopupOpen}
-            onOpenChange={setTicketsPopupOpen}
-            ticketCategories={ticketCategories}
-            stripeConnected={stripeConnected}
-            onConfirm={setTicketCategories}
-          />
-          <CapacityPopup
-            open={capacityPopupOpen}
-            onOpenChange={setCapacityPopupOpen}
-            capacityUnlimited={capacityUnlimited}
-            maxCapacity={maxCapacity}
-            waitlistEnabled={waitlistEnabled}
-            onConfirm={(unlimited, capacity, waitlist) => {
-              setCapacityUnlimited(unlimited);
-              setMaxCapacity(capacity);
-              setWaitlistEnabled(waitlist);
-            }}
-          />
+            {/* Location - Clickable Field */}
+            <button
+              type="button"
+              onClick={() => setLocationPopupOpen(true)}
+              className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {location ? (
+                    <>
+                      <p className="font-medium truncate">{location.split(',')[0]}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Veranstaltungsort hinzufügen' : 'Add location'}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Offline-Standort oder Link' : 'Offline location or link'}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+            </button>
+
+            {/* Description - Clickable Field */}
+            <button
+              type="button"
+              onClick={() => setDescriptionPopupOpen(true)}
+              className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {description ? (
+                    <>
+                      <p className="font-medium truncate">
+                        {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">{description}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Beschreibung hinzufügen' : 'Add description'}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {i18n.language === 'de' ? 'Was erwartet die Teilnehmer?' : 'What can attendees expect?'}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+            </button>
+
+            {/* Event Options */}
+            <div className="space-y-4 pt-4">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
+              </h3>
+
+              {/* Tickets - Clickable Field */}
+              <button
+                type="button"
+                onClick={() => setTicketsPopupOpen(true)}
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Ticket className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">
+                      {i18n.language === 'de' ? 'Tickets' : 'Tickets'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {ticketCategories.length > 0
+                        ? `${ticketCategories.length} ${i18n.language === 'de' ? 'Kategorie(n)' : 'category(ies)'}`
+                        : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+              </button>
+
+              {/* Requires Approval */}
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
+                <div className="flex items-center gap-3">
+                  <UserCheck className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">
+                      {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
+                    </p>
+                  </div>
+                </div>
+                <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+              </div>
+
+              {/* Capacity - Clickable Field */}
+              <button
+                type="button"
+                onClick={() => setCapacityPopupOpen(true)}
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Users className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">
+                      {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {capacityUnlimited 
+                        ? (i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited')
+                        : `${maxCapacity || '0'} ${i18n.language === 'de' ? 'Plätze' : 'spots'}`}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+              </button>
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full h-12 text-lg shadow-medium"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t('createEvent.loading')}
+                </>
+              ) : (
+                t('createEvent.button')
+              )}
+            </Button>
+          </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </form>
+
+      {/* Popups */}
+      <DateTimePopup
+        open={dateTimePopupOpen}
+        onOpenChange={setDateTimePopupOpen}
+        date={eventDate}
+        startTime={startTime}
+        endTime={endTime}
+        onConfirm={(date, start, end) => {
+          setEventDate(date);
+          setStartTime(start);
+          setEndTime(end);
+        }}
+      />
+      <LocationPopup
+        open={locationPopupOpen}
+        onOpenChange={setLocationPopupOpen}
+        location={location}
+        onConfirm={setLocation}
+      />
+      <DescriptionPopup
+        open={descriptionPopupOpen}
+        onOpenChange={setDescriptionPopupOpen}
+        description={description}
+        eventName={name}
+        location={location}
+        date={eventDate ? format(eventDate, "EEEE, d. MMMM yyyy", { locale: dateLocale }) : undefined}
+        onConfirm={setDescription}
+      />
+      <TicketsPopup
+        open={ticketsPopupOpen}
+        onOpenChange={setTicketsPopupOpen}
+        ticketCategories={ticketCategories}
+        stripeConnected={stripeConnected}
+        onConfirm={setTicketCategories}
+      />
+      <CapacityPopup
+        open={capacityPopupOpen}
+        onOpenChange={setCapacityPopupOpen}
+        capacityUnlimited={capacityUnlimited}
+        maxCapacity={maxCapacity}
+        waitlistEnabled={waitlistEnabled}
+        onConfirm={(unlimited, capacity, waitlist) => {
+          setCapacityUnlimited(unlimited);
+          setMaxCapacity(capacity);
+          setWaitlistEnabled(waitlist);
+        }}
+      />
+    </>
+  );
+
+  // Mobile: Use Drawer (bottom sheet)
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent fullScreenOnMobile>
+          <div className="mx-auto w-full overflow-y-auto px-4 pb-12">
+            <DrawerHeader className="text-center pb-2">
+              <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
+            </DrawerHeader>
+            {formContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  // Desktop: Use Dialog (centered modal like Notion)
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[820px] max-h-[90vh] overflow-y-auto p-0">
+        <div className="px-6 py-4 border-b sticky top-0 bg-background z-10">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">{t('createEvent.drawerTitle')}</DialogTitle>
+          </DialogHeader>
+        </div>
+        <div className="px-6 pb-8">
+          {formContent}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
