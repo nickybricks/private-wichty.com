@@ -48,8 +48,13 @@ All colors MUST be HSL.
     --shadow-strong: 0 10px 30px 0 rgb(0 0 0 / 0.12);
 
     /* Accent gradient (warm to cool) */
-    --gradient-accent: linear-gradient(90deg, #FFB86C 0%, #FF6788 50%, #C088FF 100%);
-    --gradient-accent-transparent: linear-gradient(90deg, rgba(255, 184, 108, 0.15) 0%, rgba(255, 103, 136, 0.15) 50%, rgba(192, 136, 255, 0.15) 100%);
+    --gradient-accent: linear-gradient(90deg, #ffb86c 0%, #ff6788 50%, #c088ff 100%);
+    --gradient-accent-transparent: linear-gradient(
+      90deg,
+      rgba(255, 184, 108, 0.15) 0%,
+      rgba(255, 103, 136, 0.15) 50%,
+      rgba(192, 136, 255, 0.15) 100%
+    );
   }
 
   .dark {
@@ -96,7 +101,12 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 }
@@ -105,15 +115,15 @@ All colors MUST be HSL.
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
-  
+
   .shadow-medium {
     box-shadow: var(--shadow-medium);
   }
-  
+
   .shadow-strong {
     box-shadow: var(--shadow-strong);
   }
@@ -130,7 +140,9 @@ All colors MUST be HSL.
   .border-gradient {
     position: relative;
     border: 2px solid transparent;
-    background: linear-gradient(hsl(var(--background)), hsl(var(--background))) padding-box, var(--gradient-accent) border-box;
+    background:
+      linear-gradient(hsl(var(--background)), hsl(var(--background))) padding-box,
+      var(--gradient-accent) border-box;
   }
 
   /* Gradient background with transparency */
@@ -141,7 +153,9 @@ All colors MUST be HSL.
   /* Focus ring with gradient */
   .focus-gradient:focus {
     outline: none;
-    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px #FF6788;
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 0 4px #ff6788;
   }
 
   /* Gradient icon effect using mask */
@@ -197,5 +211,9 @@ All colors MUST be HSL.
 
 #qr-reader img[alt="Info icon"],
 #qr-reader__header_message {
+  display: none !important;
+}
+
+#lovable-badge {
   display: none !important;
 }
