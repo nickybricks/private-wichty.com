@@ -7,36 +7,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DateTimePopup } from "@/components/event-form/DateTimePopup";
 import { LocationPopup } from "@/components/event-form/LocationPopup";
+import { DescriptionPopup } from "@/components/event-form/DescriptionPopup";
+import { CapacityPopup } from "@/components/event-form/CapacityPopup";
 import { 
   Loader2, 
   CalendarIcon, 
-  Clock, 
   Image as ImageIcon, 
   Users,
-  CreditCard,
   BarChart3,
   Settings2,
   Trash2,
   Globe,
   Lock,
   UserCheck,
-  Infinity,
-  AlertCircle,
   MapPin,
   Ticket,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { TicketCategories } from "@/components/TicketCategories";
 
 interface Event {
@@ -102,6 +98,9 @@ export default function EditEvent() {
   // Popup states
   const [dateTimePopupOpen, setDateTimePopupOpen] = useState(false);
   const [locationPopupOpen, setLocationPopupOpen] = useState(false);
+  const [descriptionPopupOpen, setDescriptionPopupOpen] = useState(false);
+  const [capacityPopupOpen, setCapacityPopupOpen] = useState(false);
+  const [waitlistEnabled, setWaitlistEnabled] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -531,19 +530,25 @@ export default function EditEvent() {
                     <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
                   </button>
 
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
-                    </Label>
-                    <Textarea
-                      placeholder={i18n.language === 'de' ? 'Event-Beschreibung hinzufügen (optional)' : 'Add event description (optional)'}
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      className="resize-none"
-                    />
-                  </div>
+                  {/* Description - Clickable Field */}
+                  <button
+                    type="button"
+                    onClick={() => setDescriptionPopupOpen(true)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">
+                          {i18n.language === 'de' ? 'Beschreibung' : 'Description'}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {description || (i18n.language === 'de' ? 'Beschreibung hinzufügen' : 'Add description')}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                  </button>
                 </div>
 
               {/* Event Options */}
@@ -552,160 +557,60 @@ export default function EditEvent() {
                   {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
                 </h3>
 
-                {/* Paid/Free */}
-                <div className="flex items-center justify-between">
+                {/* Ticket Categories */}
+                <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Zahlungen akzeptieren' : 'Accept payments'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {isPaid 
-                            ? (i18n.language === 'de' ? 'Teilnehmer zahlen für das Event' : 'Attendees pay for the event')
-                            : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
-                        </p>
-                      </div>
+                    <Ticket className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Ticket-Kategorien' : 'Ticket Categories'}
+                      </p>
                     </div>
-                    <Switch 
-                      checked={isPaid} 
-                      onCheckedChange={handlePaidToggle}
-                      disabled={checkingStripe || hasTicketSales}
-                    />
                   </div>
-
-                  {/* Stripe not connected warning */}
-                  {stripeConnected === false && !hasTicketSales && (
-                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="flex items-center justify-between">
-                        <span>
-                          {i18n.language === 'de' 
-                            ? 'Verbinde Stripe um kostenpflichtige Events zu erstellen' 
-                            : 'Connect Stripe to create paid events'}
-                        </span>
-                        <Link to="/settings">
-                          <Button variant="outline" size="sm" className="ml-2">
-                            {tc('stripe.connect')}
-                          </Button>
-                        </Link>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* Price Input when paid */}
-                  {isPaid && (
-                    <div className="pl-8 space-y-2">
-                      <Label className="text-sm">
-                        {i18n.language === 'de' ? 'Preis pro Teilnehmer' : 'Price per attendee'}
-                      </Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                        <Input
-                          type="number"
-                          min="0.50"
-                          step="0.50"
-                          placeholder="10.00"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          className="pl-8"
-                          disabled={hasTicketSales}
-                        />
-                      </div>
-                      {hasTicketSales ? (
-                        <p className="text-sm text-muted-foreground">
-                          {t('editEvent.priceLockedHint')}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          {i18n.language === 'de' ? '5% Plattformgebühr werden abgezogen' : '5% platform fee will be deducted'}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Ticket Categories */}
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-center gap-3">
-                      <Ticket className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Ticket-Kategorien' : 'Ticket Categories'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {i18n.language === 'de' ? 'Verschiedene Ticket-Arten mit unterschiedlichen Preisen' : 'Different ticket types with various prices'}
-                        </p>
-                      </div>
-                    </div>
-                    <TicketCategories 
-                      eventId={id!} 
-                      isPaidEvent={isPaid}
-                    />
-                  </div>
-
-                  {/* Requires Approval */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <UserCheck className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
-                  </div>
-
-                  {/* Capacity */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {capacityUnlimited 
-                              ? (i18n.language === 'de' ? 'Unbegrenzte Teilnehmer' : 'Unlimited attendees')
-                              : (i18n.language === 'de' ? 'Begrenzte Plätze' : 'Limited spots')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant={capacityUnlimited ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCapacityUnlimited(true)}
-                        >
-                          <Infinity className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={!capacityUnlimited ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCapacityUnlimited(false)}
-                        >
-                          <Users className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    {!capacityUnlimited && (
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder={i18n.language === 'de' ? 'Max. Teilnehmer' : 'Max attendees'}
-                        value={maxCapacity}
-                        onChange={(e) => setMaxCapacity(e.target.value)}
-                        className="w-full"
-                      />
-                    )}
-                  </div>
+                  <TicketCategories 
+                    eventId={id!} 
+                    isPaidEvent={isPaid}
+                  />
                 </div>
+
+                {/* Requires Approval */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-border/50">
+                  <div className="flex items-center gap-3">
+                    <UserCheck className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Genehmigung erforderlich' : 'Requires approval'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? 'Du genehmigst jeden Teilnehmer' : 'You approve each attendee'}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
+                </div>
+
+                {/* Capacity - Clickable Field */}
+                <button
+                  type="button"
+                  onClick={() => setCapacityPopupOpen(true)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Users className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Kapazität' : 'Capacity'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {capacityUnlimited 
+                          ? (i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited')
+                          : `${maxCapacity || '0'} ${i18n.language === 'de' ? 'Plätze' : 'spots'}`}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                </button>
+              </div>
 
               {/* Save Button */}
               <Button

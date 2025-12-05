@@ -25,12 +25,19 @@
     "startTime": "Start",
     "endTime": "End",
     "confirm": "Confirm",
+    "done": "Done",
     "location": "Location",
     "locationHint": "Enter an address or online meeting link",
     "locationPlaceholder": "Search for a location...",
     "addDateTime": "Add date & time",
     "addLocation": "Add location",
-    "locationSubtitle": "Offline location or link"
+    "locationSubtitle": "Offline location or link",
+    "description": "Description",
+    "addDescription": "Add description",
+    "tickets": "Tickets",
+    "ticketsFree": "Free",
+    "capacity": "Capacity",
+    "capacityUnlimited": "Unlimited"
   },
   "errors": {
     "enterEventName": "Please enter an event name",

@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.create-event-checkout]
 verify_jwt = false
+
+[functions.generate-event-description]
+verify_jwt = false
