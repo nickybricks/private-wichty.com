@@ -84,6 +84,7 @@ export function TicketsPopup({
         <TicketCategoriesLocal
           categories={categories}
           onCategoriesChange={setCategories}
+          stripeConnected={stripeConnected}
         />
 
         <Button 
