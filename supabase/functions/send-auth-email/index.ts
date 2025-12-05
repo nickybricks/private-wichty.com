@@ -1,22 +1,41 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 import { EMAIL_BRANDING, generateEmailHtml } from "../_shared/email-template.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const WEBHOOK_SECRET = Deno.env.get("AUTH_SEND_EMAIL_HOOK_SECRET");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, webhook-id, webhook-timestamp, webhook-signature",
 };
 
-type EmailType = 'password_reset' | 'email_confirmation' | 'magic_link';
+// Supabase Auth Hook payload types
+interface AuthHookEmailData {
+  token_hash: string;
+  redirect_to: string;
+  verification_type: string; // signup, recovery, invite, magiclink, email_change
+  site_url: string;
+  token: string;
+  email_action_type: string;
+}
 
-interface AuthEmailRequest {
+interface AuthHookUser {
+  id: string;
   email: string;
-  type: EmailType;
-  token_hash?: string;
-  redirect_to?: string;
-  language?: 'de' | 'en';
-  display_name?: string;
+  user_metadata?: {
+    display_name?: string;
+    full_name?: string;
+    name?: string;
+  };
+  app_metadata?: {
+    language?: string;
+  };
+}
+
+interface AuthHookPayload {
+  user: AuthHookUser;
+  email_data: AuthHookEmailData;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -25,20 +44,57 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const {
-      email,
-      type,
-      token_hash,
-      redirect_to,
-      language = 'de',
-      display_name,
-    }: AuthEmailRequest = await req.json();
+    // Get the raw body for signature verification
+    const payload = await req.text();
+    
+    // Verify webhook signature if secret is configured
+    if (WEBHOOK_SECRET) {
+      const webhookId = req.headers.get("webhook-id");
+      const webhookTimestamp = req.headers.get("webhook-timestamp");
+      const webhookSignature = req.headers.get("webhook-signature");
 
-    console.log(`Sending ${type} email to:`, email);
+      if (!webhookId || !webhookTimestamp || !webhookSignature) {
+        console.error("Missing webhook headers");
+        return new Response(
+          JSON.stringify({ error: "Missing webhook headers" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
 
+      const wh = new Webhook(WEBHOOK_SECRET);
+      try {
+        wh.verify(payload, {
+          "webhook-id": webhookId,
+          "webhook-timestamp": webhookTimestamp,
+          "webhook-signature": webhookSignature,
+        });
+        console.log("Webhook signature verified successfully");
+      } catch (err) {
+        console.error("Webhook signature verification failed:", err);
+        return new Response(
+          JSON.stringify({ error: "Invalid webhook signature" }),
+          { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    } else {
+      console.warn("AUTH_SEND_EMAIL_HOOK_SECRET not configured - skipping signature verification");
+    }
+
+    const { user, email_data }: AuthHookPayload = JSON.parse(payload);
+
+    console.log(`Processing auth email for: ${user.email}, type: ${email_data.email_action_type}`);
+
+    // Determine language from user metadata or default to German
+    const language = (user.app_metadata?.language as 'de' | 'en') || 'de';
     const isGerman = language === 'de';
-    const name = display_name || email.split('@')[0];
-    const baseUrl = redirect_to || 'https://wichty.com';
+    
+    // Get display name from various possible sources
+    const displayName = user.user_metadata?.display_name 
+      || user.user_metadata?.full_name 
+      || user.user_metadata?.name 
+      || user.email.split('@')[0];
+
+    const baseUrl = email_data.site_url || 'https://wichty.com';
     
     let subject: string;
     let badge: string;
@@ -48,57 +104,87 @@ const handler = async (req: Request): Promise<Response> => {
     let buttonUrl: string;
     let footerText: string;
 
-    switch (type) {
-      case 'password_reset':
-        subject = isGerman ? 'Passwort zurücksetzen' : 'Reset your password';
-        badge = isGerman ? 'PASSWORT' : 'PASSWORD';
-        title = isGerman ? 'Passwort zurücksetzen' : 'Reset your password';
-        message = isGerman 
-          ? `Hey ${name}, klicke auf den Button unten, um dein Passwort zu ändern.`
-          : `Hey ${name}, click the button below to change your password.`;
-        buttonText = isGerman ? 'Passwort zurücksetzen' : 'Reset Password';
-        buttonUrl = token_hash 
-          ? `${baseUrl}/reset-password?token_hash=${token_hash}&type=recovery`
-          : baseUrl;
-        footerText = isGerman 
-          ? 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.'
-          : "If you didn't request this, you can ignore this email.";
-        break;
+    // Build the confirmation URL with token
+    const confirmUrl = `${baseUrl}/auth/confirm?token_hash=${email_data.token_hash}&type=${email_data.verification_type}`;
 
-      case 'email_confirmation':
+    switch (email_data.email_action_type) {
+      case 'signup':
         subject = isGerman ? 'Bestätige deine E-Mail' : 'Confirm your email';
         badge = isGerman ? 'WILLKOMMEN' : 'WELCOME';
         title = isGerman ? 'Willkommen bei wichty! ✨' : 'Welcome to wichty! ✨';
         message = isGerman 
-          ? `Hey ${name}, schön dass du dabei bist! Bestätige deine E-Mail-Adresse, um loszulegen.`
-          : `Hey ${name}, great to have you! Confirm your email address to get started.`;
+          ? `Hey ${displayName}, schön dass du dabei bist! Bestätige deine E-Mail-Adresse, um loszulegen.`
+          : `Hey ${displayName}, great to have you! Confirm your email address to get started.`;
         buttonText = isGerman ? 'E-Mail bestätigen' : 'Confirm Email';
-        buttonUrl = token_hash 
-          ? `${baseUrl}/auth/confirm?token_hash=${token_hash}&type=signup`
-          : baseUrl;
+        buttonUrl = confirmUrl;
         footerText = isGerman 
           ? 'Falls du dich nicht registriert hast, ignoriere diese E-Mail.'
           : "If you didn't sign up, you can ignore this email.";
         break;
 
-      case 'magic_link':
+      case 'recovery':
+        subject = isGerman ? 'Passwort zurücksetzen' : 'Reset your password';
+        badge = isGerman ? 'PASSWORT' : 'PASSWORD';
+        title = isGerman ? 'Passwort zurücksetzen' : 'Reset your password';
+        message = isGerman 
+          ? `Hey ${displayName}, klicke auf den Button unten, um dein Passwort zu ändern.`
+          : `Hey ${displayName}, click the button below to change your password.`;
+        buttonText = isGerman ? 'Passwort zurücksetzen' : 'Reset Password';
+        buttonUrl = `${baseUrl}/reset-password?token_hash=${email_data.token_hash}&type=recovery`;
+        footerText = isGerman 
+          ? 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.'
+          : "If you didn't request this, you can ignore this email.";
+        break;
+
+      case 'magiclink':
         subject = isGerman ? 'Dein Login-Link' : 'Your login link';
         badge = 'LOGIN';
         title = isGerman ? 'Einloggen bei wichty' : 'Log in to wichty';
         message = isGerman 
-          ? `Hey ${name}, klicke auf den Button unten, um dich einzuloggen.`
-          : `Hey ${name}, click the button below to log in.`;
+          ? `Hey ${displayName}, klicke auf den Button unten, um dich einzuloggen.`
+          : `Hey ${displayName}, click the button below to log in.`;
         buttonText = isGerman ? 'Einloggen' : 'Log In';
-        buttonUrl = token_hash 
-          ? `${baseUrl}/auth/confirm?token_hash=${token_hash}&type=magiclink`
-          : baseUrl;
+        buttonUrl = confirmUrl;
         footerText = isGerman 
           ? 'Dieser Link ist nur einmal verwendbar und läuft nach 1 Stunde ab.'
           : 'This link can only be used once and expires after 1 hour.';
         break;
 
+      case 'invite':
+        subject = isGerman ? 'Du wurdest eingeladen' : "You've been invited";
+        badge = isGerman ? 'EINLADUNG' : 'INVITATION';
+        title = isGerman ? 'Du wurdest eingeladen! 🎉' : "You've been invited! 🎉";
+        message = isGerman 
+          ? `Hey ${displayName}, du wurdest eingeladen, wichty beizutreten. Klicke auf den Button, um dein Konto zu aktivieren.`
+          : `Hey ${displayName}, you've been invited to join wichty. Click the button to activate your account.`;
+        buttonText = isGerman ? 'Einladung annehmen' : 'Accept Invitation';
+        buttonUrl = confirmUrl;
+        footerText = isGerman 
+          ? 'Falls du keine Einladung erwartet hast, ignoriere diese E-Mail.'
+          : "If you weren't expecting an invitation, you can ignore this email.";
+        break;
+
+      case 'email_change':
+        subject = isGerman ? 'E-Mail-Adresse bestätigen' : 'Confirm email change';
+        badge = isGerman ? 'E-MAIL ÄNDERUNG' : 'EMAIL CHANGE';
+        title = isGerman ? 'Neue E-Mail bestätigen' : 'Confirm new email';
+        message = isGerman 
+          ? `Hey ${displayName}, bestätige deine neue E-Mail-Adresse, um die Änderung abzuschließen.`
+          : `Hey ${displayName}, confirm your new email address to complete the change.`;
+        buttonText = isGerman ? 'E-Mail bestätigen' : 'Confirm Email';
+        buttonUrl = confirmUrl;
+        footerText = isGerman 
+          ? 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.'
+          : "If you didn't request this, you can ignore this email.";
+        break;
+
       default:
-        throw new Error(`Unknown email type: ${type}`);
+        console.error(`Unknown email action type: ${email_data.email_action_type}`);
+        // Return success to not block auth flow, but don't send email
+        return new Response(JSON.stringify({ success: true, skipped: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
     }
 
     const html = generateEmailHtml({
@@ -119,7 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: EMAIL_BRANDING.sender.noreply,
-        to: [email],
+        to: [user.email],
         subject,
         html,
       }),
@@ -134,7 +220,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Auth email sent successfully:", emailData);
 
-    return new Response(JSON.stringify({ success: true, emailData }), {
+    // Return success response in the format Supabase expects
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
