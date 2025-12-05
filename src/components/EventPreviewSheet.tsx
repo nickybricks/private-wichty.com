@@ -344,8 +344,8 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             </div>
           )}
 
-          {/* 2. Event Image - Square */}
-          <div className="w-full aspect-square rounded-xl overflow-hidden shadow-medium bg-muted relative">
+          {/* 2. Event Image - 300px height */}
+          <div className="w-full h-[300px] rounded-xl overflow-hidden shadow-medium bg-muted relative">
             {event.image_url ? (
               <img
                 src={event.image_url}
@@ -621,10 +621,10 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
     );
   }
 
-  // Desktop: Side panel from right
+  // Desktop: Side panel from right (floating popup)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-[440px] p-0 flex flex-col rounded-l-2xl border-l shadow-2xl">
+      <SheetContent side="right" className="w-[500px] p-0 flex flex-col shadow-2xl">
         {content}
       </SheetContent>
     </Sheet>
