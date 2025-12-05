@@ -139,14 +139,14 @@ export default function BlogPost() {
         {/* Header */}
         <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
           <div className="max-w-[1080px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <Link to="/wichtel-app" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
               <span className="text-xl font-bold tracking-tight">Wichty</span>
             </Link>
             <div className="flex items-center gap-3">
               <LanguageToggle />
               <Link 
-                to="/wichtel-app"
+                to="/"
                 className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 {lang === 'de' ? 'Zur App' : 'To App'} →
@@ -159,7 +159,7 @@ export default function BlogPost() {
         <nav className="max-w-[1080px] mx-auto px-4 sm:px-6 py-4">
           <ol className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
             <li>
-              <Link to="/wichtel-app" className="hover:text-foreground transition-colors">
+              <Link to="/" className="hover:text-foreground transition-colors">
                 {lang === 'de' ? 'Startseite' : 'Home'}
               </Link>
             </li>

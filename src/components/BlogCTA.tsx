@@ -31,7 +31,7 @@ export function BlogCTA({ title, description, buttonText }: BlogCTAProps) {
           <p className="text-sm text-muted-foreground">{description || defaultDescription}</p>
         </div>
         <Button asChild size="lg" className="shadow-medium hover:shadow-strong transition-all w-full sm:w-auto">
-          <Link to="/wichtel-app">
+          <Link to="/">
             {buttonText || defaultButton}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>

@@ -26,12 +26,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* SEO-optimized main landing page */}
-          <Route path="/wichtel-app" element={<Landing />} />
-          {/* Redirect root to SEO URL */}
-          <Route path="/" element={<Navigate to="/wichtel-app" replace />} />
-          {/* Auth and create pages removed - using dialogs instead */}
-          <Route path="/auth" element={<Navigate to="/wichtel-app" replace />} />
+          {/* Main landing page */}
+          <Route path="/" element={<Landing />} />
+          {/* Redirects */}
+          <Route path="/wichtel-app" element={<Navigate to="/" replace />} />
+          <Route path="/auth" element={<Navigate to="/" replace />} />
           <Route path="/create" element={<Navigate to="/dashboard" replace />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />

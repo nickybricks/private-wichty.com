@@ -97,7 +97,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/wichtel-app?auth_callback=true`,
+          redirectTo: `${window.location.origin}/?auth_callback=true`,
         },
       });
       if (error) throw error;
