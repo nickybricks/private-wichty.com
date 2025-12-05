@@ -54,6 +54,7 @@ interface Participant {
   id: string;
   name: string;
   user_id: string;
+  avatar_url?: string | null;
 }
 
 interface HostProfile {
@@ -151,7 +152,23 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
         .order("created_at", { ascending: true });
 
       if (participantsError) throw participantsError;
-      setParticipants(participantsData || []);
+      
+      // Fetch profile avatars for participants with user_id
+      const participantsWithAvatars = await Promise.all(
+        (participantsData || []).map(async (p) => {
+          if (p.user_id) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("avatar_url")
+              .eq("id", p.user_id)
+              .single();
+            return { ...p, avatar_url: profile?.avatar_url };
+          }
+          return p;
+        })
+      );
+      
+      setParticipants(participantsWithAvatars);
 
       if (user) {
         const userParticipant = participantsData?.find((p) => p.user_id === user.id);
@@ -526,13 +543,18 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
                 >
                   <div className="flex -space-x-2">
                     {participants.slice(0, 5).map((participant, index) => (
-                      <div
-                        key={participant.id}
-                        className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium ring-2 ring-background`}
+                      <Avatar 
+                        key={participant.id} 
+                        className="w-10 h-10 ring-2 ring-background"
                         title={participant.name}
                       >
-                        {getInitials(participant.name)}
-                      </div>
+                        {participant.avatar_url ? (
+                          <AvatarImage src={participant.avatar_url} alt={participant.name} />
+                        ) : null}
+                        <AvatarFallback className={`${getAvatarColor(index)} text-white text-xs font-medium`}>
+                          {getInitials(participant.name)}
+                        </AvatarFallback>
+                      </Avatar>
                     ))}
                   </div>
                   {participants.length > 5 ? (
@@ -574,11 +596,14 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
           <div className="mt-4 space-y-2 overflow-y-auto max-h-[calc(70vh-100px)]">
             {participants.map((participant, index) => (
               <div key={participant.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div
-                  className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-xs font-medium`}
-                >
-                  {getInitials(participant.name)}
-                </div>
+                <Avatar className="w-10 h-10">
+                  {participant.avatar_url ? (
+                    <AvatarImage src={participant.avatar_url} alt={participant.name} />
+                  ) : null}
+                  <AvatarFallback className={`${getAvatarColor(index)} text-white text-xs font-medium`}>
+                    {getInitials(participant.name)}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="font-medium">{participant.name}</span>
               </div>
             ))}
