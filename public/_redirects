@@ -1,0 +1,6 @@
+# 301 Redirects for SEO
+/wichtel-app  /  301
+/wichtel-app/*  /:splat  301
+
+# SPA fallback - all routes go to index.html
+/*  /index.html  200
