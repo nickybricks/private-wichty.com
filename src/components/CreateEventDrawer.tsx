@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationInput } from "@/components/LocationInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TicketCategoriesLocal, PendingTicketCategory } from "@/components/TicketCategoriesLocal";
 import { 
   Loader2, 
   Image as ImageIcon, 
@@ -25,7 +26,8 @@ import {
   CreditCard,
   UserCheck,
   Infinity,
-  AlertCircle
+  AlertCircle,
+  Ticket
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -68,6 +70,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [capacityUnlimited, setCapacityUnlimited] = useState(true);
   const [maxCapacity, setMaxCapacity] = useState("");
+  const [ticketCategories, setTicketCategories] = useState<PendingTicketCategory[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [stripeConnected, setStripeConnected] = useState<boolean | null>(null);
@@ -159,6 +162,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     setRequiresApproval(false);
     setCapacityUnlimited(true);
     setMaxCapacity("");
+    setTicketCategories([]);
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -236,6 +240,28 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         .single();
 
       if (error) throw error;
+
+      // Create ticket categories if any
+      if (ticketCategories.length > 0) {
+        const ticketInserts = ticketCategories.map((cat, index) => ({
+          event_id: data.id,
+          name: cat.name,
+          description: cat.description || null,
+          price_cents: cat.price_cents,
+          currency: 'eur',
+          max_quantity: cat.max_quantity,
+          sort_order: index
+        }));
+
+        const { error: ticketError } = await supabase
+          .from("ticket_categories")
+          .insert(ticketInserts);
+
+        if (ticketError) {
+          console.error("Error creating ticket categories:", ticketError);
+          // Don't throw - event was created successfully
+        }
+      }
 
       toast.success(t('createEvent.success'));
       resetForm();
@@ -477,6 +503,25 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                     </p>
                   </div>
                 )}
+
+                {/* Ticket Categories */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3">
+                    <Ticket className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">
+                        {i18n.language === 'de' ? 'Ticket-Kategorien' : 'Ticket Categories'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? 'Verschiedene Ticket-Arten mit unterschiedlichen Preisen' : 'Different ticket types with various prices'}
+                      </p>
+                    </div>
+                  </div>
+                  <TicketCategoriesLocal 
+                    categories={ticketCategories}
+                    onCategoriesChange={setTicketCategories}
+                  />
+                </div>
 
                 {/* Requires Approval */}
                 <div className="flex items-center justify-between">
