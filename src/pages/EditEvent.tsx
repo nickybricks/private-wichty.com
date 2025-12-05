@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -723,6 +724,25 @@ export default function EditEvent() {
         onOpenChange={setLocationPopupOpen}
         location={location}
         onConfirm={setLocation}
+      />
+      <DescriptionPopup
+        open={descriptionPopupOpen}
+        onOpenChange={setDescriptionPopupOpen}
+        description={description}
+        eventName={name}
+        onConfirm={setDescription}
+      />
+      <CapacityPopup
+        open={capacityPopupOpen}
+        onOpenChange={setCapacityPopupOpen}
+        capacityUnlimited={capacityUnlimited}
+        maxCapacity={maxCapacity}
+        waitlistEnabled={waitlistEnabled}
+        onConfirm={(unlimited, max, waitlist) => {
+          setCapacityUnlimited(unlimited);
+          setMaxCapacity(max);
+          setWaitlistEnabled(waitlist);
+        }}
       />
     </div>
   );
