@@ -295,7 +295,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     <>
       <form onSubmit={handleCreateEvent} className="space-y-6">
         {/* Desktop: Two-column layout */}
-        <div className="md:grid md:grid-cols-2 md:gap-8">
+        <div className="md:grid md:grid-cols-[330px_1fr] md:gap-8">
           {/* Left Column: Image Upload */}
           <div>
             <label
@@ -617,7 +617,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   // Desktop: Use Dialog (centered modal like Notion)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[820px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl animate-scale-in">
+      <DialogContent className="max-w-[960px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl animate-scale-in">
         <div className="px-6 py-6">
           {formContent}
         </div>
