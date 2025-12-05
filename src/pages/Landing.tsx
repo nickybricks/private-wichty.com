@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Users, Gift, Lock, Zap, Star, Shield, Clock, BookOpen, ArrowRight } from "lucide-react";
 import { Footer } from "@/components/Footer";
@@ -23,7 +24,110 @@ export default function Landing() {
     navigate("/dashboard");
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://wichty.com/#website",
+        "url": "https://wichty.com",
+        "name": "Wichty",
+        "description": lang === 'de' 
+          ? "Kostenlose Wichtel-App für Secret Santa Events. Einfach Gruppen erstellen, Teilnehmer einladen und faire Zulosung starten."
+          : "Free Secret Santa app for gift exchange events. Create groups, invite participants, and start fair draws.",
+        "inLanguage": lang === 'de' ? "de-DE" : "en-US",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://wichty.com/ratgeber?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://wichty.com/#organization",
+        "name": "Wichty",
+        "url": "https://wichty.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://wichty.com/favicon.ico"
+        },
+        "sameAs": []
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://wichty.com/#app",
+        "name": "Wichty",
+        "url": "https://wichty.com",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        "description": lang === 'de'
+          ? "Wichty ist die einfachste Art, Wichtel-Events zu organisieren. Kostenlos, sicher und ohne Registrierung nutzbar."
+          : "Wichty is the easiest way to organize Secret Santa events. Free, secure, and usable without registration.",
+        "featureList": lang === 'de'
+          ? ["Kostenlos", "Unbegrenzte Teilnehmer", "Faire Zulosung", "Datenschutz-konform"]
+          : ["Free", "Unlimited participants", "Fair draw algorithm", "Privacy compliant"]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://wichty.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": lang === 'de' ? "Ist Wichty kostenlos?" : "Is Wichty free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": lang === 'de' 
+                ? "Ja, Wichty ist komplett kostenlos nutzbar. Es gibt keine versteckten Kosten oder Premium-Features."
+                : "Yes, Wichty is completely free to use. There are no hidden costs or premium features."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": lang === 'de' ? "Wie funktioniert die Zulosung?" : "How does the draw work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": lang === 'de'
+                ? "Unser Algorithmus sorgt für eine faire und zufällige Zulosung. Jeder Teilnehmer zieht genau einen anderen Teilnehmer."
+                : "Our algorithm ensures a fair and random draw. Each participant draws exactly one other participant."
+            }
+          }
+        ]
+      }
+    ]
+  };
+
   return (
+    <>
+      <Helmet>
+        <title>{lang === 'de' ? 'Wichty - Kostenlose Wichtel-App für Secret Santa' : 'Wichty - Free Secret Santa App'}</title>
+        <meta 
+          name="description" 
+          content={lang === 'de' 
+            ? 'Organisiere dein Wichtel-Event in Sekunden. Kostenlos, sicher und einfach. Erstelle Gruppen, lade Teilnehmer ein und starte die faire Zulosung.'
+            : 'Organize your Secret Santa event in seconds. Free, secure, and simple. Create groups, invite participants, and start the fair draw.'
+          } 
+        />
+        <meta property="og:title" content={lang === 'de' ? 'Wichty - Kostenlose Wichtel-App' : 'Wichty - Free Secret Santa App'} />
+        <meta 
+          property="og:description" 
+          content={lang === 'de'
+            ? 'Die einfachste Art, Wichtel-Events zu organisieren. Kostenlos und sicher.'
+            : 'The easiest way to organize Secret Santa events. Free and secure.'
+          }
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://wichty.com" />
+        <link rel="canonical" href="https://wichty.com" />
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
+
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -242,5 +346,6 @@ export default function Landing() {
         defaultTab="login"
       />
     </div>
+    </>
   );
 }
