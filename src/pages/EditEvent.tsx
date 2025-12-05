@@ -182,6 +182,7 @@ export default function EditEvent() {
       setPrice(eventData.price_cents ? (eventData.price_cents / 100).toString() : "");
       setRequiresApproval(eventData.requires_approval || false);
       setImagePreview(eventData.image_url);
+      setWaitlistEnabled(eventData.waitlist_enabled || false);
 
       // Fetch participants
       const { data: participantsData } = await supabase
@@ -291,6 +292,7 @@ export default function EditEvent() {
         target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
         requires_approval: requiresApproval,
         image_url: imageUrl,
+        waitlist_enabled: waitlistEnabled,
       };
 
       // Only allow price changes if no ticket sales
