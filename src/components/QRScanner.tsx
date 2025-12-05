@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Html5Qrcode } from "html5-qrcode";
 import { supabase } from "@/integrations/supabase/client";
+import { useOfflineCheckIn } from "@/hooks/use-offline-checkin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -11,7 +12,13 @@ import {
   CheckCircle2, 
   XCircle,
   Loader2,
-  UserCheck
+  UserCheck,
+  WifiOff,
+  Wifi,
+  Download,
+  RefreshCw,
+  CloudOff,
+  Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -26,19 +33,7 @@ interface CheckIn {
   guestName: string;
   ticketType: string;
   timestamp: Date;
-}
-
-interface TicketInfo {
-  id: string;
-  ticket_code: string;
-  status: string;
-  checked_in_at: string | null;
-  participant: {
-    name: string;
-  } | null;
-  ticket_category: {
-    name: string;
-  } | null;
+  isOffline?: boolean;
 }
 
 export function QRScanner({ eventId }: QRScannerProps) {
@@ -48,17 +43,33 @@ export function QRScanner({ eventId }: QRScannerProps) {
   const [recentCheckIns, setRecentCheckIns] = useState<CheckIn[]>([]);
   const [totalTickets, setTotalTickets] = useState(0);
   const [checkedInCount, setCheckedInCount] = useState(0);
-  const [successOverlay, setSuccessOverlay] = useState<{ name: string; type: string } | null>(null);
+  const [successOverlay, setSuccessOverlay] = useState<{ name: string; type: string; isOffline?: boolean } | null>(null);
   const [errorOverlay, setErrorOverlay] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
+  const {
+    isOnline,
+    isDownloading,
+    isSyncing,
+    hasOfflineData,
+    offlineTicketCount,
+    pendingCount,
+    lastDownload,
+    downloadTicketsForOffline,
+    checkInOffline,
+    syncPendingCheckIns,
+    clearOfflineData
+  } = useOfflineCheckIn(eventId, i18n.language);
+
   useEffect(() => {
-    fetchStats();
+    if (isOnline) {
+      fetchStats();
+    }
     return () => {
       stopScanner();
     };
-  }, [eventId]);
+  }, [eventId, isOnline]);
 
   const fetchStats = async () => {
     try {
@@ -77,11 +88,9 @@ export function QRScanner({ eventId }: QRScannerProps) {
   };
 
   const extractTicketCode = (scannedText: string): string | null => {
-    // Match ticket code from URL like https://wichty.com/ticket/EVT-XXXX-XXXX
     const urlMatch = scannedText.match(/ticket\/([A-Z0-9-]+)/i);
     if (urlMatch) return urlMatch[1];
     
-    // Match direct code format EVT-XXXX-XXXX
     const directMatch = scannedText.match(/^(EVT-[A-Z0-9]+-[A-Z0-9]+)$/i);
     if (directMatch) return directMatch[1];
     
@@ -101,8 +110,44 @@ export function QRScanner({ eventId }: QRScannerProps) {
       return;
     }
 
+    // Use offline mode if not online and has offline data
+    if (!isOnline && hasOfflineData) {
+      const result = checkInOffline(ticketCode);
+      
+      if (result.success) {
+        setSuccessOverlay({ 
+          name: result.guestName!, 
+          type: result.ticketType!,
+          isOffline: true 
+        });
+        
+        if (navigator.vibrate) {
+          navigator.vibrate(200);
+        }
+
+        setRecentCheckIns(prev => [{
+          id: Date.now().toString(),
+          guestName: result.guestName!,
+          ticketType: result.ticketType!,
+          timestamp: new Date(),
+          isOffline: true
+        }, ...prev].slice(0, 10));
+
+        setCheckedInCount(prev => prev + 1);
+
+        setTimeout(() => {
+          setSuccessOverlay(null);
+        }, 2000);
+      } else {
+        showError(result.error!);
+      }
+      
+      setIsProcessing(false);
+      return;
+    }
+
+    // Online mode - original logic
     try {
-      // Fetch ticket with participant and category info
       const { data: ticket, error } = await supabase
         .from("tickets")
         .select(`
@@ -125,28 +170,24 @@ export function QRScanner({ eventId }: QRScannerProps) {
         return;
       }
 
-      // Check if ticket belongs to this event
       if (ticket.event_id !== eventId) {
         showError(t('checkIn.wrongEvent'));
         setIsProcessing(false);
         return;
       }
 
-      // Check if already used
       if (ticket.status === 'used') {
         showError(t('checkIn.alreadyUsed'));
         setIsProcessing(false);
         return;
       }
 
-      // Check if cancelled
       if (ticket.status === 'cancelled') {
         showError(t('checkIn.cancelled'));
         setIsProcessing(false);
         return;
       }
 
-      // Perform check-in
       const { error: updateError } = await supabase
         .from("tickets")
         .update({
@@ -160,15 +201,12 @@ export function QRScanner({ eventId }: QRScannerProps) {
       const guestName = ticket.participant?.name || t('checkIn.unknownGuest');
       const ticketType = ticket.ticket_category?.name || t('tickets.generalAdmission');
 
-      // Show success overlay
       setSuccessOverlay({ name: guestName, type: ticketType });
       
-      // Vibrate if supported
       if (navigator.vibrate) {
         navigator.vibrate(200);
       }
 
-      // Add to recent check-ins
       setRecentCheckIns(prev => [{
         id: ticket.id,
         guestName,
@@ -176,17 +214,32 @@ export function QRScanner({ eventId }: QRScannerProps) {
         timestamp: new Date()
       }, ...prev].slice(0, 10));
 
-      // Update stats
       setCheckedInCount(prev => prev + 1);
 
-      // Hide overlay after 2 seconds
       setTimeout(() => {
         setSuccessOverlay(null);
       }, 2000);
 
     } catch (error) {
       console.error("Error processing check-in:", error);
-      showError(t('checkIn.error'));
+      
+      // Fallback to offline if online fails and has offline data
+      if (hasOfflineData) {
+        const result = checkInOffline(ticketCode);
+        if (result.success) {
+          setSuccessOverlay({ 
+            name: result.guestName!, 
+            type: result.ticketType!,
+            isOffline: true 
+          });
+          setCheckedInCount(prev => prev + 1);
+          setTimeout(() => setSuccessOverlay(null), 2000);
+        } else {
+          showError(t('checkIn.error'));
+        }
+      } else {
+        showError(t('checkIn.error'));
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -203,16 +256,13 @@ export function QRScanner({ eventId }: QRScannerProps) {
   };
 
   const startScanner = async () => {
-    // Set scanning state first so the container is visible
     setIsScanning(true);
-    
-    // Small delay to ensure DOM is updated
     await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
       const html5QrCode = new Html5Qrcode("qr-reader", {
         verbose: false,
-        formatsToSupport: [0] // QR_CODE only
+        formatsToSupport: [0]
       });
       scannerRef.current = html5QrCode;
       
@@ -227,7 +277,7 @@ export function QRScanner({ eventId }: QRScannerProps) {
           aspectRatio: 1,
         },
         handleScan,
-        () => {} // Ignore scan failures
+        () => {}
       );
     } catch (error) {
       console.error("Error starting scanner:", error);
@@ -250,10 +300,117 @@ export function QRScanner({ eventId }: QRScannerProps) {
 
   return (
     <div className="space-y-6">
+      {/* Offline Status Bar */}
+      <Card className={`p-3 ${isOnline ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isOnline ? (
+              <>
+                <Wifi className="h-4 w-4 text-emerald-500" />
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  {t('checkIn.online')}
+                </span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4 text-amber-500" />
+                <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                  {t('checkIn.offline')}
+                </span>
+              </>
+            )}
+          </div>
+          
+          {pendingCount > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {t('checkIn.pendingSync', { count: pendingCount })}
+              </span>
+              {isOnline && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={syncPendingCheckIns}
+                  disabled={isSyncing}
+                  className="h-7 px-2"
+                >
+                  <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Offline Data Management */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold flex items-center gap-2">
+            <CloudOff className="h-4 w-4" />
+            {t('checkIn.offlineMode')}
+          </h3>
+          {hasOfflineData && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearOfflineData}
+              className="h-7 px-2 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              {t('checkIn.clearData')}
+            </Button>
+          )}
+        </div>
+        
+        {hasOfflineData ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {t('checkIn.ticketsDownloaded', { count: offlineTicketCount })}
+            </p>
+            {lastDownload && (
+              <p className="text-xs text-muted-foreground">
+                {t('checkIn.lastDownload')}: {format(lastDownload, "dd.MM.yyyy HH:mm", { locale: dateLocale })}
+              </p>
+            )}
+            <Button
+              onClick={downloadTicketsForOffline}
+              disabled={isDownloading || !isOnline}
+              variant="outline"
+              size="sm"
+              className="w-full mt-2"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {t('checkIn.refreshOfflineData')}
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground mb-3">
+              {t('checkIn.noOfflineData')}
+            </p>
+            <Button
+              onClick={downloadTicketsForOffline}
+              disabled={isDownloading || !isOnline}
+              className="w-full"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              {t('checkIn.downloadForOffline')}
+            </Button>
+          </div>
+        )}
+      </Card>
+
       {/* Scanner Area */}
       <Card className="overflow-hidden">
         <div className="relative">
-          {/* Camera Preview - must have explicit dimensions for html5-qrcode */}
           <div 
             id="qr-reader" 
             className="w-full"
@@ -263,7 +420,6 @@ export function QRScanner({ eventId }: QRScannerProps) {
             }}
           />
           
-          {/* Placeholder when not scanning */}
           {!isScanning && (
             <div className="w-full aspect-square bg-gradient-to-br from-muted to-muted/50 flex flex-col items-center justify-center">
               <div className="w-64 h-64 border-2 border-dashed border-muted-foreground/30 rounded-2xl flex items-center justify-center">
@@ -272,6 +428,11 @@ export function QRScanner({ eventId }: QRScannerProps) {
               <p className="mt-4 text-muted-foreground">
                 {t('checkIn.scanTicket')}
               </p>
+              {!isOnline && !hasOfflineData && (
+                <p className="mt-2 text-sm text-amber-500">
+                  {t('checkIn.downloadFirst')}
+                </p>
+              )}
             </div>
           )}
 
@@ -282,6 +443,12 @@ export function QRScanner({ eventId }: QRScannerProps) {
               <p className="text-2xl font-bold mb-1">{t('checkIn.success')}</p>
               <p className="text-xl">{successOverlay.name}</p>
               <p className="text-sm opacity-80 mt-1">{successOverlay.type}</p>
+              {successOverlay.isOffline && (
+                <p className="text-xs opacity-60 mt-2 flex items-center gap-1">
+                  <CloudOff className="h-3 w-3" />
+                  {t('checkIn.savedOffline')}
+                </p>
+              )}
             </div>
           )}
 
@@ -308,6 +475,7 @@ export function QRScanner({ eventId }: QRScannerProps) {
             size="lg"
             variant={isScanning ? "destructive" : "default"}
             className="w-full h-12"
+            disabled={!isOnline && !hasOfflineData}
           >
             {isScanning ? (
               <>
@@ -343,7 +511,7 @@ export function QRScanner({ eventId }: QRScannerProps) {
               <ScanLine className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{totalTickets}</p>
+              <p className="text-2xl font-bold">{isOnline ? totalTickets : offlineTicketCount}</p>
               <p className="text-sm text-muted-foreground">{t('checkIn.total')}</p>
             </div>
           </div>
@@ -365,8 +533,12 @@ export function QRScanner({ eventId }: QRScannerProps) {
                 className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 bg-emerald-500/10 rounded-full">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <div className={`p-1.5 rounded-full ${checkIn.isOffline ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
+                    {checkIn.isOffline ? (
+                      <CloudOff className="h-4 w-4 text-amber-500" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    )}
                   </div>
                   <div>
                     <p className="font-medium">{checkIn.guestName}</p>
