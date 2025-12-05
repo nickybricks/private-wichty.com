@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending ticket confirmation to:", participant_email);
 
-    const ticketUrl = `${req.headers.get("origin") || "https://wichty.de"}/ticket/${ticket_code}`;
+    const ticketUrl = `${req.headers.get("origin") || "https://wichty.com"}/ticket/${ticket_code}`;
     
     const isGerman = language === 'de';
 
@@ -160,7 +160,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "wichty <tickets@wichty.de>",
+        from: "wichty <tickets@wichty.com>",
         to: [participant_email],
         subject,
         html,
