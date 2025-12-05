@@ -203,23 +203,35 @@ export function QRScanner({ eventId }: QRScannerProps) {
   };
 
   const startScanner = async () => {
+    // Set scanning state first so the container is visible
+    setIsScanning(true);
+    
+    // Small delay to ensure DOM is updated
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     try {
-      const html5QrCode = new Html5Qrcode("qr-reader");
+      const html5QrCode = new Html5Qrcode("qr-reader", {
+        verbose: false,
+        formatsToSupport: [0] // QR_CODE only
+      });
       scannerRef.current = html5QrCode;
+      
+      const containerWidth = document.getElementById("qr-reader")?.clientWidth || 300;
+      const qrboxSize = Math.min(250, containerWidth - 50);
       
       await html5QrCode.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: qrboxSize, height: qrboxSize },
+          aspectRatio: 1,
         },
         handleScan,
         () => {} // Ignore scan failures
       );
-      
-      setIsScanning(true);
     } catch (error) {
       console.error("Error starting scanner:", error);
+      setIsScanning(false);
       toast.error(t('checkIn.cameraPermission'));
     }
   };
@@ -241,10 +253,14 @@ export function QRScanner({ eventId }: QRScannerProps) {
       {/* Scanner Area */}
       <Card className="overflow-hidden">
         <div className="relative">
-          {/* Camera Preview */}
+          {/* Camera Preview - must have explicit dimensions for html5-qrcode */}
           <div 
             id="qr-reader" 
-            className={`w-full aspect-square bg-muted ${!isScanning ? 'hidden' : ''}`}
+            className="w-full"
+            style={{ 
+              display: isScanning ? 'block' : 'none',
+              minHeight: isScanning ? '300px' : '0'
+            }}
           />
           
           {/* Placeholder when not scanning */}
