@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CreateEventDrawer } from "@/components/CreateEventDrawer";
+import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 
 interface Event {
   id: string;
@@ -43,6 +44,8 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventPreviewOpen, setEventPreviewOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -256,7 +259,10 @@ export default function Dashboard() {
               <Card
                 key={event.id}
                 className="p-5 shadow-medium hover:shadow-strong transition-shadow cursor-pointer"
-                onClick={() => navigate(`/event/${event.id}`)}
+                onClick={() => {
+                  setSelectedEventId(event.id);
+                  setEventPreviewOpen(true);
+                }}
               >
                 <div className="flex gap-4">
                   {/* Image */}
@@ -338,6 +344,13 @@ export default function Dashboard() {
       <CreateEventDrawer 
         open={createDrawerOpen} 
         onOpenChange={setCreateDrawerOpen} 
+      />
+      
+      <EventPreviewSheet
+        eventId={selectedEventId}
+        open={eventPreviewOpen}
+        onOpenChange={setEventPreviewOpen}
+        user={user}
       />
     </div>
   );
