@@ -35,8 +35,12 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[10px] border bg-background",
+        "fixed z-50 flex flex-col rounded-t-[10px] border bg-background",
+        // Mobile: full width, attached to bottom
+        "inset-x-0 bottom-0",
         fullScreenOnMobile ? "h-[100dvh] max-h-[100dvh]" : "mt-24 h-auto max-h-[95vh]",
+        // Desktop: centered floating popup
+        "md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:bottom-8 md:rounded-2xl md:max-h-[90vh]",
         className,
       )}
       {...props}
