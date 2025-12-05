@@ -55,6 +55,42 @@ export default function Event() {
         }
         
         if (data) {
+          // Create ticket for the participant
+          const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          
+          await supabase
+            .from("tickets")
+            .insert({
+              participant_id: data.id,
+              event_id: id,
+              ticket_code: ticketCode,
+            });
+
+          // Get event details for confirmation email
+          const { data: eventDetails } = await supabase
+            .from("events")
+            .select("name, event_date, event_time, location")
+            .eq("id", id)
+            .single();
+
+          // Send ticket confirmation email (fire and forget)
+          if (session.user.email) {
+            supabase.functions.invoke('send-ticket-confirmation', {
+              body: {
+                participant_id: data.id,
+                event_id: id,
+                ticket_code: ticketCode,
+                participant_name: decodeURIComponent(participantName),
+                participant_email: session.user.email,
+                event_name: eventDetails?.name || '',
+                event_date: eventDetails?.event_date,
+                event_time: eventDetails?.event_time,
+                event_location: eventDetails?.location,
+                language: i18n.language,
+              },
+            }).catch(err => console.error("Failed to send ticket email:", err));
+          }
+
           toast.success(t('joinSuccess'));
         }
 

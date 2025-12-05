@@ -14,6 +14,7 @@ import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Ticket from "./pages/Ticket";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/datenschutz" element={<Datenschutz />} />
           <Route path="/ratgeber" element={<Blog />} />
           <Route path="/ratgeber/:slug" element={<BlogPost />} />
+          <Route path="/ticket/:ticketCode" element={<Ticket />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

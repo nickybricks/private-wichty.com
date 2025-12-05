@@ -152,15 +152,54 @@ export function JoinEventSheet({
       }
 
       // For free events, directly add participant
-      const { error } = await supabase
+      const { data: participantData, error } = await supabase
         .from("participants")
         .insert({
           event_id: eventId,
           name: displayName,
           user_id: userId,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create ticket for the participant
+      const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      
+      await supabase
+        .from("tickets")
+        .insert({
+          participant_id: participantData.id,
+          event_id: eventId,
+          ticket_code: ticketCode,
+        });
+
+      // Get user email and event details for confirmation email
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        const { data: eventDetails } = await supabase
+          .from("events")
+          .select("name, event_date, event_time, location")
+          .eq("id", eventId)
+          .single();
+
+        // Send ticket confirmation email (fire and forget)
+        supabase.functions.invoke('send-ticket-confirmation', {
+          body: {
+            participant_id: participantData.id,
+            event_id: eventId,
+            ticket_code: ticketCode,
+            participant_name: displayName,
+            participant_email: user.email,
+            event_name: eventDetails?.name || '',
+            event_date: eventDetails?.event_date,
+            event_time: eventDetails?.event_time,
+            event_location: eventDetails?.location,
+            language: i18n.language,
+          },
+        }).catch(err => console.error("Failed to send ticket email:", err));
+      }
 
       onSuccess();
       setName("");
