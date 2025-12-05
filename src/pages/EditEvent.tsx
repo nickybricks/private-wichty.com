@@ -32,8 +32,10 @@ import {
   MapPin,
   Ticket,
   ChevronRight,
-  FileText
+  FileText,
+  ScanLine
 } from "lucide-react";
+import { QRScanner } from "@/components/QRScanner";
 import { toast } from "sonner";
 
 interface Event {
@@ -385,18 +387,22 @@ export default function EditEvent() {
           <h1 className="text-2xl font-bold mb-6">{t('editEvent.title')}</h1>
 
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="flex justify-start gap-2 mb-6 w-auto bg-muted p-1 rounded-lg">
+            <TabsList className="flex justify-start gap-2 mb-6 w-auto bg-muted p-1 rounded-lg overflow-x-auto">
               <TabsTrigger value="details" className="flex items-center gap-2">
                 <Settings2 className="h-4 w-4" />
-                {t('editEvent.tabs.details')}
+                <span className="hidden sm:inline">{t('editEvent.tabs.details')}</span>
               </TabsTrigger>
               <TabsTrigger value="guests" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                {t('editEvent.tabs.guests')}
+                <span className="hidden sm:inline">{t('editEvent.tabs.guests')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="checkin" className="flex items-center gap-2">
+                <ScanLine className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('checkIn.title')}</span>
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                {t('editEvent.tabs.analytics')}
+                <span className="hidden sm:inline">{t('editEvent.tabs.analytics')}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -691,6 +697,11 @@ export default function EditEvent() {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            {/* Check-In Tab */}
+            <TabsContent value="checkin">
+              <QRScanner eventId={id!} />
             </TabsContent>
 
             {/* Analytics Tab */}

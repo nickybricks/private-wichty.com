@@ -103,5 +103,24 @@
     "addToCalendar": "Zum Kalender hinzufügen",
     "ticketOf": "Ticket {{current}} von {{total}}",
     "goHome": "Zur Startseite"
+  },
+  "checkIn": {
+    "title": "Check-In",
+    "startScanner": "Scanner starten",
+    "stopScanner": "Scanner stoppen",
+    "scanTicket": "QR-Code scannen",
+    "checkedIn": "Eingecheckt",
+    "total": "Gesamt",
+    "recentCheckIns": "Letzte Check-Ins",
+    "noCheckIns": "Noch keine Check-Ins",
+    "success": "Check-In erfolgreich!",
+    "alreadyUsed": "Ticket bereits verwendet",
+    "notFound": "Ticket nicht gefunden",
+    "wrongEvent": "Ticket gehört zu einem anderen Event",
+    "cancelled": "Ticket wurde storniert",
+    "invalidQR": "Ungültiger QR-Code",
+    "cameraPermission": "Bitte erlaube den Kamerazugriff für den Scanner",
+    "error": "Fehler beim Check-In",
+    "unknownGuest": "Unbekannter Gast"
   }
 }
