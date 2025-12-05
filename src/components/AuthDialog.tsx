@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Sparkles, Mail, Lock, Chrome } from "lucide-react";
+import { Loader2, Sparkles, Mail, Lock, Chrome, CheckCircle2, MailOpen } from "lucide-react";
 import { toast } from "sonner";
 
 interface AuthDialogProps {
@@ -22,6 +22,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +50,12 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
 
       if (error) throw error;
 
-      if (data.user) {
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        // Email confirmation is required
+        setShowEmailConfirmation(true);
+      } else if (data.user && data.session) {
+        // No email confirmation required (immediate login)
         toast.success(t('success.signup'));
         onSuccess(data.user.id);
       }
@@ -135,10 +141,34 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
     }
   };
 
+  const handleResendConfirmation = async () => {
+    if (!email) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+      toast.success(t('emailConfirmation.resendSuccess'));
+    } catch (error: any) {
+      console.error("Resend error:", error);
+      toast.error(error.message || t('emailConfirmation.resendError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setEmail("");
     setPassword("");
     setShowForgotPassword(false);
+    setShowEmailConfirmation(false);
   };
 
   return (
@@ -154,7 +184,64 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
           </DialogTitle>
         </DialogHeader>
 
-        {showForgotPassword ? (
+        {showEmailConfirmation ? (
+          <div className="space-y-6 pt-4 text-center">
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MailOpen className="h-10 w-10 text-primary" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">{t('emailConfirmation.title')}</h3>
+              <p className="text-muted-foreground text-sm">
+                {t('emailConfirmation.description')}
+              </p>
+              <p className="font-medium text-foreground">{email}</p>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+              <p>{t('emailConfirmation.hint')}</p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleResendConfirmation}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('loading.sending')}
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    {t('emailConfirmation.resend')}
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setShowEmailConfirmation(false);
+                  setPassword("");
+                }}
+              >
+                {t('emailConfirmation.backToLogin')}
+              </Button>
+            </div>
+          </div>
+        ) : showForgotPassword ? (
           <div className="space-y-4 pt-4">
             <div className="text-center mb-4">
               <p className="text-sm text-muted-foreground">
