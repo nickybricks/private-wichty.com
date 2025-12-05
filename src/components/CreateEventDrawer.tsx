@@ -39,8 +39,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 
 interface CreateEventDrawerProps {
@@ -619,13 +617,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   // Desktop: Use Dialog (centered modal like Notion)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[820px] max-h-[90vh] overflow-y-auto p-0">
-        <div className="px-6 py-4 border-b sticky top-0 bg-background z-10">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">{t('createEvent.drawerTitle')}</DialogTitle>
-          </DialogHeader>
-        </div>
-        <div className="px-6 pb-8">
+      <DialogContent className="max-w-[820px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl animate-scale-in">
+        <div className="px-6 py-6">
           {formContent}
         </div>
       </DialogContent>
