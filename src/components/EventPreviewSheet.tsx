@@ -376,30 +376,54 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             {/* 3. Title */}
             <h2 className="text-xl font-bold tracking-tight">{event.name}</h2>
             
-            {/* 4. Date & Time */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-muted">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+            {/* 4. Date & Time - styled like CreateEventDrawer */}
+            <div className="w-full flex items-center p-3 rounded-xl border border-border/50 bg-background">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {event.event_date ? (
+                    <>
+                      <p className="font-medium truncate">
+                        {format(new Date(event.event_date), "EEEE, d. MMMM", { locale: dateLocale })}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {event.event_time 
+                          ? `${event.event_time.slice(0, 5)} ${i18n.language === 'de' ? 'Uhr' : ''}`
+                          : (i18n.language === 'de' ? 'Ganztägig' : 'All day')}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="font-medium text-muted-foreground truncate">
+                      {t('noDate')}
+                    </p>
+                  )}
+                </div>
               </div>
-              <span className={`text-sm ${event.event_date ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {event.event_date 
-                  ? formatEventDate(event.event_date, event.event_time)
-                  : t('noDate')}
-              </span>
             </div>
             
-            {/* 5. Address/Location - clickable to open Google Maps */}
+            {/* 5. Address/Location - clickable to open Google Maps, styled like CreateEventDrawer */}
             <button 
-              className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-lg p-1 -ml-1 transition-colors"
+              className="w-full flex items-center p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors text-left"
               onClick={() => event.location && openGoogleMaps(event.location)}
               disabled={!event.location}
             >
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-muted">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  {event.location ? (
+                    <>
+                      <p className="font-medium truncate">{event.location.split(',')[0]}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {event.location.split(',').slice(1).join(',').trim() || (i18n.language === 'de' ? 'Veranstaltungsort' : 'Event location')}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="font-medium text-muted-foreground truncate">
+                      {t('noLocation')}
+                    </p>
+                  )}
+                </div>
               </div>
-              <span className={`text-sm ${event.location ? 'text-foreground underline underline-offset-2' : 'text-muted-foreground'}`}>
-                {event.location || t('noLocation')}
-              </span>
             </button>
 
             {/* 6. Tickets Section - bordered card with categories and CTA */}
