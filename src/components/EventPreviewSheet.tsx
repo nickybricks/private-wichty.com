@@ -624,12 +624,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
   // Desktop: Side panel from right
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b flex-shrink-0">
-          <SheetTitle className="text-left">
-            {event?.name || (i18n.language === 'de' ? 'Event' : 'Event')}
-          </SheetTitle>
-        </SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-[440px] p-0 flex flex-col rounded-l-2xl border-l shadow-2xl">
         {content}
       </SheetContent>
     </Sheet>
