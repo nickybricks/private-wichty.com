@@ -287,57 +287,55 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
             <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
           </DrawerHeader>
 
-          <form onSubmit={handleCreateEvent} className="space-y-5">
-            {/* Event Preview Card Style */}
-            <div className="rounded-2xl border border-border overflow-hidden bg-card">
-              {/* Image Upload Area */}
-              <label
-                htmlFor="drawer-image"
-                className="block relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors"
-              >
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt={t('createEvent.preview')}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
-                    </p>
-                  </div>
-                )}
-                <Input
-                  id="drawer-image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
+          <form onSubmit={handleCreateEvent} className="space-y-6">
+            {/* Image Upload Area - Square */}
+            <label
+              htmlFor="drawer-image"
+              className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt={t('createEvent.preview')}
+                  className="h-full w-full object-cover"
                 />
-              </label>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {i18n.language === 'de' ? 'Event-Bild hinzufügen' : 'Add event image'}
+                  </p>
+                </div>
+              )}
+              <Input
+                id="drawer-image"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
 
-              {/* Event Details */}
-              <div className="p-4 space-y-4">
-                {/* Public/Private Toggle */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={isPublic ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsPublic(true)}
-                    className="gap-1.5"
-                  >
-                    <Globe className="h-4 w-4" />
-                    {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={!isPublic ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsPublic(false)}
-                    className="gap-1.5"
+            {/* Event Details */}
+            <div className="space-y-4">
+              {/* Public/Private Toggle */}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant={isPublic ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsPublic(true)}
+                  className="gap-1.5"
+                >
+                  <Globe className="h-4 w-4" />
+                  {i18n.language === 'de' ? 'Öffentlich' : 'Public'}
+                </Button>
+                <Button
+                  type="button"
+                  variant={!isPublic ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsPublic(false)}
+                  className="gap-1.5"
                   >
                     <Lock className="h-4 w-4" />
                     {i18n.language === 'de' ? 'Privat' : 'Private'}
@@ -437,29 +435,27 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                   />
                 </div>
               </div>
-            </div>
 
             {/* Event Options */}
-            <div className="rounded-2xl border border-border overflow-hidden bg-card">
-              <div className="p-4 space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
-                </h3>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                {i18n.language === 'de' ? 'Eventoptionen' : 'Event Options'}
+              </h3>
 
-                {/* Paid/Free */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">
-                        {i18n.language === 'de' ? 'Zahlungen akzeptieren' : 'Accept payments'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {isPaid 
-                          ? (i18n.language === 'de' ? 'Teilnehmer zahlen für das Event' : 'Attendees pay for the event')
-                          : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
-                      </p>
-                    </div>
+              {/* Paid/Free */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">
+                      {i18n.language === 'de' ? 'Zahlungen akzeptieren' : 'Accept payments'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {isPaid 
+                        ? (i18n.language === 'de' ? 'Teilnehmer zahlen für das Event' : 'Attendees pay for the event')
+                        : (i18n.language === 'de' ? 'Kostenlos' : 'Free')}
+                    </p>
+                  </div>
                   </div>
                   <Switch 
                     checked={isPaid} 
@@ -593,7 +589,6 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                   )}
                 </div>
               </div>
-            </div>
 
             <Button
               type="submit"
