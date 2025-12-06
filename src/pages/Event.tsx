@@ -73,20 +73,23 @@ export default function Event() {
             .eq("id", id)
             .single();
 
-          // Send ticket confirmation email (fire and forget)
+          // Send ticket purchase confirmation email (fire and forget)
           if (session.user.email) {
-            supabase.functions.invoke('send-ticket-confirmation', {
+            const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
+            const eventUrl = `${window.location.origin}/event/${id}`;
+
+            supabase.functions.invoke('send-notification', {
               body: {
-                participant_id: data.id,
-                event_id: id,
-                ticket_code: ticketCode,
-                participant_name: decodeURIComponent(participantName),
-                participant_email: session.user.email,
-                event_name: eventDetails?.name || '',
-                event_date: eventDetails?.event_date,
-                event_time: eventDetails?.event_time,
-                event_location: eventDetails?.location,
-                language: i18n.language,
+                type: 'ticket_purchased',
+                recipientEmail: session.user.email,
+                recipientName: decodeURIComponent(participantName),
+                language: i18n.language === 'de' ? 'de' : 'en',
+                eventName: eventDetails?.name || '',
+                eventDate: eventDetails?.event_date,
+                eventTime: eventDetails?.event_time,
+                eventLocation: eventDetails?.location,
+                eventUrl,
+                ticketUrl,
               },
             }).catch(err => console.error("Failed to send ticket email:", err));
           }
