@@ -184,21 +184,24 @@ export function JoinEventSheet({
           .eq("id", eventId)
           .single();
 
-        // Send ticket confirmation email (fire and forget)
-        supabase.functions.invoke('send-ticket-confirmation', {
+        const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
+        const eventUrl = `${window.location.origin}/event/${eventId}`;
+
+        // Send RSVP confirmation email (fire and forget)
+        supabase.functions.invoke('send-notification', {
           body: {
-            participant_id: participantData.id,
-            event_id: eventId,
-            ticket_code: ticketCode,
-            participant_name: displayName,
-            participant_email: user.email,
-            event_name: eventDetails?.name || '',
-            event_date: eventDetails?.event_date,
-            event_time: eventDetails?.event_time,
-            event_location: eventDetails?.location,
-            language: i18n.language,
+            type: 'ticket_rsvp',
+            recipientEmail: user.email,
+            recipientName: displayName,
+            language: i18n.language === 'de' ? 'de' : 'en',
+            eventName: eventDetails?.name || '',
+            eventDate: eventDetails?.event_date,
+            eventTime: eventDetails?.event_time,
+            eventLocation: eventDetails?.location,
+            eventUrl,
+            ticketUrl,
           },
-        }).catch(err => console.error("Failed to send ticket email:", err));
+        }).catch(err => console.error("Failed to send RSVP email:", err));
       }
 
       onSuccess();

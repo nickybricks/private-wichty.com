@@ -253,6 +253,14 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
     
     setIsLeaving(true);
     try {
+      // Get participant name before deleting
+      const { data: participantData } = await supabase
+        .from("participants")
+        .select("name")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .single();
+
       const { error } = await supabase
         .from("participants")
         .delete()
@@ -260,6 +268,22 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      // Send cancellation email (fire and forget)
+      if (user.email && event) {
+        supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'ticket_cancelled',
+            recipientEmail: user.email,
+            recipientName: participantData?.name || user.email,
+            language: i18n.language === 'de' ? 'de' : 'en',
+            eventName: event.name,
+            eventDate: event.event_date,
+            eventTime: event.event_time,
+            eventLocation: event.location,
+          },
+        }).catch(err => console.error("Failed to send cancellation email:", err));
+      }
 
       setIsParticipant(false);
       setShowLeaveConfirm(false);
