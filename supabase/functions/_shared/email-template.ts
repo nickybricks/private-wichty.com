@@ -86,6 +86,7 @@ export interface NotificationEmailContent {
   ticketUrl?: string;
   participantName?: string;
   participantCount?: number;
+  checkedInCount?: number;
   ticketCount?: number;
   revenue?: string;
   customMessage?: string;
@@ -385,8 +386,8 @@ export function getNotificationContent(content: NotificationEmailContent): {
     },
     event_ended: {
       subject: {
-        de: `Event beendet: ${content.eventName}`,
-        en: `Event ended: ${content.eventName}`,
+        de: `Event Zusammenfassung: ${content.eventName}`,
+        en: `Event Summary: ${content.eventName}`,
       },
       badge: { de: "EVENT BEENDET", en: "EVENT ENDED" },
       title: {
@@ -394,10 +395,10 @@ export function getNotificationContent(content: NotificationEmailContent): {
         en: `That's a wrap! 🎊`,
       },
       message: {
-        de: `Hey ${content.recipientName}, dein Event "${content.eventName}" ist vorbei. Insgesamt: ${content.participantCount || 0} Teilnehmer.`,
-        en: `Hey ${content.recipientName}, your event "${content.eventName}" has ended. Total: ${content.participantCount || 0} participants.`,
+        de: `Hey ${content.recipientName}, dein Event "${content.eventName}" ist vorbei.\n\n📊 Statistik:\n• Teilnehmer: ${content.participantCount || 0}\n• Eingecheckt: ${content.checkedInCount || 0} (${content.participantCount ? Math.round(((content.checkedInCount || 0) / content.participantCount) * 100) : 0}%)`,
+        en: `Hey ${content.recipientName}, your event "${content.eventName}" has ended.\n\n📊 Stats:\n• Participants: ${content.participantCount || 0}\n• Checked in: ${content.checkedInCount || 0} (${content.participantCount ? Math.round(((content.checkedInCount || 0) / content.participantCount) * 100) : 0}%)`,
       },
-      buttonText: { de: "Event-Statistik ansehen", en: "View Event Statistics" },
+      buttonText: { de: "Event ansehen", en: "View Event" },
       getButtonUrl: () => content.eventUrl || baseUrl,
     },
     event_deleted: {
