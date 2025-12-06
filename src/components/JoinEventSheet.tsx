@@ -12,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, CreditCard, Check } from "lucide-react";
+import { Loader2, User, CreditCard, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface JoinEventSheetProps {
@@ -24,6 +24,7 @@ interface JoinEventSheetProps {
   priceCents?: number;
   currency?: string;
   eventName?: string;
+  requiresApproval?: boolean;
 }
 
 interface UserProfile {
@@ -42,6 +43,7 @@ export function JoinEventSheet({
   priceCents = 0,
   currency = 'eur',
   eventName = '',
+  requiresApproval = false,
 }: JoinEventSheetProps) {
   const { t, i18n } = useTranslation('event');
   const { t: ta } = useTranslation('auth');
@@ -50,13 +52,17 @@ export function JoinEventSheet({
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [existingRequest, setExistingRequest] = useState<{ status: string } | null>(null);
 
   // Fetch user profile when sheet opens
   useEffect(() => {
     if (open) {
       fetchUserProfile();
+      if (requiresApproval) {
+        checkExistingRequest();
+      }
     }
-  }, [open]);
+  }, [open, requiresApproval]);
 
   const fetchUserProfile = async () => {
     setLoadingProfile(true);
@@ -91,6 +97,31 @@ export function JoinEventSheet({
     }
   };
 
+  const checkExistingRequest = async () => {
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("join_requests")
+        .select("status")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .single();
+      
+      setExistingRequest(data);
+    } else {
+      const { data } = await supabase
+        .from("join_requests")
+        .select("status")
+        .eq("event_id", eventId)
+        .eq("user_id", userId)
+        .single();
+      
+      setExistingRequest(data);
+    }
+  };
+
   const getProfileDisplayName = (profile: UserProfile | null): string => {
     if (!profile) return "";
     if (profile.first_name && profile.last_name) {
@@ -109,6 +140,83 @@ export function JoinEventSheet({
     }).format(cents / 100);
   };
 
+  const handleJoinRequest = async (displayName: string) => {
+    // Create join request instead of direct participant
+    const { error } = await supabase
+      .from("join_requests")
+      .insert({
+        event_id: eventId,
+        user_id: userId!,
+        name: displayName,
+        status: 'pending',
+      });
+
+    if (error) {
+      if (error.code === '23505') {
+        toast.error(t('joinRequests.alreadyRequested'));
+      } else {
+        throw error;
+      }
+      return;
+    }
+
+    // Get event details for notifications
+    const { data: eventDetails } = await supabase
+      .from("events")
+      .select("name, event_date, event_time, location, user_id")
+      .eq("id", eventId)
+      .single();
+
+    const eventUrl = `${window.location.origin}/event/${eventId}`;
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Send join_request_sent notification to guest
+    if (user?.email) {
+      supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'join_request_sent',
+          recipientEmail: user.email,
+          recipientName: displayName,
+          language: i18n.language === 'de' ? 'de' : 'en',
+          eventName: eventDetails?.name || eventName,
+          eventDate: eventDetails?.event_date,
+          eventTime: eventDetails?.event_time,
+          eventLocation: eventDetails?.location,
+          eventUrl,
+        },
+      }).catch(err => console.error("Failed to send join request email:", err));
+    }
+
+    // Send new_join_request notification to host
+    if (eventDetails?.user_id) {
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("display_name, first_name, notify_organizing")
+        .eq("id", eventDetails.user_id)
+        .single();
+
+      if (hostProfile?.notify_organizing !== false) {
+        supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'new_join_request',
+            recipientUserId: eventDetails.user_id,
+            recipientName: hostProfile?.first_name || hostProfile?.display_name || 'Host',
+            language: i18n.language === 'de' ? 'de' : 'en',
+            eventName: eventDetails?.name || eventName,
+            eventDate: eventDetails?.event_date,
+            eventTime: eventDetails?.event_time,
+            eventLocation: eventDetails?.location,
+            eventUrl,
+            participantName: displayName,
+          },
+        }).catch(err => console.error("Failed to send host notification:", err));
+      }
+    }
+
+    toast.success(t('joinRequests.requestSent'));
+    onOpenChange(false);
+  };
+
   const handleJoin = async () => {
     const displayName = name.trim() || getProfileDisplayName(userProfile);
     
@@ -125,6 +233,12 @@ export function JoinEventSheet({
     setLoading(true);
 
     try {
+      // For events requiring approval (non-paid), create a join request
+      if (requiresApproval && !isPaidEvent) {
+        await handleJoinRequest(displayName);
+        return;
+      }
+
       // For paid events, redirect to Stripe checkout
       if (isPaidEvent && priceCents > 0) {
         const { data: { session } } = await supabase.auth.getSession();
@@ -211,9 +325,6 @@ export function JoinEventSheet({
             .eq("id", eventDetails.user_id)
             .single();
 
-          // Get host email from auth (we need to call a function or use the host's user_id)
-          const { data: hostUser } = await supabase.auth.admin?.getUserById?.(eventDetails.user_id) || { data: null };
-          
           // Since we can't get host email from client, we'll use send-notification with user_id
           if (hostProfile?.notify_organizing !== false) {
             supabase.functions.invoke('send-notification', {
@@ -247,6 +358,30 @@ export function JoinEventSheet({
   const profileName = getProfileDisplayName(userProfile);
   const hasProfile = !!profileName;
 
+  // If user has a pending request, show status
+  if (existingRequest?.status === 'pending') {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-auto">
+          <SheetHeader className="space-y-3 pb-6">
+            <SheetTitle className="text-2xl">{t('join.title')}</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col items-center gap-4 py-8">
+            <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center">
+              <Clock className="h-8 w-8 text-amber-600" />
+            </div>
+            <p className="text-lg font-medium text-center">{t('joinRequests.requestPending')}</p>
+            <p className="text-muted-foreground text-center">
+              {i18n.language === 'de' 
+                ? 'Der Veranstalter wird deine Anfrage prüfen.' 
+                : 'The host will review your request.'}
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto">
@@ -257,6 +392,12 @@ export function JoinEventSheet({
               {i18n.language === 'de' 
                 ? 'Schließe den Kauf ab, um am Event teilzunehmen.' 
                 : 'Complete your purchase to join the event.'}
+            </SheetDescription>
+          ) : requiresApproval ? (
+            <SheetDescription>
+              {i18n.language === 'de' 
+                ? 'Deine Anfrage wird vom Veranstalter geprüft.' 
+                : 'Your request will be reviewed by the host.'}
             </SheetDescription>
           ) : (
             <SheetDescription>
@@ -323,7 +464,7 @@ export function JoinEventSheet({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {t('join.loading')}
+                {requiresApproval && !isPaidEvent ? t('join.requestLoading') : t('join.loading')}
               </>
             ) : isPaidEvent && priceCents > 0 ? (
               <>
@@ -332,6 +473,8 @@ export function JoinEventSheet({
                   ? `${formatPrice(priceCents, currency)} zahlen` 
                   : `Pay ${formatPrice(priceCents, currency)}`}
               </>
+            ) : requiresApproval ? (
+              t('join.requestButton')
             ) : (
               t('join.button')
             )}

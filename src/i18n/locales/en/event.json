@@ -39,13 +39,30 @@
     "title": "Who's coming",
     "close": "Close"
   },
+  "joinRequests": {
+    "title": "Requests",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "approve": "Approve",
+    "reject": "Reject",
+    "noRequests": "No pending requests",
+    "approveSuccess": "Request approved!",
+    "rejectSuccess": "Request rejected",
+    "error": "Error processing request",
+    "requestSent": "Request sent!",
+    "requestPending": "Your request is being reviewed",
+    "alreadyRequested": "You have already requested to join"
+  },
   "join": {
     "title": "Join event",
     "description": "Enter your name to join the event.",
     "yourName": "Your name",
     "namePlaceholder": "e.g. John Smith",
     "button": "Join",
+    "requestButton": "Send request",
     "loading": "Joining...",
+    "requestLoading": "Sending request...",
     "error": "Error joining"
   },
   "edit": {
