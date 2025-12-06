@@ -29,8 +29,8 @@ export const EMAIL_BRANDING = {
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   assets: {
-    logoUrl: "https://eaff4405-d588-4cf9-9450-641aa6e38986.lovableproject.com/email-logo.png",
-    logoSize: "115px",
+    logoUrl: "https://wichty.com/email-logo.png",
+    logoSize: "48px",
   },
   sender: {
     tickets: "Wichty <tickets@wichty.com>",
@@ -511,12 +511,12 @@ export function generateEmailHtml(content: EmailContent): string {
             <table width="100%" cellpadding="0" cellspacing="0" style="max-width: ${styles.maxWidth}; background-color: ${colors.card}; border-radius: ${styles.cardBorderRadius}; overflow: hidden; box-shadow: ${styles.boxShadow};">
               
               ${
-                content.showLogo
+                content.showLogo !== false
                   ? `
               <!-- Logo Header -->
               <tr>
                 <td style="padding: 32px 24px 16px; text-align: center;">
-                  <img src="${assets.logoUrl}" alt="wichty" width="${assets.logoSize}" height="${assets.logoSize}" style="width: ${assets.logoSize}; height: ${assets.logoSize}; display: block; margin: 0 auto;">
+                  <img src="${assets.logoUrl}" alt="wichty" width="48" height="48" style="width: ${assets.logoSize}; height: ${assets.logoSize}; display: block; margin: 0 auto;">
                 </td>
               </tr>
               `
@@ -525,7 +525,7 @@ export function generateEmailHtml(content: EmailContent): string {
               
               <!-- Header Badge -->
               <tr>
-                <td style="padding: ${content.showLogo ? "16px" : "32px"} 24px 24px; text-align: center;">
+                <td style="padding: ${content.showLogo !== false ? "8px" : "32px"} 24px 24px; text-align: center;">
                   <div style="display: inline-block; background-color: ${colors.badgeBg}; padding: 6px 16px; border-radius: ${styles.badgeBorderRadius}; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: ${colors.textMuted};">
                     ${content.badge}
                   </div>
@@ -632,7 +632,7 @@ export function generateTicketEmailHtml(content: {
   ticketUrl: string;
   language: "de" | "en";
 }): string {
-  const { colors, styles } = EMAIL_BRANDING;
+  const { colors, styles, assets } = EMAIL_BRANDING;
   const isGerman = content.language === "de";
   const footerBranding = EMAIL_BRANDING.footer[content.language];
 
@@ -648,9 +648,16 @@ export function generateTicketEmailHtml(content: {
         <tr>
           <td align="center">
             <table width="100%" cellpadding="0" cellspacing="0" style="max-width: ${styles.maxWidth}; background-color: ${colors.card}; border-radius: ${styles.cardBorderRadius}; overflow: hidden; box-shadow: ${styles.boxShadow};">
+              <!-- Logo Header -->
+              <tr>
+                <td style="padding: 32px 24px 16px; text-align: center;">
+                  <img src="${assets.logoUrl}" alt="wichty" width="48" height="48" style="width: ${assets.logoSize}; height: ${assets.logoSize}; display: block; margin: 0 auto;">
+                </td>
+              </tr>
+              
               <!-- Header -->
               <tr>
-                <td style="padding: 32px 24px 24px; text-align: center;">
+                <td style="padding: 8px 24px 24px; text-align: center;">
                   <div style="display: inline-block; background-color: ${colors.badgeBg}; padding: 6px 16px; border-radius: ${styles.badgeBorderRadius}; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: ${colors.textMuted};">
                     TICKET
                   </div>
@@ -741,7 +748,7 @@ export function generateTicketEmailHtml(content: {
 
 // Generate notification email with event details section
 export function generateNotificationEmailHtml(content: NotificationEmailContent): string {
-  const { colors, styles } = EMAIL_BRANDING;
+  const { colors, styles, assets } = EMAIL_BRANDING;
   const notificationContent = getNotificationContent(content);
   const footerBranding = EMAIL_BRANDING.footer[content.language];
 
@@ -759,9 +766,16 @@ export function generateNotificationEmailHtml(content: NotificationEmailContent)
         <tr>
           <td align="center">
             <table width="100%" cellpadding="0" cellspacing="0" style="max-width: ${styles.maxWidth}; background-color: ${colors.card}; border-radius: ${styles.cardBorderRadius}; overflow: hidden; box-shadow: ${styles.boxShadow};">
+              <!-- Logo Header -->
+              <tr>
+                <td style="padding: 32px 24px 16px; text-align: center;">
+                  <img src="${assets.logoUrl}" alt="wichty" width="48" height="48" style="width: ${assets.logoSize}; height: ${assets.logoSize}; display: block; margin: 0 auto;">
+                </td>
+              </tr>
+              
               <!-- Header Badge -->
               <tr>
-                <td style="padding: 32px 24px 24px; text-align: center;">
+                <td style="padding: 8px 24px 24px; text-align: center;">
                   <div style="display: inline-block; background-color: ${colors.badgeBg}; padding: 6px 16px; border-radius: ${styles.badgeBorderRadius}; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: ${colors.textMuted};">
                     ${notificationContent.badge}
                   </div>
