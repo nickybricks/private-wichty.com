@@ -77,7 +77,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build the confirmation URL using Supabase's verification endpoint
     // This URL will verify the token and redirect to the app
-    const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.verification_type}&redirect_to=${encodeURIComponent(baseUrl)}`;
+    // Note: For signup verification, the type must be 'signup' (not 'email')
+    const getVerificationType = (actionType: string, verType: string): string => {
+      // Map action types to correct verification types for Supabase
+      switch (actionType) {
+        case 'signup':
+          return 'signup';
+        case 'recovery':
+          return 'recovery';
+        case 'magiclink':
+          return 'magiclink';
+        case 'invite':
+          return 'invite';
+        case 'email_change':
+          return 'email_change';
+        default:
+          return verType;
+      }
+    };
+
+    const verificationType = getVerificationType(email_data.email_action_type, email_data.verification_type);
+    const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${verificationType}&redirect_to=${encodeURIComponent(baseUrl)}`;
 
     switch (email_data.email_action_type) {
       case 'signup':
