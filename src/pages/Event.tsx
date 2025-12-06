@@ -69,7 +69,7 @@ export default function Event() {
           // Get event details for confirmation email
           const { data: eventDetails } = await supabase
             .from("events")
-            .select("name, event_date, event_time, location")
+            .select("name, event_date, event_time, location, user_id")
             .eq("id", id)
             .single();
 
@@ -77,12 +77,13 @@ export default function Event() {
           if (session.user.email) {
             const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
             const eventUrl = `${window.location.origin}/event/${id}`;
+            const decodedName = decodeURIComponent(participantName);
 
             supabase.functions.invoke('send-notification', {
               body: {
                 type: 'ticket_purchased',
                 recipientEmail: session.user.email,
-                recipientName: decodeURIComponent(participantName),
+                recipientName: decodedName,
                 language: i18n.language === 'de' ? 'de' : 'en',
                 eventName: eventDetails?.name || '',
                 eventDate: eventDetails?.event_date,
@@ -92,6 +93,32 @@ export default function Event() {
                 ticketUrl,
               },
             }).catch(err => console.error("Failed to send ticket email:", err));
+
+            // Send notification to host (new purchase)
+            if (eventDetails?.user_id && eventDetails.user_id !== session.user.id) {
+              const { data: hostProfile } = await supabase
+                .from("profiles")
+                .select("display_name, first_name, last_name, notify_organizing")
+                .eq("id", eventDetails.user_id)
+                .single();
+
+              if (hostProfile?.notify_organizing !== false) {
+                supabase.functions.invoke('send-notification', {
+                  body: {
+                    type: 'new_purchase',
+                    recipientUserId: eventDetails.user_id,
+                    recipientName: hostProfile?.first_name || hostProfile?.display_name || 'Host',
+                    language: i18n.language === 'de' ? 'de' : 'en',
+                    eventName: eventDetails?.name || '',
+                    eventDate: eventDetails?.event_date,
+                    eventTime: eventDetails?.event_time,
+                    eventLocation: eventDetails?.location,
+                    eventUrl,
+                    participantName: decodedName,
+                  },
+                }).catch(err => console.error("Failed to send host notification:", err));
+              }
+            }
           }
 
           toast.success(t('joinSuccess'));

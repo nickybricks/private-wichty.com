@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import {
   EMAIL_BRANDING,
@@ -18,7 +19,8 @@ const corsHeaders = {
 
 interface NotificationRequest {
   type: NotificationType;
-  recipientEmail: string;
+  recipientEmail?: string;
+  recipientUserId?: string; // Alternative: fetch email from user ID
   recipientName: string;
   language?: "de" | "en";
   // Event-related fields
@@ -49,14 +51,56 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Received notification request:", {
       type: request.type,
       recipientEmail: request.recipientEmail,
+      recipientUserId: request.recipientUserId,
       eventName: request.eventName,
     });
 
     // Validate required fields
-    if (!request.type || !request.recipientEmail || !request.recipientName) {
+    if (!request.type || !request.recipientName) {
       console.error("Missing required fields:", request);
       return new Response(
-        JSON.stringify({ error: "Missing required fields: type, recipientEmail, recipientName" }),
+        JSON.stringify({ error: "Missing required fields: type, recipientName" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Get recipient email - either directly provided or fetched from user ID
+    let recipientEmail = request.recipientEmail;
+    
+    if (!recipientEmail && request.recipientUserId) {
+      // Fetch email from Supabase auth using service role
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(
+        request.recipientUserId
+      );
+
+      if (userError || !userData.user?.email) {
+        console.error("Failed to fetch user email:", userError);
+        return new Response(
+          JSON.stringify({ error: "Could not fetch recipient email" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+
+      recipientEmail = userData.user.email;
+      console.log("Fetched email for user:", request.recipientUserId, "->", recipientEmail);
+    }
+
+    if (!recipientEmail) {
+      console.error("No recipient email provided or found");
+      return new Response(
+        JSON.stringify({ error: "Missing recipientEmail or recipientUserId" }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -70,7 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
     const notificationContent: NotificationEmailContent = {
       type: request.type,
       language,
-      recipientEmail: request.recipientEmail,
+      recipientEmail,
       recipientName: request.recipientName,
       eventName: request.eventName,
       eventDate: request.eventDate,
@@ -112,14 +156,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email:", {
       from: sender,
-      to: request.recipientEmail,
+      to: recipientEmail,
       subject: emailContent.subject,
     });
 
     // Send email via Resend
     const emailResponse = await resend.emails.send({
       from: sender,
-      to: [request.recipientEmail],
+      to: [recipientEmail],
       subject: emailContent.subject,
       html,
     });

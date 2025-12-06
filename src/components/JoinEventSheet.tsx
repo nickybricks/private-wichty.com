@@ -180,14 +180,14 @@ export function JoinEventSheet({
       if (user?.email) {
         const { data: eventDetails } = await supabase
           .from("events")
-          .select("name, event_date, event_time, location")
+          .select("name, event_date, event_time, location, user_id")
           .eq("id", eventId)
           .single();
 
         const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
         const eventUrl = `${window.location.origin}/event/${eventId}`;
 
-        // Send RSVP confirmation email (fire and forget)
+        // Send RSVP confirmation email to guest (fire and forget)
         supabase.functions.invoke('send-notification', {
           body: {
             type: 'ticket_rsvp',
@@ -202,6 +202,36 @@ export function JoinEventSheet({
             ticketUrl,
           },
         }).catch(err => console.error("Failed to send RSVP email:", err));
+
+        // Send notification to host (if they have notifications enabled)
+        if (eventDetails?.user_id) {
+          const { data: hostProfile } = await supabase
+            .from("profiles")
+            .select("display_name, first_name, last_name, notify_organizing")
+            .eq("id", eventDetails.user_id)
+            .single();
+
+          // Get host email from auth (we need to call a function or use the host's user_id)
+          const { data: hostUser } = await supabase.auth.admin?.getUserById?.(eventDetails.user_id) || { data: null };
+          
+          // Since we can't get host email from client, we'll use send-notification with user_id
+          if (hostProfile?.notify_organizing !== false) {
+            supabase.functions.invoke('send-notification', {
+              body: {
+                type: 'new_rsvp',
+                recipientUserId: eventDetails.user_id,
+                recipientName: hostProfile?.first_name || hostProfile?.display_name || 'Host',
+                language: i18n.language === 'de' ? 'de' : 'en',
+                eventName: eventDetails?.name || '',
+                eventDate: eventDetails?.event_date,
+                eventTime: eventDetails?.event_time,
+                eventLocation: eventDetails?.location,
+                eventUrl,
+                participantName: displayName,
+              },
+            }).catch(err => console.error("Failed to send host notification:", err));
+          }
+        }
       }
 
       onSuccess();
