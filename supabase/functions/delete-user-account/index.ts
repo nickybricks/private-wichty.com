@@ -41,12 +41,23 @@ Deno.serve(async (req) => {
     }
 
     const userId = user.id
+    const userEmail = user.email
     console.log('Deleting account for user:', userId)
 
     // Create admin client with service role key
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
+
+    // Get user profile for name and language
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('display_name, first_name, language')
+      .eq('id', userId)
+      .single()
+
+    const userName = profile?.display_name || profile?.first_name || 'User'
+    const userLanguage = (profile?.language as 'de' | 'en') || 'de'
 
     // Delete in correct order to respect foreign key constraints:
     
@@ -144,6 +155,30 @@ Deno.serve(async (req) => {
     }
 
     console.log('Successfully deleted user:', userId)
+
+    // 11. Send confirmation email (fire and forget - don't block on this)
+    if (userEmail) {
+      try {
+        const notificationUrl = `${supabaseUrl}/functions/v1/send-notification`
+        await fetch(notificationUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({
+            type: 'account_deleted',
+            recipientEmail: userEmail,
+            recipientName: userName,
+            language: userLanguage,
+          }),
+        })
+        console.log('Account deletion confirmation email sent to:', userEmail)
+      } catch (emailError) {
+        // Don't fail the deletion if email fails
+        console.error('Failed to send account deletion email:', emailError)
+      }
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Account deleted successfully' }),
