@@ -64,7 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
       || user.user_metadata?.name 
       || user.email.split('@')[0];
 
-    const baseUrl = email_data.site_url || 'https://wichty.com';
+    // Always use wichty.com as the base URL for production
+    const baseUrl = 'https://wichty.com';
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || 'https://yskajilatxzwtnunxxvs.supabase.co';
     
     let subject: string;
@@ -97,7 +98,9 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const verificationType = getVerificationType(email_data.email_action_type, email_data.verification_type);
-    const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${verificationType}&redirect_to=${encodeURIComponent(baseUrl)}`;
+    // Redirect to /dashboard after signup verification
+    const redirectAfterVerify = email_data.email_action_type === 'signup' ? `${baseUrl}/dashboard` : baseUrl;
+    const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${verificationType}&redirect_to=${encodeURIComponent(redirectAfterVerify)}`;
 
     switch (email_data.email_action_type) {
       case 'signup':
