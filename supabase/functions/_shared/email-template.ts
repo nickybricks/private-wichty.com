@@ -19,6 +19,7 @@ export const EMAIL_BRANDING = {
     warningText: "#92400e",
     errorBg: "#fee2e2",
     errorText: "#991b1b",
+    accent: "#f87171", // wichty pink/coral accent
   },
   styles: {
     cardBorderRadius: "16px",
@@ -26,6 +27,10 @@ export const EMAIL_BRANDING = {
     badgeBorderRadius: "20px",
     maxWidth: "480px",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  },
+  assets: {
+    logoUrl: "https://wichty.com/email-logo.png",
+    logoSize: "115px",
   },
   sender: {
     tickets: "Wichty <tickets@wichty.com>",
@@ -71,6 +76,9 @@ export interface EmailContent {
   buttonUrl: string;
   footerText?: string;
   language?: "de" | "en";
+  showLogo?: boolean;
+  heroImageUrl?: string;
+  guideSteps?: { icon: string; title: string; description: string }[];
 }
 
 export interface NotificationEmailContent {
@@ -454,9 +462,40 @@ export function getNotificationContent(content: NotificationEmailContent): {
 }
 
 export function generateEmailHtml(content: EmailContent): string {
-  const { colors, styles } = EMAIL_BRANDING;
+  const { colors, styles, assets } = EMAIL_BRANDING;
   const language = content.language || "de";
   const footerBranding = EMAIL_BRANDING.footer[language];
+
+  // Generate guide steps HTML if provided
+  const guideStepsHtml = content.guideSteps
+    ? content.guideSteps
+        .map(
+          (step, index) => `
+        <tr>
+          <td style="padding: ${index === 0 ? "24px" : "12px"} 24px ${index === content.guideSteps!.length - 1 ? "24px" : "12px"};">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="48" valign="top" style="padding-right: 16px;">
+                  <div style="width: 40px; height: 40px; background-color: ${colors.badgeBg}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; text-align: center; line-height: 40px;">
+                    ${step.icon}
+                  </div>
+                </td>
+                <td valign="top">
+                  <p style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: ${colors.textPrimary};">
+                    ${step.title}
+                  </p>
+                  <p style="margin: 0; font-size: 14px; color: ${colors.textMuted}; line-height: 1.4;">
+                    ${step.description}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      `
+        )
+        .join("")
+    : "";
 
   return `
     <!DOCTYPE html>
@@ -470,9 +509,23 @@ export function generateEmailHtml(content: EmailContent): string {
         <tr>
           <td align="center">
             <table width="100%" cellpadding="0" cellspacing="0" style="max-width: ${styles.maxWidth}; background-color: ${colors.card}; border-radius: ${styles.cardBorderRadius}; overflow: hidden; box-shadow: ${styles.boxShadow};">
+              
+              ${
+                content.showLogo
+                  ? `
+              <!-- Logo Header -->
+              <tr>
+                <td style="padding: 32px 24px 16px; text-align: center;">
+                  <img src="${assets.logoUrl}" alt="wichty" width="${assets.logoSize}" height="${assets.logoSize}" style="width: ${assets.logoSize}; height: ${assets.logoSize}; display: block; margin: 0 auto;">
+                </td>
+              </tr>
+              `
+                  : ""
+              }
+              
               <!-- Header Badge -->
               <tr>
-                <td style="padding: 32px 24px 24px; text-align: center;">
+                <td style="padding: ${content.showLogo ? "16px" : "32px"} 24px 24px; text-align: center;">
                   <div style="display: inline-block; background-color: ${colors.badgeBg}; padding: 6px 16px; border-radius: ${styles.badgeBorderRadius}; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: ${colors.textMuted};">
                     ${content.badge}
                   </div>
@@ -503,6 +556,19 @@ export function generateEmailHtml(content: EmailContent): string {
                   : ""
               }
               
+              ${
+                content.heroImageUrl
+                  ? `
+              <!-- Hero Image -->
+              <tr>
+                <td style="padding: 0 24px 24px; text-align: center;">
+                  <img src="${content.heroImageUrl}" alt="Welcome" style="width: 100%; max-width: 400px; height: auto; border-radius: 12px; display: block; margin: 0 auto;">
+                </td>
+              </tr>
+              `
+                  : ""
+              }
+              
               <!-- Message -->
               <tr>
                 <td style="padding: 0 24px 24px; text-align: center;">
@@ -512,9 +578,11 @@ export function generateEmailHtml(content: EmailContent): string {
                 </td>
               </tr>
               
+              ${guideStepsHtml}
+              
               <!-- CTA Button -->
               <tr>
-                <td style="padding: 0 24px 32px; text-align: center;">
+                <td style="padding: ${content.guideSteps ? "8px" : "0"} 24px 32px; text-align: center;">
                   <a href="${content.buttonUrl}" style="display: inline-block; background-color: ${colors.buttonBg}; color: ${colors.buttonText}; text-decoration: none; padding: 14px 32px; border-radius: ${styles.buttonBorderRadius}; font-size: 16px; font-weight: 600;">
                     ${content.buttonText}
                   </a>

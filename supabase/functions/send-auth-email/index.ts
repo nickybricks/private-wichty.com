@@ -102,19 +102,58 @@ const handler = async (req: Request): Promise<Response> => {
     const redirectAfterVerify = email_data.email_action_type === 'signup' ? `${baseUrl}/dashboard` : baseUrl;
     const confirmUrl = `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${verificationType}&redirect_to=${encodeURIComponent(redirectAfterVerify)}`;
 
+    // Additional content for welcome email
+    let showLogo = false;
+    let heroImageUrl: string | undefined;
+    let guideSteps: { icon: string; title: string; description: string }[] | undefined;
+
     switch (email_data.email_action_type) {
       case 'signup':
-        subject = isGerman ? 'Bestätige deine E-Mail' : 'Confirm your email';
+        subject = isGerman ? 'Willkommen bei wichty! 🎉' : 'Welcome to wichty! 🎉';
         badge = isGerman ? 'WILLKOMMEN' : 'WELCOME';
-        title = isGerman ? 'Willkommen bei wichty! ✨' : 'Welcome to wichty! ✨';
+        title = isGerman ? 'Schön, dass du dabei bist!' : 'Great to have you!';
         message = isGerman 
-          ? `Hey ${displayName}, schön dass du dabei bist! Bestätige deine E-Mail-Adresse, um loszulegen.`
-          : `Hey ${displayName}, great to have you! Confirm your email address to get started.`;
-        buttonText = isGerman ? 'E-Mail bestätigen' : 'Confirm Email';
+          ? `Hey ${displayName}, danke dass du dich für wichty entschieden hast! Wir freuen uns, dich in unserer Community begrüßen zu dürfen. Mit wichty kannst du ganz einfach Events erstellen, Tickets verwalten und Teilnehmer begeistern.`
+          : `Hey ${displayName}, thank you for choosing wichty! We're excited to welcome you to our community. With wichty, you can easily create events, manage tickets, and delight your participants.`;
+        buttonText = isGerman ? 'E-Mail bestätigen & loslegen' : 'Confirm Email & Get Started';
         buttonUrl = confirmUrl;
         footerText = isGerman 
           ? 'Falls du dich nicht registriert hast, ignoriere diese E-Mail.'
           : "If you didn't sign up, you can ignore this email.";
+        showLogo = true;
+        guideSteps = isGerman ? [
+          {
+            icon: '📝',
+            title: 'Event erstellen',
+            description: 'Erstelle dein erstes Event in wenigen Klicks – kostenlos oder kostenpflichtig.'
+          },
+          {
+            icon: '🎫',
+            title: 'Tickets verwalten',
+            description: 'Behalte den Überblick über Anmeldungen, Check-ins und Teilnehmer.'
+          },
+          {
+            icon: '📱',
+            title: 'QR-Code Check-in',
+            description: 'Scanne Tickets am Eingang – schnell, einfach und kontaktlos.'
+          }
+        ] : [
+          {
+            icon: '📝',
+            title: 'Create an Event',
+            description: 'Create your first event in just a few clicks – free or paid.'
+          },
+          {
+            icon: '🎫',
+            title: 'Manage Tickets',
+            description: 'Keep track of registrations, check-ins, and participants.'
+          },
+          {
+            icon: '📱',
+            title: 'QR Code Check-in',
+            description: 'Scan tickets at the entrance – fast, easy, and contactless.'
+          }
+        ];
         break;
 
       case 'recovery':
@@ -190,6 +229,9 @@ const handler = async (req: Request): Promise<Response> => {
       buttonUrl,
       footerText,
       language,
+      showLogo,
+      heroImageUrl,
+      guideSteps,
     });
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
