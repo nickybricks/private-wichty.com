@@ -29,7 +29,7 @@ export const EMAIL_BRANDING = {
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   assets: {
-    logoUrl: "https://wichty.com/email-logo.png",
+    logoUrl: "https://eaff4405-d588-4cf9-9450-641aa6e38986.lovableproject.com/email-logo.png",
     logoSize: "115px",
   },
   sender: {
