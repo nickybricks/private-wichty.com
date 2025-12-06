@@ -36,7 +36,16 @@ import {
   ScanLine
 } from "lucide-react";
 import { QRScanner } from "@/components/QRScanner";
+import { JoinRequestsList } from "@/components/JoinRequestsList";
 import { toast } from "sonner";
+
+interface JoinRequest {
+  id: string;
+  user_id: string;
+  name: string;
+  status: string;
+  created_at: string;
+}
 
 interface Event {
   id: string;
@@ -75,6 +84,7 @@ export default function EditEvent() {
   const [user, setUser] = useState<any>(null);
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasTicketSales, setHasTicketSales] = useState(false);
@@ -196,6 +206,17 @@ export default function EditEvent() {
         .order("created_at", { ascending: true });
 
       setParticipants(participantsData || []);
+
+      // Fetch join requests if approval is required
+      if (eventData.requires_approval) {
+        const { data: requestsData } = await supabase
+          .from("join_requests")
+          .select("id, user_id, name, status, created_at")
+          .eq("event_id", id)
+          .order("created_at", { ascending: false });
+
+        setJoinRequests(requestsData || []);
+      }
       
       // Check if there are any ticket sales (for now just check if paid event has participants)
       if (eventData.is_paid && participantsData && participantsData.length > 0) {
@@ -654,49 +675,74 @@ export default function EditEvent() {
             </TabsContent>
 
             {/* Guests Tab */}
-            <TabsContent value="guests" className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">
-                  {t('editEvent.guestList')} ({participants.length})
-                </h2>
-              </div>
-
-              {participants.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">{t('editEvent.noGuests')}</p>
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {participants.map((participant, index) => (
-                    <Card key={participant.id} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className={cn("h-10 w-10", getAvatarColor(index))}>
-                            <AvatarFallback className="bg-transparent text-white text-sm">
-                              {getInitials(participant.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{participant.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(participant.created_at), "dd.MM.yyyy", { locale: dateLocale })}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleRemoveParticipant(participant.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
+            <TabsContent value="guests" className="space-y-6">
+              {/* Join Requests Section - Only show if requires approval and has pending requests */}
+              {requiresApproval && joinRequests.filter(r => r.status === 'pending').length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      {t('joinRequests.title')}
+                      <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                        {joinRequests.filter(r => r.status === 'pending').length}
+                      </span>
+                    </h2>
+                  </div>
+                  <JoinRequestsList
+                    eventId={id!}
+                    requests={joinRequests}
+                    onRequestProcessed={() => {
+                      // Refresh data after processing a request
+                      if (user) fetchEventData(user.id);
+                    }}
+                  />
                 </div>
               )}
+
+              {/* Participants Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">
+                    {t('editEvent.guestList')} ({participants.length})
+                  </h2>
+                </div>
+
+                {participants.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">{t('editEvent.noGuests')}</p>
+                  </Card>
+                ) : (
+                  <div className="space-y-2">
+                    {participants.map((participant, index) => (
+                      <Card key={participant.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className={cn("h-10 w-10", getAvatarColor(index))}>
+                              <AvatarFallback className="bg-transparent text-white text-sm">
+                                {getInitials(participant.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{participant.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(participant.created_at), "dd.MM.yyyy", { locale: dateLocale })}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleRemoveParticipant(participant.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             {/* Check-In Tab */}

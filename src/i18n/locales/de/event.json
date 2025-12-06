@@ -39,13 +39,30 @@
     "title": "Wer kommt",
     "close": "Schließen"
   },
+  "joinRequests": {
+    "title": "Anfragen",
+    "pending": "Ausstehend",
+    "approved": "Genehmigt",
+    "rejected": "Abgelehnt",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "noRequests": "Keine ausstehenden Anfragen",
+    "approveSuccess": "Anfrage genehmigt!",
+    "rejectSuccess": "Anfrage abgelehnt",
+    "error": "Fehler bei der Bearbeitung",
+    "requestSent": "Anfrage gesendet!",
+    "requestPending": "Deine Anfrage wird geprüft",
+    "alreadyRequested": "Du hast bereits eine Anfrage gestellt"
+  },
   "join": {
     "title": "Event beitreten",
     "description": "Gib deinen Namen ein, um dem Event beizutreten.",
     "yourName": "Dein Name",
     "namePlaceholder": "z.B. Max Mustermann",
     "button": "Teilnehmen",
+    "requestButton": "Anfrage senden",
     "loading": "Tritt bei...",
+    "requestLoading": "Sendet Anfrage...",
     "error": "Fehler beim Beitreten"
   },
   "edit": {

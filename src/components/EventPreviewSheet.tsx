@@ -607,6 +607,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
           isPaidEvent={event.is_paid}
           priceCents={event.price_cents}
           currency={event.currency}
+          requiresApproval={event.requires_approval}
           onSuccess={handleJoinSuccess}
         />
       )}
