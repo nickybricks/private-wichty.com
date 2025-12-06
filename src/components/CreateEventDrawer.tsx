@@ -279,6 +279,30 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         }
       }
 
+      // Send event_created notification to host (fire and forget)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, first_name, language, notify_organizing")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.notify_organizing !== false) {
+        const eventUrl = `${window.location.origin}/event/${data.id}`;
+        supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'event_created',
+            recipientUserId: user.id,
+            recipientName: profile?.first_name || profile?.display_name || 'Host',
+            language: profile?.language === 'en' ? 'en' : 'de',
+            eventName: name.trim(),
+            eventDate: format(eventDate, "yyyy-MM-dd"),
+            eventTime: startTime || null,
+            eventLocation: location.trim() || null,
+            eventUrl,
+          },
+        }).catch(err => console.error("Failed to send event created email:", err));
+      }
+
       toast.success(t('createEvent.success'));
       resetForm();
       onOpenChange(false);
