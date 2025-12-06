@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = false
+
+[functions.send-event-reminders]
+verify_jwt = false

@@ -30,6 +30,7 @@ export type Database = {
           location: string | null
           name: string
           price_cents: number | null
+          reminder_sent_at: string | null
           requires_approval: boolean | null
           status: Database["public"]["Enums"]["event_status"]
           target_participants: number
@@ -52,6 +53,7 @@ export type Database = {
           location?: string | null
           name: string
           price_cents?: number | null
+          reminder_sent_at?: string | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
@@ -74,6 +76,7 @@ export type Database = {
           location?: string | null
           name?: string
           price_cents?: number | null
+          reminder_sent_at?: string | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           target_participants?: number
