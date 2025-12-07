@@ -1,0 +1,21 @@
+{
+  "title": "Erkunden",
+  "popularEvents": "Beliebte Veranstaltungen in",
+  "categories": "Kategorien",
+  "cities": "Städte",
+  "all": "Alle",
+  "showAll": "Alle anzeigen",
+  "today": "Heute",
+  "tomorrow": "Morgen",
+  "noEvents": "Keine Veranstaltungen gefunden",
+  "noEventsInCity": "Keine Veranstaltungen in {{city}} gefunden",
+  "noEventsInCategory": "Keine Veranstaltungen in dieser Kategorie gefunden",
+  "selectCity": "Stadt auswählen",
+  "locationPermission": "Standortzugriff erlauben",
+  "locationDenied": "Standortzugriff verweigert. Standard: Berlin",
+  "eventsIn": "Veranstaltungen in",
+  "sortByDate": "Nach Datum",
+  "sortByPopularity": "Nach Beliebtheit",
+  "previous": "Zurück",
+  "next": "Weiter"
+}

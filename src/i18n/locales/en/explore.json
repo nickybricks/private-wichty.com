@@ -1,0 +1,21 @@
+{
+  "title": "Explore",
+  "popularEvents": "Popular events in",
+  "categories": "Categories",
+  "cities": "Cities",
+  "all": "All",
+  "showAll": "Show all",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "noEvents": "No events found",
+  "noEventsInCity": "No events found in {{city}}",
+  "noEventsInCategory": "No events found in this category",
+  "selectCity": "Select city",
+  "locationPermission": "Allow location access",
+  "locationDenied": "Location access denied. Default: Berlin",
+  "eventsIn": "Events in",
+  "sortByDate": "By date",
+  "sortByPopularity": "By popularity",
+  "previous": "Previous",
+  "next": "Next"
+}

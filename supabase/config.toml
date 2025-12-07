@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-event-ended]
 verify_jwt = false
+
+[functions.auto-tag-event]
+verify_jwt = false
