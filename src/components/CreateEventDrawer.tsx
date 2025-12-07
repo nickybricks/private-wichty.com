@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -81,6 +81,9 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [loading, setLoading] = useState(false);
   const [stripeConnected, setStripeConnected] = useState<boolean | null>(null);
   const [checkingStripe, setCheckingStripe] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [isAutoTagging, setIsAutoTagging] = useState(false);
+  const autoTagTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Popup states
   const [dateTimePopupOpen, setDateTimePopupOpen] = useState(false);
@@ -91,6 +94,54 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
+
+  // AI Auto-Tagging function
+  const triggerAutoTagging = useCallback(async (title: string, desc: string) => {
+    if (!title.trim() || !desc.trim()) return;
+    
+    setIsAutoTagging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-tag-event', {
+        body: { 
+          title: title.trim(), 
+          description: desc.trim(),
+          language: i18n.language 
+        }
+      });
+
+      if (error) {
+        console.error('Auto-tag error:', error);
+        return;
+      }
+
+      if (data?.tag) {
+        setTags([data.tag]);
+      }
+    } catch (err) {
+      console.error('Auto-tag failed:', err);
+    } finally {
+      setIsAutoTagging(false);
+    }
+  }, [i18n.language]);
+
+  // Debounced auto-tagging when both title and description are present
+  useEffect(() => {
+    if (autoTagTimeoutRef.current) {
+      clearTimeout(autoTagTimeoutRef.current);
+    }
+
+    if (name.trim() && description.trim() && tags.length === 0) {
+      autoTagTimeoutRef.current = setTimeout(() => {
+        triggerAutoTagging(name, description);
+      }, 1000); // 1 second debounce
+    }
+
+    return () => {
+      if (autoTagTimeoutRef.current) {
+        clearTimeout(autoTagTimeoutRef.current);
+      }
+    };
+  }, [name, description, tags.length, triggerAutoTagging]);
 
   // Check Stripe connection status when drawer opens
   useEffect(() => {
@@ -179,6 +230,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     setCapacityUnlimited(true);
     setMaxCapacity("");
     setTicketCategories([]);
+    setTags([]);
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -247,6 +299,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           location: location.trim() || null,
           city: city || null,
           country: country || null,
+          tags: tags.length > 0 ? tags : null,
           image_url: imageUrl,
           is_paid: hasPaidTickets,
           price_cents: 0,
