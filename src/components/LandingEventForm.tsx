@@ -88,6 +88,27 @@ export function LandingEventForm() {
 
       if (error) throw error;
 
+      // Send event_created notification
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, language")
+        .eq("id", userId)
+        .single();
+
+      const hostName = profile?.display_name || "Host";
+      const language = profile?.language || "de";
+
+      supabase.functions.invoke("send-notification", {
+        body: {
+          type: "event_created",
+          recipientUserId: userId,
+          recipientName: hostName,
+          language,
+          eventName: pendingEvent.name,
+          eventUrl: `${window.location.origin}/event/${data.id}`,
+        },
+      }).catch((err) => console.error("Failed to send event_created notification:", err));
+
       localStorage.removeItem('pendingEvent');
       toast.success(t('createEvent.successCreated'));
       navigate("/dashboard");
@@ -187,6 +208,27 @@ export function LandingEventForm() {
         .single();
 
       if (error) throw error;
+
+      // Send event_created notification
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, language")
+        .eq("id", session.user.id)
+        .single();
+
+      const hostName = profile?.display_name || "Host";
+      const language = profile?.language || "de";
+
+      supabase.functions.invoke("send-notification", {
+        body: {
+          type: "event_created",
+          recipientUserId: session.user.id,
+          recipientName: hostName,
+          language,
+          eventName: name.trim(),
+          eventUrl: `${window.location.origin}/event/${data.id}`,
+        },
+      }).catch((err) => console.error("Failed to send event_created notification:", err));
 
       toast.success(t('createEvent.success'));
       navigate("/dashboard");
