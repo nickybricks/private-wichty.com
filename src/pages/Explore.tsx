@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { CitySelector } from "@/components/explore/CitySelector";
 import { CategoryChips } from "@/components/explore/CategoryChips";
 import { CityCards } from "@/components/explore/CityCards";
 import { PopularEventsCarousel } from "@/components/explore/PopularEventsCarousel";
+import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 import { DEFAULT_CITY } from "@/data/cities";
 import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -25,6 +27,10 @@ export default function Explore() {
   const [loading, setLoading] = useState(true);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  // Event Preview Sheet state
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventPreviewOpen, setEventPreviewOpen] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -137,6 +143,11 @@ export default function Explore() {
     setSelectedTags([]);
   };
 
+  const handleEventClick = (eventId: string) => {
+    setSelectedEventId(eventId);
+    setEventPreviewOpen(true);
+  };
+
   return (
     <>
       <Helmet>
@@ -144,10 +155,10 @@ export default function Explore() {
         <meta name="description" content={`${t("popularEvents")} ${currentCity}`} />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header user={user} />
 
-        <main className="max-w-[var(--max-width)] mx-auto px-4 py-6 space-y-6">
+        <main className="max-w-[var(--max-width)] mx-auto px-4 py-6 space-y-6 flex-1">
           {/* City Header */}
           <div className="flex items-center justify-between">
             <button
@@ -172,7 +183,11 @@ export default function Explore() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <PopularEventsCarousel events={events} language={language} />
+            <PopularEventsCarousel 
+              events={events} 
+              language={language} 
+              onEventClick={handleEventClick}
+            />
           )}
 
           {/* Category Chips */}
@@ -188,12 +203,23 @@ export default function Explore() {
           <CityCards availableCities={availableCities} />
         </main>
 
+        <Footer />
+
         <CitySelector
           open={showCitySelector}
           onOpenChange={setShowCitySelector}
           onCitySelect={setCurrentCity}
           currentCity={currentCity}
         />
+
+        {selectedEventId && (
+          <EventPreviewSheet
+            eventId={selectedEventId}
+            open={eventPreviewOpen}
+            onOpenChange={setEventPreviewOpen}
+            user={user}
+          />
+        )}
       </div>
     </>
   );

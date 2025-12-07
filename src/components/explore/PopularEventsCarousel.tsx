@@ -20,9 +20,10 @@ interface Event {
 interface PopularEventsCarouselProps {
   events: Event[];
   language: "de" | "en";
+  onEventClick?: (eventId: string) => void;
 }
 
-export function PopularEventsCarousel({ events, language }: PopularEventsCarouselProps) {
+export function PopularEventsCarousel({ events, language, onEventClick }: PopularEventsCarouselProps) {
   const { t } = useTranslation("explore");
   const isMobile = useIsMobile();
 
@@ -62,6 +63,7 @@ export function PopularEventsCarousel({ events, language }: PopularEventsCarouse
                     event={event}
                     participantCount={event.attendance_count}
                     showAvatars={false}
+                    onClick={onEventClick ? () => onEventClick(event.id) : undefined}
                   />
                 ))}
               </div>
@@ -81,6 +83,7 @@ export function PopularEventsCarousel({ events, language }: PopularEventsCarouse
           event={event}
           participantCount={event.attendance_count}
           showAvatars={false}
+          onClick={onEventClick ? () => onEventClick(event.id) : undefined}
         />
       ))}
     </div>
