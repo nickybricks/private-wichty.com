@@ -1,10 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Event {
   id: string;
@@ -22,27 +26,12 @@ interface PopularEventsCarouselProps {
 }
 
 export function PopularEventsCarousel({ events, language }: PopularEventsCarouselProps) {
-  const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
   const { t } = useTranslation("explore");
+  const isMobile = useIsMobile();
 
-  const eventsPerPage = 3;
-  const maxEvents = Math.min(events.length, 9);
+  const maxEvents = isMobile ? 9 : 8;
   const displayEvents = events.slice(0, maxEvents);
-  const totalPages = Math.ceil(displayEvents.length / eventsPerPage);
-
-  const currentEvents = displayEvents.slice(
-    currentPage * eventsPerPage,
-    (currentPage + 1) * eventsPerPage
-  );
-
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
-  };
 
   const formatEventDate = (dateStr: string | null) => {
     if (!dateStr) return null;
@@ -62,77 +51,84 @@ export function PopularEventsCarousel({ events, language }: PopularEventsCarouse
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        {currentEvents.map((event) => (
-          <button
-            key={event.id}
-            onClick={() => navigate(`/event/${event.id}`)}
-            className="w-full flex gap-3 p-3 bg-card rounded-xl shadow-sm hover:shadow-md transition-shadow text-left border border-border/50"
-          >
-            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-              {event.image_url ? (
-                <img
-                  src={event.image_url}
-                  alt={event.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <Calendar className="h-8 w-8" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-foreground truncate">{event.name}</h4>
-              {event.event_date && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                  <Calendar className="h-3 w-3" />
-                  {formatEventDate(event.event_date)}
-                  {event.event_time && ` · ${event.event_time}`}
-                </p>
-              )}
-              {event.location && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
-                  <MapPin className="h-3 w-3 flex-shrink-0" />
-                  <span className="truncate">{event.location}</span>
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                <Users className="h-3 w-3" />
-                {event.attendance_count} Teilnehmer
-              </p>
-            </div>
-          </button>
-        ))}
+  const EventCard = ({ event }: { event: Event }) => (
+    <button
+      onClick={() => navigate(`/event/${event.id}`)}
+      className="w-full flex gap-3 p-3 bg-card rounded-xl shadow-sm hover:shadow-md transition-shadow text-left border border-border/50"
+    >
+      <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+        {event.image_url ? (
+          <img
+            src={event.image_url}
+            alt={event.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            <Calendar className="h-6 w-6 md:h-8 md:w-8" />
+          </div>
+        )}
       </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-semibold text-foreground truncate text-sm md:text-base">{event.name}</h4>
+        {event.event_date && (
+          <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1 mt-0.5 md:mt-1">
+            <Calendar className="h-3 w-3" />
+            {formatEventDate(event.event_date)}
+            {event.event_time && ` · ${event.event_time}`}
+          </p>
+        )}
+        {event.location && (
+          <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1 truncate">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{event.location}</span>
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 md:mt-1">
+          <Users className="h-3 w-3" />
+          {event.attendance_count} {language === "de" ? "Teilnehmer" : "attendees"}
+        </p>
+      </div>
+    </button>
+  );
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrevious}
-            disabled={currentPage === 0}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            {t("previous")}
-          </Button>
-          <span className="text-sm text-muted-foreground px-2">
-            {currentPage + 1} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNext}
-            disabled={currentPage === totalPages - 1}
-          >
-            {t("next")}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+  // Mobile: Horizontal carousel with columns of 3 events each
+  if (isMobile) {
+    // Group events into columns of 3
+    const columns: Event[][] = [];
+    for (let i = 0; i < displayEvents.length; i += 3) {
+      columns.push(displayEvents.slice(i, i + 3));
+    }
+
+    return (
+      <Carousel
+        opts={{
+          align: "start",
+          slidesToScroll: 1,
+        }}
+        className="-mx-4"
+      >
+        <CarouselContent className="ml-0">
+          {columns.map((column, colIndex) => (
+            <CarouselItem key={colIndex} className="basis-[85%] pl-4 first:pl-4">
+              <div className="space-y-3 pr-2">
+                {column.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    );
+  }
+
+  // Desktop: 2 columns, 4 per column grid
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {displayEvents.map((event) => (
+        <EventCard key={event.id} event={event} />
+      ))}
     </div>
   );
 }
