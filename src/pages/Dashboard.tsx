@@ -4,12 +4,13 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Plus, Calendar, MapPin } from "lucide-react";
+import { Loader2, Plus, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 import { EventPreviewSheet } from "@/components/EventPreviewSheet";
+import { EventCardUnified } from "@/components/EventCardUnified";
 
 interface Event {
   id: string;
@@ -147,35 +148,6 @@ export default function Dashboard() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
-    return new Date(dateString).toLocaleDateString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const avatarColors = [
-    "bg-rose-500",
-    "bg-amber-500",
-    "bg-emerald-500",
-    "bg-sky-500",
-    "bg-violet-500",
-  ];
-
-  const getAvatarColor = (index: number) => {
-    return avatarColors[index % avatarColors.length];
-  };
 
   if (loading) {
     return (
@@ -255,77 +227,19 @@ export default function Dashboard() {
           }
 
           return (
-            <div className="grid gap-4">
+            <div className="grid gap-3 md:gap-4">
               {filteredEvents.map((event) => (
-              <Card
-                key={event.id}
-                className="p-5 shadow-medium hover:shadow-strong transition-shadow cursor-pointer overflow-hidden"
-                onClick={() => {
-                  setSelectedEventId(event.id);
-                  setEventPreviewOpen(true);
-                }}
-              >
-                <div className="flex gap-4 overflow-hidden">
-                  {/* Image */}
-                  <div className="flex-shrink-0">
-                    {event.image_url ? (
-                      <img
-                        src={event.image_url}
-                        alt={event.name}
-                        className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 md:w-24 md:h-24 bg-muted rounded-xl flex items-center justify-center">
-                        <Calendar className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 overflow-hidden space-y-1">
-                    {/* Date/Time */}
-                    {event.event_date && (
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(event.event_date)}
-                        {event.event_time && ` • ${event.event_time.slice(0, 5)}`}
-                      </p>
-                    )}
-
-                    {/* Title */}
-                    <h3 className="text-lg font-semibold truncate">{event.name}</h3>
-
-                    {/* Location */}
-                    {event.location && (
-                      <div className="flex items-center gap-1.5 text-muted-foreground max-w-full">
-                        <MapPin className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-sm truncate">{event.location}</span>
-                      </div>
-                    )}
-
-                    {/* Participant Avatars */}
-                    {event.participant_count > 0 && (
-                      <div className="flex items-center pt-1">
-                        <div className="flex -space-x-1">
-                          {event.participants.slice(0, 5).map((participant, index) => (
-                            <div
-                              key={participant.id}
-                              className={`w-[1.125rem] h-[1.125rem] rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white text-[7px] font-medium ring-[1.5px] ring-background`}
-                              title={participant.name}
-                            >
-                              {getInitials(participant.name)}
-                            </div>
-                          ))}
-                          {event.participant_count > 5 && (
-                            <div className="h-[1.125rem] px-1 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-[7px] font-medium ring-[1.5px] ring-background">
-                              +{event.participant_count - 5}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
+                <EventCardUnified
+                  key={event.id}
+                  event={event}
+                  participants={event.participants}
+                  participantCount={event.participant_count}
+                  showAvatars={true}
+                  onClick={() => {
+                    setSelectedEventId(event.id);
+                    setEventPreviewOpen(true);
+                  }}
+                />
               ))}
             </div>
           );
