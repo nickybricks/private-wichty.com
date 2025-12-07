@@ -112,7 +112,7 @@ export function EventCardUnified({
 
           {/* Location */}
           {event.location && (
-            <div className="flex items-center gap-1 text-muted-foreground">
+            <div className="flex items-center gap-1 text-muted-foreground min-w-0 overflow-hidden">
               <MapPin className="h-3 w-3 flex-shrink-0" />
               <span className="text-xs md:text-sm truncate">{event.location}</span>
             </div>

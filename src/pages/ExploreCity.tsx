@@ -5,9 +5,11 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { CitySelector } from "@/components/explore/CitySelector";
 import { CategoryChips } from "@/components/explore/CategoryChips";
 import { EventCardUnified } from "@/components/EventCardUnified";
+import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 import { DEFAULT_CITY } from "@/data/cities";
 import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -28,6 +30,10 @@ export default function ExploreCity() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+
+  // Event Preview Sheet state
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventPreviewOpen, setEventPreviewOpen] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -112,6 +118,11 @@ export default function ExploreCity() {
     setSelectedTags([]);
   };
 
+  const handleEventClick = (eventId: string) => {
+    setSelectedEventId(eventId);
+    setEventPreviewOpen(true);
+  };
+
   // Group events by date
   const groupedEvents = events.reduce((groups, event) => {
     const dateKey = event.event_date || "no-date";
@@ -140,10 +151,10 @@ export default function ExploreCity() {
         <title>{t("eventsIn")} {currentCity} | wichty</title>
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <Header user={user} showBackButton />
 
-        <main className="max-w-[var(--max-width)] mx-auto px-4 py-6 space-y-6">
+        <main className="max-w-[var(--max-width)] mx-auto px-4 py-6 space-y-6 flex-1">
           {/* Header */}
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/explore")}>
@@ -192,6 +203,7 @@ export default function ExploreCity() {
                       event={event}
                       participantCount={event.attendance_count}
                       showAvatars={false}
+                      onClick={() => handleEventClick(event.id)}
                     />
                   ))}
                 </div>
@@ -200,12 +212,23 @@ export default function ExploreCity() {
           )}
         </main>
 
+        <Footer />
+
         <CitySelector
           open={showCitySelector}
           onOpenChange={setShowCitySelector}
           onCitySelect={handleCityChange}
           currentCity={currentCity}
         />
+
+        {selectedEventId && (
+          <EventPreviewSheet
+            eventId={selectedEventId}
+            open={eventPreviewOpen}
+            onOpenChange={setEventPreviewOpen}
+            user={user}
+          />
+        )}
       </div>
     </>
   );
