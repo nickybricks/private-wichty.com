@@ -3,9 +3,25 @@ import { useTranslation } from "react-i18next";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { POPULAR_CITIES } from "@/data/cities";
 
-export function CityCards() {
+interface CityCardsProps {
+  availableCities: string[];
+}
+
+export function CityCards({ availableCities }: CityCardsProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("explore");
+
+  // Filter cities to only show those with events
+  const citiesToShow = POPULAR_CITIES.filter(city =>
+    availableCities.some(ac =>
+      ac.toLowerCase().includes(city.name.toLowerCase()) ||
+      city.name.toLowerCase().includes(ac.toLowerCase())
+    )
+  );
+
+  if (citiesToShow.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-3">
@@ -14,7 +30,7 @@ export function CityCards() {
       </h3>
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-3 pb-4">
-          {POPULAR_CITIES.map((city) => (
+          {citiesToShow.map((city) => (
             <button
               key={city.id}
               onClick={() => navigate(`/explore/city/${encodeURIComponent(city.name)}`)}

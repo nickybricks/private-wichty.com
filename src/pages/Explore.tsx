@@ -20,9 +20,11 @@ export default function Explore() {
   const [user, setUser] = useState<any>(null);
   const [currentCity, setCurrentCity] = useState<string>(DEFAULT_CITY);
   const [showCitySelector, setShowCitySelector] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,13 +34,41 @@ export default function Explore() {
     getUser();
   }, []);
 
+  // Fetch available tags and cities from events
+  useEffect(() => {
+    const fetchAvailableFilters = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("tags, city")
+        .eq("is_public", true);
+
+      if (data) {
+        const tags = new Set<string>();
+        const cities = new Set<string>();
+
+        data.forEach(event => {
+          if (event.tags) {
+            event.tags.forEach((tag: string) => tags.add(tag));
+          }
+          if (event.city) {
+            cities.add(event.city);
+          }
+        });
+
+        setAvailableTags(Array.from(tags));
+        setAvailableCities(Array.from(cities));
+      }
+    };
+
+    fetchAvailableFilters();
+  }, []);
+
   // Get user's location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // Reverse geocoding using a simple approach
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
             );
@@ -75,9 +105,9 @@ export default function Explore() {
           query = query.ilike("city", `%${currentCity}%`);
         }
 
-        // Filter by tag
-        if (selectedTag) {
-          query = query.contains("tags", [selectedTag]);
+        // Filter by multiple tags (OR logic)
+        if (selectedTags.length > 0) {
+          query = query.overlaps("tags", selectedTags);
         }
 
         const { data, error } = await query.limit(50);
@@ -93,14 +123,18 @@ export default function Explore() {
     };
 
     fetchEvents();
-  }, [currentCity, selectedTag]);
+  }, [currentCity, selectedTags]);
 
-  const handleTagSelect = (tag: string | null) => {
-    if (tag) {
-      navigate(`/explore/category/${tag}?city=${encodeURIComponent(currentCity)}`);
-    } else {
-      setSelectedTag(null);
-    }
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedTags([]);
   };
 
   return (
@@ -113,7 +147,7 @@ export default function Explore() {
       <div className="min-h-screen bg-background">
         <Header user={user} />
 
-        <main className="container max-w-lg mx-auto px-4 py-6 space-y-6">
+        <main className="container max-w-[820px] mx-auto px-4 py-6 space-y-6">
           {/* City Header */}
           <div className="flex items-center justify-between">
             <button
@@ -143,13 +177,15 @@ export default function Explore() {
 
           {/* Category Chips */}
           <CategoryChips
-            selectedTag={selectedTag}
-            onTagSelect={handleTagSelect}
+            selectedTags={selectedTags}
+            onTagToggle={handleTagToggle}
+            onSelectAll={handleSelectAll}
+            availableTags={availableTags}
             language={language}
           />
 
           {/* City Cards */}
-          <CityCards />
+          <CityCards availableCities={availableCities} />
         </main>
 
         <CitySelector

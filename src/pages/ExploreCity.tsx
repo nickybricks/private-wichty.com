@@ -24,9 +24,10 @@ export default function ExploreCity() {
   const [user, setUser] = useState<any>(null);
   const [currentCity, setCurrentCity] = useState<string>(decodeURIComponent(cityName || DEFAULT_CITY));
   const [showCitySelector, setShowCitySelector] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -42,6 +43,28 @@ export default function ExploreCity() {
     }
   }, [cityName]);
 
+  // Fetch available tags for this city
+  useEffect(() => {
+    const fetchAvailableTags = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("tags")
+        .eq("is_public", true)
+        .ilike("city", `%${currentCity}%`);
+
+      if (data) {
+        const tags = new Set<string>();
+        data.forEach(event => {
+          if (event.tags) {
+            event.tags.forEach((t: string) => tags.add(t));
+          }
+        });
+        setAvailableTags(Array.from(tags));
+      }
+    };
+    fetchAvailableTags();
+  }, [currentCity]);
+
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -53,8 +76,8 @@ export default function ExploreCity() {
           .ilike("city", `%${currentCity}%`)
           .order("event_date", { ascending: true });
 
-        if (selectedTag) {
-          query = query.contains("tags", [selectedTag]);
+        if (selectedTags.length > 0) {
+          query = query.overlaps("tags", selectedTags);
         }
 
         const { data, error } = await query;
@@ -70,15 +93,23 @@ export default function ExploreCity() {
     };
 
     fetchEvents();
-  }, [currentCity, selectedTag]);
+  }, [currentCity, selectedTags]);
 
   const handleCityChange = (city: string) => {
     setCurrentCity(city);
     navigate(`/explore/city/${encodeURIComponent(city)}`, { replace: true });
   };
 
-  const handleTagSelect = (tag: string | null) => {
-    setSelectedTag(tag);
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedTags([]);
   };
 
   // Group events by date
@@ -130,8 +161,10 @@ export default function ExploreCity() {
 
           {/* Category Chips */}
           <CategoryChips
-            selectedTag={selectedTag}
-            onTagSelect={handleTagSelect}
+            selectedTags={selectedTags}
+            onTagToggle={handleTagToggle}
+            onSelectAll={handleSelectAll}
+            availableTags={availableTags}
             language={language}
           />
 
