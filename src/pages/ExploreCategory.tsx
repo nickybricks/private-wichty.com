@@ -26,6 +26,7 @@ export default function ExploreCategory() {
   const [showCitySelector, setShowCitySelector] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -33,6 +34,27 @@ export default function ExploreCategory() {
       setUser(data.user);
     };
     getUser();
+  }, []);
+
+  // Fetch available tags
+  useEffect(() => {
+    const fetchAvailableTags = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("tags")
+        .eq("is_public", true);
+
+      if (data) {
+        const tags = new Set<string>();
+        data.forEach(event => {
+          if (event.tags) {
+            event.tags.forEach((t: string) => tags.add(t));
+          }
+        });
+        setAvailableTags(Array.from(tags));
+      }
+    };
+    fetchAvailableTags();
   }, []);
 
   useEffect(() => {
@@ -68,12 +90,14 @@ export default function ExploreCategory() {
     fetchEvents();
   }, [tag, currentCity]);
 
-  const handleTagSelect = (newTag: string | null) => {
-    if (newTag === null) {
-      navigate(`/explore`);
-    } else if (newTag !== tag) {
+  const handleTagToggle = (newTag: string) => {
+    if (newTag !== tag) {
       navigate(`/explore/category/${newTag}?city=${encodeURIComponent(currentCity)}`);
     }
+  };
+
+  const handleSelectAll = () => {
+    navigate(`/explore`);
   };
 
   const tagLabel = tag ? getTagLabel(tag, language) : "";
@@ -106,8 +130,10 @@ export default function ExploreCategory() {
 
           {/* Category Chips */}
           <CategoryChips
-            selectedTag={tag || null}
-            onTagSelect={handleTagSelect}
+            selectedTags={tag ? [tag] : []}
+            onTagToggle={handleTagToggle}
+            onSelectAll={handleSelectAll}
+            availableTags={availableTags}
             language={language}
           />
 
