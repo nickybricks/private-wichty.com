@@ -25,9 +25,9 @@ import {
 } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, 
-  Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell, CheckCircle2, 
-  AlertCircle, ExternalLink, ChevronDown, Users, Megaphone 
+  Loader2, User, Settings as SettingsIcon, CreditCard, Camera, 
+  Trash2, Phone, Mail, Globe, Bell, CheckCircle2, 
+  AlertCircle, ExternalLink, ChevronDown, Megaphone 
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
