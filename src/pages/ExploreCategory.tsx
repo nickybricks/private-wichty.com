@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { CitySelector } from "@/components/explore/CitySelector";
 import { CategoryChips } from "@/components/explore/CategoryChips";
-import { EventCard } from "@/components/explore/EventCard";
+import { EventCardUnified } from "@/components/EventCardUnified";
 import { getTagLabel } from "@/data/eventTags";
 import { DEFAULT_CITY } from "@/data/cities";
 import { Loader2 } from "lucide-react";
@@ -149,7 +149,12 @@ export default function ExploreCategory() {
           ) : (
             <div className="space-y-3">
               {events.map((event) => (
-                <EventCard key={event.id} event={event} language={language} />
+                <EventCardUnified
+                  key={event.id}
+                  event={event}
+                  participantCount={event.attendance_count}
+                  showAvatars={false}
+                />
               ))}
             </div>
           )}
