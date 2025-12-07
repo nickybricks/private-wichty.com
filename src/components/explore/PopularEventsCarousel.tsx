@@ -55,7 +55,7 @@ export function PopularEventsCarousel({ events, language, onEventClick }: Popula
       >
         <CarouselContent className="ml-0">
           {columns.map((column, colIndex) => (
-            <CarouselItem key={colIndex} className="basis-[85%] pl-4 first:pl-4">
+            <CarouselItem key={colIndex} className="basis-full pl-4 first:pl-4">
               <div className="space-y-3 pr-2">
                 {column.map((event) => (
                   <EventCardUnified

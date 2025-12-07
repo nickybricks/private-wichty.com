@@ -78,7 +78,7 @@ export function EventCardUnified({
   return (
     <Card
       onClick={handleClick}
-      className="p-3 md:p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border/50"
+      className="min-w-0 p-3 md:p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-border/50"
     >
       <div className="flex gap-3 md:gap-4">
         {/* Image */}
