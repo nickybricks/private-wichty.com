@@ -16,7 +16,10 @@ export type Database = {
     Tables: {
       events: {
         Row: {
+          attendance_count: number | null
           capacity_unlimited: boolean | null
+          city: string | null
+          country: string | null
           created_at: string
           currency: string | null
           description: string | null
@@ -33,13 +36,18 @@ export type Database = {
           reminder_sent_at: string | null
           requires_approval: boolean | null
           status: Database["public"]["Enums"]["event_status"]
+          tags: string[] | null
           target_participants: number
           updated_at: string
           user_id: string
+          view_count: number | null
           waitlist_enabled: boolean | null
         }
         Insert: {
+          attendance_count?: number | null
           capacity_unlimited?: boolean | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
@@ -56,13 +64,18 @@ export type Database = {
           reminder_sent_at?: string | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
+          tags?: string[] | null
           target_participants?: number
           updated_at?: string
           user_id: string
+          view_count?: number | null
           waitlist_enabled?: boolean | null
         }
         Update: {
+          attendance_count?: number | null
           capacity_unlimited?: boolean | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
@@ -79,9 +92,11 @@ export type Database = {
           reminder_sent_at?: string | null
           requires_approval?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
+          tags?: string[] | null
           target_participants?: number
           updated_at?: string
           user_id?: string
+          view_count?: number | null
           waitlist_enabled?: boolean | null
         }
         Relationships: []
@@ -365,6 +380,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_attendance_count: {
+        Args: { event_id: string }
+        Returns: undefined
+      }
+      increment_view_count: { Args: { event_id: string }; Returns: undefined }
       perform_draw: { Args: { p_event_id: string }; Returns: boolean }
       spin_wheel: { Args: { p_participant_id: string }; Returns: string }
     }

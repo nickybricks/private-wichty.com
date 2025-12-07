@@ -17,6 +17,9 @@ import BlogPost from "./pages/BlogPost";
 import Ticket from "./pages/Ticket";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
+import Explore from "./pages/Explore";
+import ExploreCategory from "./pages/ExploreCategory";
+import ExploreCity from "./pages/ExploreCity";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,9 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/explore/category/:tag" element={<ExploreCategory />} />
+          <Route path="/explore/city/:cityName" element={<ExploreCity />} />
           <Route path="/event/:id" element={<Event />} />
           <Route path="/event/:id/edit" element={<EditEvent />} />
           <Route path="/host/:id" element={<HostProfile />} />

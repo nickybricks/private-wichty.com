@@ -10,6 +10,7 @@ import deAuth from './locales/de/auth.json';
 import deEvent from './locales/de/event.json';
 import deForms from './locales/de/forms.json';
 import deBlog from './locales/de/blog.json';
+import deExplore from './locales/de/explore.json';
 
 // English translations
 import enCommon from './locales/en/common.json';
@@ -19,6 +20,7 @@ import enAuth from './locales/en/auth.json';
 import enEvent from './locales/en/event.json';
 import enForms from './locales/en/forms.json';
 import enBlog from './locales/en/blog.json';
+import enExplore from './locales/en/explore.json';
 
 const resources = {
   de: {
@@ -29,6 +31,7 @@ const resources = {
     event: deEvent,
     forms: deForms,
     blog: deBlog,
+    explore: deExplore,
   },
   en: {
     common: enCommon,
@@ -38,6 +41,7 @@ const resources = {
     event: enEvent,
     forms: enForms,
     blog: enBlog,
+    explore: enExplore,
   },
 };
 
@@ -75,7 +79,7 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'landing', 'dashboard', 'auth', 'event', 'forms', 'blog'],
+    ns: ['common', 'landing', 'dashboard', 'auth', 'event', 'forms', 'blog', 'explore'],
     
     detection: {
       order: ['customDetector', 'localStorage', 'navigator'],

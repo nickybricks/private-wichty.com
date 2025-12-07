@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft } from "lucide-react";
+import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft, Compass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -64,6 +64,15 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => navigate("/explore")}
+          >
+            <Compass className="h-4 w-4 mr-2" />
+            {t('header.explore')}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate("/dashboard")}
           >
             <LayoutDashboard className="h-4 w-4 mr-2" />
@@ -104,6 +113,15 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
               <nav className="flex flex-col gap-4 mt-8">
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigation("/explore")}
+                >
+                  <Compass className="h-5 w-5 mr-3" />
+                  {t('header.explore')}
+                </Button>
+
                 <Button
                   variant="ghost"
                   className="justify-start"
