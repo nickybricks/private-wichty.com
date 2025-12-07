@@ -181,6 +181,17 @@ export type Database = {
           id: string
           language: string | null
           last_name: string | null
+          notify_guest_cancellation: boolean | null
+          notify_guest_checkin: boolean | null
+          notify_guest_event_reminder: boolean | null
+          notify_guest_join_request_status: boolean | null
+          notify_guest_ticket_confirmation: boolean | null
+          notify_host_cancellation: boolean | null
+          notify_host_event_created: boolean | null
+          notify_host_event_reminder: boolean | null
+          notify_host_event_summary: boolean | null
+          notify_host_join_requests: boolean | null
+          notify_host_new_registration: boolean | null
           notify_organizing: boolean | null
           notify_participating: boolean | null
           notify_product_updates: boolean | null
@@ -200,6 +211,17 @@ export type Database = {
           id: string
           language?: string | null
           last_name?: string | null
+          notify_guest_cancellation?: boolean | null
+          notify_guest_checkin?: boolean | null
+          notify_guest_event_reminder?: boolean | null
+          notify_guest_join_request_status?: boolean | null
+          notify_guest_ticket_confirmation?: boolean | null
+          notify_host_cancellation?: boolean | null
+          notify_host_event_created?: boolean | null
+          notify_host_event_reminder?: boolean | null
+          notify_host_event_summary?: boolean | null
+          notify_host_join_requests?: boolean | null
+          notify_host_new_registration?: boolean | null
           notify_organizing?: boolean | null
           notify_participating?: boolean | null
           notify_product_updates?: boolean | null
@@ -219,6 +241,17 @@ export type Database = {
           id?: string
           language?: string | null
           last_name?: string | null
+          notify_guest_cancellation?: boolean | null
+          notify_guest_checkin?: boolean | null
+          notify_guest_event_reminder?: boolean | null
+          notify_guest_join_request_status?: boolean | null
+          notify_guest_ticket_confirmation?: boolean | null
+          notify_host_cancellation?: boolean | null
+          notify_host_event_created?: boolean | null
+          notify_host_event_reminder?: boolean | null
+          notify_host_event_summary?: boolean | null
+          notify_host_join_requests?: boolean | null
+          notify_host_new_registration?: boolean | null
           notify_organizing?: boolean | null
           notify_participating?: boolean | null
           notify_product_updates?: boolean | null

@@ -18,8 +18,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell, CheckCircle2, AlertCircle, ExternalLink
+import { Loader2, User, Settings as SettingsIcon, CreditCard, Ticket, Camera, Trash2, Phone, Mail, Sun, Moon, Monitor, Globe, Bell, CheckCircle2, AlertCircle, ExternalLink, ChevronDown, Users, Megaphone
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -35,6 +40,54 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Notification setting keys
+type GuestNotificationKey = 
+  | 'notify_guest_ticket_confirmation'
+  | 'notify_guest_join_request_status'
+  | 'notify_guest_cancellation'
+  | 'notify_guest_event_reminder'
+  | 'notify_guest_checkin';
+
+type HostNotificationKey = 
+  | 'notify_host_new_registration'
+  | 'notify_host_join_requests'
+  | 'notify_host_cancellation'
+  | 'notify_host_event_created'
+  | 'notify_host_event_reminder'
+  | 'notify_host_event_summary';
+
+type NotificationKey = GuestNotificationKey | HostNotificationKey | 'notify_product_updates';
+
+interface NotificationSettings {
+  notify_guest_ticket_confirmation: boolean;
+  notify_guest_join_request_status: boolean;
+  notify_guest_cancellation: boolean;
+  notify_guest_event_reminder: boolean;
+  notify_guest_checkin: boolean;
+  notify_host_new_registration: boolean;
+  notify_host_join_requests: boolean;
+  notify_host_cancellation: boolean;
+  notify_host_event_created: boolean;
+  notify_host_event_reminder: boolean;
+  notify_host_event_summary: boolean;
+  notify_product_updates: boolean;
+}
+
+const defaultNotifications: NotificationSettings = {
+  notify_guest_ticket_confirmation: true,
+  notify_guest_join_request_status: true,
+  notify_guest_cancellation: true,
+  notify_guest_event_reminder: true,
+  notify_guest_checkin: true,
+  notify_host_new_registration: true,
+  notify_host_join_requests: true,
+  notify_host_cancellation: true,
+  notify_host_event_created: true,
+  notify_host_event_reminder: true,
+  notify_host_event_summary: true,
+  notify_product_updates: false,
+};
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -58,10 +111,12 @@ export default function Settings() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
 
-  // Settings
-  const [notifyParticipating, setNotifyParticipating] = useState(true);
-  const [notifyOrganizing, setNotifyOrganizing] = useState(true);
-  const [notifyProductUpdates, setNotifyProductUpdates] = useState(false);
+  // Notification settings (granular)
+  const [notifications, setNotifications] = useState<NotificationSettings>(defaultNotifications);
+  
+  // Collapsible sections
+  const [guestOpen, setGuestOpen] = useState(true);
+  const [hostOpen, setHostOpen] = useState(true);
 
   // Stripe Connect
   const [stripeConnectStatus, setStripeConnectStatus] = useState<{
@@ -114,9 +169,23 @@ export default function Settings() {
         setAvatarUrl(profile.avatar_url || "");
         setPhoneNumber(profile.phone_number || "");
         setPhoneVerified(profile.phone_verified || false);
-        setNotifyParticipating(profile.notify_participating ?? true);
-        setNotifyOrganizing(profile.notify_organizing ?? true);
-        setNotifyProductUpdates(profile.notify_product_updates ?? false);
+        
+        // Load granular notification settings
+        setNotifications({
+          notify_guest_ticket_confirmation: profile.notify_guest_ticket_confirmation ?? true,
+          notify_guest_join_request_status: profile.notify_guest_join_request_status ?? true,
+          notify_guest_cancellation: profile.notify_guest_cancellation ?? true,
+          notify_guest_event_reminder: profile.notify_guest_event_reminder ?? true,
+          notify_guest_checkin: profile.notify_guest_checkin ?? true,
+          notify_host_new_registration: profile.notify_host_new_registration ?? true,
+          notify_host_join_requests: profile.notify_host_join_requests ?? true,
+          notify_host_cancellation: profile.notify_host_cancellation ?? true,
+          notify_host_event_created: profile.notify_host_event_created ?? true,
+          notify_host_event_reminder: profile.notify_host_event_reminder ?? true,
+          notify_host_event_summary: profile.notify_host_event_summary ?? true,
+          notify_product_updates: profile.notify_product_updates ?? false,
+        });
+        
         // Apply saved theme and language
         if (profile.theme) setTheme(profile.theme);
         if (profile.language) i18n.changeLanguage(profile.language);
@@ -254,14 +323,9 @@ export default function Settings() {
     handleSettingChange('language', lang, t('settingsPage.toasts.languageChanged', { language: langLabels[lang] }));
   };
 
-  const handleNotificationChange = async (
-    field: 'notify_participating' | 'notify_organizing' | 'notify_product_updates',
-    value: boolean
-  ) => {
+  const handleNotificationChange = async (field: NotificationKey, value: boolean) => {
     // Update local state immediately
-    if (field === 'notify_participating') setNotifyParticipating(value);
-    if (field === 'notify_organizing') setNotifyOrganizing(value);
-    if (field === 'notify_product_updates') setNotifyProductUpdates(value);
+    setNotifications(prev => ({ ...prev, [field]: value }));
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -283,9 +347,7 @@ export default function Settings() {
       console.error("Error saving notification setting:", error);
       toast.error(t('settingsPage.toasts.errorSaving'));
       // Revert on error
-      if (field === 'notify_participating') setNotifyParticipating(!value);
-      if (field === 'notify_organizing') setNotifyOrganizing(!value);
-      if (field === 'notify_product_updates') setNotifyProductUpdates(!value);
+      setNotifications(prev => ({ ...prev, [field]: !value }));
     }
   };
 
@@ -417,6 +479,35 @@ export default function Settings() {
     const last = lastName?.[0] || "";
     return (first + last).toUpperCase() || "?";
   };
+
+  // Notification switch component
+  const NotificationSwitch = ({ 
+    id, 
+    field, 
+    label, 
+    description 
+  }: { 
+    id: string; 
+    field: NotificationKey; 
+    label: string; 
+    description: string;
+  }) => (
+    <div className="flex items-center justify-between py-3">
+      <div className="space-y-0.5 pr-4">
+        <Label htmlFor={id} className="font-medium text-sm">
+          {label}
+        </Label>
+        <p className="text-xs text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <Switch
+        id={id}
+        checked={notifications[field]}
+        onCheckedChange={(checked) => handleNotificationChange(field, checked)}
+      />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -775,59 +866,121 @@ export default function Settings() {
               </div>
             </Card>
 
-            {/* Notifications */}
+            {/* Notifications - Granular */}
             <Card className="p-6 shadow-medium">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Bell className="h-5 w-5" />
                   <h3 className="font-semibold">{t('settingsPage.notifications.title')}</h3>
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="notify-participating" className="font-medium">
-                        {t('settingsPage.notifications.participating')}
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        {t('settingsPage.notifications.participatingDesc')}
-                      </p>
+                {/* Guest Notifications */}
+                <Collapsible open={guestOpen} onOpenChange={setGuestOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-3 px-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{t('settingsPage.notifications.asGuest')}</span>
                     </div>
-                    <Switch
-                      id="notify-participating"
-                      checked={notifyParticipating}
-                      onCheckedChange={(checked) => handleNotificationChange('notify_participating', checked)}
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${guestOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-4 divide-y divide-border">
+                    <NotificationSwitch
+                      id="notify-guest-ticket"
+                      field="notify_guest_ticket_confirmation"
+                      label={t('settingsPage.notifications.guest.ticketConfirmation')}
+                      description={t('settingsPage.notifications.guest.ticketConfirmationDesc')}
                     />
-                  </div>
+                    <NotificationSwitch
+                      id="notify-guest-join"
+                      field="notify_guest_join_request_status"
+                      label={t('settingsPage.notifications.guest.joinRequestStatus')}
+                      description={t('settingsPage.notifications.guest.joinRequestStatusDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-guest-cancel"
+                      field="notify_guest_cancellation"
+                      label={t('settingsPage.notifications.guest.cancellation')}
+                      description={t('settingsPage.notifications.guest.cancellationDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-guest-reminder"
+                      field="notify_guest_event_reminder"
+                      label={t('settingsPage.notifications.guest.eventReminder')}
+                      description={t('settingsPage.notifications.guest.eventReminderDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-guest-checkin"
+                      field="notify_guest_checkin"
+                      label={t('settingsPage.notifications.guest.checkin')}
+                      description={t('settingsPage.notifications.guest.checkinDesc')}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="notify-organizing" className="font-medium">
-                        {t('settingsPage.notifications.organizing')}
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        {t('settingsPage.notifications.organizingDesc')}
-                      </p>
+                {/* Host Notifications */}
+                <Collapsible open={hostOpen} onOpenChange={setHostOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-3 px-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{t('settingsPage.notifications.asHost')}</span>
                     </div>
-                    <Switch
-                      id="notify-organizing"
-                      checked={notifyOrganizing}
-                      onCheckedChange={(checked) => handleNotificationChange('notify_organizing', checked)}
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${hostOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-4 divide-y divide-border">
+                    <NotificationSwitch
+                      id="notify-host-registration"
+                      field="notify_host_new_registration"
+                      label={t('settingsPage.notifications.host.newRegistration')}
+                      description={t('settingsPage.notifications.host.newRegistrationDesc')}
                     />
-                  </div>
+                    <NotificationSwitch
+                      id="notify-host-join"
+                      field="notify_host_join_requests"
+                      label={t('settingsPage.notifications.host.joinRequests')}
+                      description={t('settingsPage.notifications.host.joinRequestsDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-host-cancel"
+                      field="notify_host_cancellation"
+                      label={t('settingsPage.notifications.host.cancellation')}
+                      description={t('settingsPage.notifications.host.cancellationDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-host-created"
+                      field="notify_host_event_created"
+                      label={t('settingsPage.notifications.host.eventCreated')}
+                      description={t('settingsPage.notifications.host.eventCreatedDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-host-reminder"
+                      field="notify_host_event_reminder"
+                      label={t('settingsPage.notifications.host.eventReminder')}
+                      description={t('settingsPage.notifications.host.eventReminderDesc')}
+                    />
+                    <NotificationSwitch
+                      id="notify-host-summary"
+                      field="notify_host_event_summary"
+                      label={t('settingsPage.notifications.host.eventSummary')}
+                      description={t('settingsPage.notifications.host.eventSummaryDesc')}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="notify-product" className="font-medium">
+                {/* General / Product Updates */}
+                <div className="pt-2">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{t('settingsPage.notifications.general')}</p>
+                  <div className="flex items-center justify-between py-3">
+                    <div className="space-y-0.5 pr-4">
+                      <Label htmlFor="notify-product" className="font-medium text-sm">
                         {t('settingsPage.notifications.productUpdates')}
                       </Label>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {t('settingsPage.notifications.productUpdatesDesc')}
                       </p>
                     </div>
                     <Switch
                       id="notify-product"
-                      checked={notifyProductUpdates}
+                      checked={notifications.notify_product_updates}
                       onCheckedChange={(checked) => handleNotificationChange('notify_product_updates', checked)}
                     />
                   </div>
@@ -867,79 +1020,91 @@ export default function Settings() {
                   {stripeLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   ) : stripeConnectStatus?.connected ? (
-                    <Badge variant={stripeConnectStatus.charges_enabled ? "default" : "secondary"}>
-                      {stripeConnectStatus.charges_enabled ? (
-                        <>
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {t('settingsPage.payment.stripeConnect.connected')}
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          {t('settingsPage.payment.stripeConnect.setupIncomplete')}
-                        </>
-                      )}
+                    <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      {t('settingsPage.payment.stripeConnect.connected')}
                     </Badge>
                   ) : (
-                    <Badge variant="outline">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
                       {t('settingsPage.payment.stripeConnect.notConnected')}
                     </Badge>
                   )}
                 </div>
 
                 {stripeConnectStatus?.connected && (
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <div className={`flex items-center gap-1.5 text-sm ${stripeConnectStatus.charges_enabled ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm">
                       {stripeConnectStatus.charges_enabled ? (
-                        <CheckCircle2 className="h-4 w-4" />
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
                       ) : (
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
                       )}
-                      {t('settingsPage.payment.stripeConnect.chargesEnabled')}
+                      <span>{t('settingsPage.payment.stripeConnect.chargesEnabled')}</span>
                     </div>
-                    <div className={`flex items-center gap-1.5 text-sm ${stripeConnectStatus.payouts_enabled ? 'text-green-600' : 'text-muted-foreground'}`}>
+                    <div className="flex items-center gap-2 text-sm">
                       {stripeConnectStatus.payouts_enabled ? (
-                        <CheckCircle2 className="h-4 w-4" />
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
                       ) : (
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
                       )}
-                      {t('settingsPage.payment.stripeConnect.payoutsEnabled')}
+                      <span>{t('settingsPage.payment.stripeConnect.payoutsEnabled')}</span>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">
-                    {t('settingsPage.payment.stripeConnect.platformFee')}
-                  </p>
-                  <Button
-                    onClick={handleConnectStripe}
-                    disabled={stripeConnecting || stripeLoading}
-                    variant={stripeConnectStatus?.charges_enabled ? "outline" : "default"}
-                  >
-                    {stripeConnecting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('settingsPage.payment.stripeConnect.connecting')}
-                      </>
-                    ) : stripeConnectStatus?.connected && !stripeConnectStatus?.charges_enabled ? (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        {t('settingsPage.payment.stripeConnect.continueSetup')}
-                      </>
-                    ) : stripeConnectStatus?.charges_enabled ? (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        {t('settingsPage.payment.stripeConnect.manageDashboard')}
-                      </>
-                    ) : (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        {t('settingsPage.payment.stripeConnect.connectButton')}
-                      </>
-                    )}
-                  </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {!stripeConnectStatus?.connected ? (
+                    <Button 
+                      onClick={handleConnectStripe}
+                      disabled={stripeConnecting}
+                      className="flex-1"
+                    >
+                      {stripeConnecting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t('settingsPage.payment.stripeConnect.connecting')}
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          {t('settingsPage.payment.stripeConnect.connectButton')}
+                        </>
+                      )}
+                    </Button>
+                  ) : !stripeConnectStatus?.details_submitted ? (
+                    <Button 
+                      onClick={handleConnectStripe}
+                      disabled={stripeConnecting}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {stripeConnecting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t('settingsPage.payment.stripeConnect.connecting')}
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="mr-2 h-4 w-4" />
+                          {t('settingsPage.payment.stripeConnect.continueSetup')}
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => window.open('https://dashboard.stripe.com/', '_blank')}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      {t('settingsPage.payment.stripeConnect.manageDashboard')}
+                    </Button>
+                  )}
                 </div>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  {t('settingsPage.payment.stripeConnect.platformFee')}
+                </p>
               </div>
             </Card>
           </TabsContent>

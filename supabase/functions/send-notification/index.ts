@@ -39,6 +39,31 @@ interface NotificationRequest {
   customMessage?: string;
 }
 
+// Map notification types to profile settings
+const getNotificationSettingField = (type: NotificationType): string | null => {
+  const mapping: Record<string, string> = {
+    // Guest notifications
+    'ticket_purchased': 'notify_guest_ticket_confirmation',
+    'ticket_rsvp': 'notify_guest_ticket_confirmation',
+    'join_request_approved': 'notify_guest_join_request_status',
+    'join_request_rejected': 'notify_guest_join_request_status',
+    'event_cancelled': 'notify_guest_cancellation',
+    'event_reminder_guest': 'notify_guest_event_reminder',
+    'ticket_checked_in': 'notify_guest_checkin',
+    
+    // Host notifications
+    'new_rsvp': 'notify_host_new_registration',
+    'new_purchase': 'notify_host_new_registration',
+    'new_join_request': 'notify_host_join_requests',
+    'participant_cancelled': 'notify_host_cancellation',
+    'event_created': 'notify_host_event_created',
+    'event_reminder_host': 'notify_host_event_reminder',
+    'event_ended': 'notify_host_event_summary',
+  };
+  
+  return mapping[type] || null;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -67,20 +92,19 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
     // Get recipient email - either directly provided or fetched from user ID
     let recipientEmail = request.recipientEmail;
+    let userId = request.recipientUserId;
     
-    if (!recipientEmail && request.recipientUserId) {
-      // Fetch email from Supabase auth using service role
-      const supabaseAdmin = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-
-      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(
-        request.recipientUserId
-      );
+    if (!recipientEmail && userId) {
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
 
       if (userError || !userData.user?.email) {
         console.error("Failed to fetch user email:", userError);
@@ -94,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       recipientEmail = userData.user.email;
-      console.log("Fetched email for user:", request.recipientUserId, "->", recipientEmail);
+      console.log("Fetched email for user:", userId, "->", recipientEmail);
     }
 
     if (!recipientEmail) {
@@ -106,6 +130,34 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
+    }
+
+    // Check user's notification preferences
+    const settingField = getNotificationSettingField(request.type);
+    
+    if (settingField && userId) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select(settingField)
+        .eq("id", userId)
+        .single();
+      
+      // Check if the specific notification type is disabled
+      const profileData = profile as Record<string, unknown> | null;
+      if (profileData && profileData[settingField] === false) {
+        console.log(`Notification ${request.type} disabled for user ${userId} (${settingField}=false)`);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            skipped: true, 
+            reason: `User has disabled ${settingField}` 
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
     }
 
     const language = request.language || "de";
