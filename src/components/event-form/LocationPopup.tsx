@@ -9,7 +9,7 @@ interface LocationPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   location: string;
-  onConfirm: (location: string) => void;
+  onConfirm: (location: string, city: string | null, country: string | null) => void;
 }
 
 export function LocationPopup({
@@ -20,15 +20,19 @@ export function LocationPopup({
 }: LocationPopupProps) {
   const { t } = useTranslation("forms");
   const [location, setLocation] = useState(initialLocation);
+  const [city, setCity] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setLocation(initialLocation);
+      setCity(null);
+      setCountry(null);
     }
   }, [open, initialLocation]);
 
   const handleConfirm = () => {
-    onConfirm(location);
+    onConfirm(location, city, country);
     onOpenChange(false);
   };
 
@@ -47,6 +51,8 @@ export function LocationPopup({
         <LocationInput
           value={location}
           onChange={setLocation}
+          onCityChange={setCity}
+          onCountryChange={setCountry}
           placeholder={t("eventForm.locationPlaceholder", "Search for a location...")}
         />
 

@@ -65,6 +65,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   
   // Location & Image
   const [location, setLocation] = useState("");
+  const [city, setCity] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -167,6 +169,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     setStartTime(format(new Date(), "HH:00"));
     setEndTime(format(new Date(Date.now() + 2 * 60 * 60 * 1000), "HH:00"));
     setLocation("");
+    setCity(null);
+    setCountry(null);
     setImageFile(null);
     setImagePreview(null);
     setIsPaid(false);
@@ -241,6 +245,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           event_time: startTime || null,
           end_time: endTime || null,
           location: location.trim() || null,
+          city: city || null,
+          country: country || null,
           image_url: imageUrl,
           is_paid: hasPaidTickets,
           price_cents: 0,
@@ -589,7 +595,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         open={locationPopupOpen}
         onOpenChange={setLocationPopupOpen}
         location={location}
-        onConfirm={setLocation}
+        onConfirm={(loc, c, co) => {
+          setLocation(loc);
+          setCity(c);
+          setCountry(co);
+        }}
       />
       <DescriptionPopup
         open={descriptionPopupOpen}

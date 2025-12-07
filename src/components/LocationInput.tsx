@@ -8,6 +8,8 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyC5O6oJjt66t69ylhhi2I2VJAUS46iy2JY";
 interface LocationInputProps {
   value: string;
   onChange: (value: string, placeId?: string) => void;
+  onCityChange?: (city: string | null) => void;
+  onCountryChange?: (country: string | null) => void;
   placeholder?: string;
   className?: string;
 }
@@ -21,7 +23,7 @@ interface PlacePrediction {
   };
 }
 
-export function LocationInput({ value, onChange, placeholder, className }: LocationInputProps) {
+export function LocationInput({ value, onChange, onCityChange, onCountryChange, placeholder, className }: LocationInputProps) {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -101,16 +103,48 @@ export function LocationInput({ value, onChange, placeholder, className }: Locat
     setPredictions([]);
     setIsOpen(false);
 
-    // Get coordinates for the selected place
+    // Get coordinates and address details for the selected place
     if (placesService.current) {
       placesService.current.getDetails(
-        { placeId: prediction.place_id, fields: ["geometry"] },
+        { placeId: prediction.place_id, fields: ["geometry", "address_components"] },
         (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
-            setCoordinates({
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            });
+          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            // Extract coordinates
+            if (place.geometry?.location) {
+              setCoordinates({
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+              });
+            }
+
+            // Extract city and country from address_components
+            const addressComponents = (place as any).address_components as Array<{
+              long_name: string;
+              short_name: string;
+              types: string[];
+            }> | undefined;
+            if (addressComponents) {
+              let city: string | null = null;
+              let country: string | null = null;
+
+              for (const component of addressComponents) {
+                if (component.types.includes("locality")) {
+                  city = component.long_name;
+                } else if (component.types.includes("administrative_area_level_1") && !city) {
+                  // Fallback to administrative area if locality not found
+                  city = component.long_name;
+                } else if (component.types.includes("sublocality_level_1") && !city) {
+                  // Another fallback for cities like Berlin
+                  city = component.long_name;
+                } else if (component.types.includes("country")) {
+                  country = component.long_name;
+                }
+              }
+
+              // Notify parent components
+              onCityChange?.(city);
+              onCountryChange?.(country);
+            }
           }
         }
       );
