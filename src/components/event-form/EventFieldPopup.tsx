@@ -36,14 +36,19 @@ export function EventFieldPopup({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="px-4 pb-8 max-h-[85dvh]">
-          <DrawerHeader className="px-0">
+        <DrawerContent 
+          fullScreenOnMobile 
+          className="px-4 pb-8 overflow-y-auto"
+        >
+          <DrawerHeader className="px-0 flex-shrink-0">
             <DrawerTitle className="flex items-center gap-2 text-lg font-medium">
               {icon}
               {title}
             </DrawerTitle>
           </DrawerHeader>
-          {children}
+          <div className="flex-1 overflow-y-auto">
+            {children}
+          </div>
         </DrawerContent>
       </Drawer>
     );
