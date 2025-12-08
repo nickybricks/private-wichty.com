@@ -158,7 +158,7 @@ export default function Explore() {
       <div className="min-h-screen bg-background flex flex-col">
         <Header user={user} />
 
-        <main className="max-w-[var(--max-width)] mx-auto px-4 py-6 space-y-6 flex-1">
+        <main className="max-w-[var(--max-width)] mx-auto p-4 md:p-8 space-y-6 flex-1">
           {/* City Header */}
           <div className="flex items-center justify-between">
             <button
