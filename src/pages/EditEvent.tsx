@@ -334,7 +334,9 @@ export default function EditEvent() {
       if (error) throw error;
 
       toast.success(t('edit.success'));
-      navigate(`/event/${id}`);
+      
+      // Update local event state with new data
+      setEvent(prev => prev ? { ...prev, ...updateData } : null);
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error(t('edit.error'));
