@@ -99,6 +99,8 @@ export default function EditEvent() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
+  const [city, setCity] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
   const [capacityUnlimited, setCapacityUnlimited] = useState(true);
   const [maxCapacity, setMaxCapacity] = useState("");
   const [isPaid, setIsPaid] = useState(false);
@@ -190,6 +192,8 @@ export default function EditEvent() {
       setStartTime(eventData.event_time || "");
       setEndTime(eventData.end_time || "");
       setLocation(eventData.location || "");
+      setCity(eventData.city || null);
+      setCountry(eventData.country || null);
       setCapacityUnlimited(eventData.capacity_unlimited ?? true);
       setMaxCapacity(eventData.capacity_unlimited ? "" : eventData.target_participants.toString());
       setIsPaid(eventData.is_paid || false);
@@ -313,6 +317,8 @@ export default function EditEvent() {
         event_time: startTime || null,
         end_time: endTime || null,
         location: location.trim() || null,
+        city: city || null,
+        country: country || null,
         capacity_unlimited: capacityUnlimited,
         target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
         requires_approval: requiresApproval,
@@ -798,7 +804,11 @@ export default function EditEvent() {
         open={locationPopupOpen}
         onOpenChange={setLocationPopupOpen}
         location={location}
-        onConfirm={setLocation}
+        onConfirm={(loc, c, co) => {
+          setLocation(loc);
+          setCity(c);
+          setCountry(co);
+        }}
       />
       <DescriptionPopup
         open={descriptionPopupOpen}
