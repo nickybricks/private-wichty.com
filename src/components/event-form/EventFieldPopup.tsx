@@ -5,6 +5,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 interface EventFieldPopupProps {
@@ -24,6 +31,24 @@ export function EventFieldPopup({
   children,
   className,
 }: EventFieldPopupProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="px-4 pb-8 max-h-[85dvh]">
+          <DrawerHeader className="px-0">
+            <DrawerTitle className="flex items-center gap-2 text-lg font-medium">
+              {icon}
+              {title}
+            </DrawerTitle>
+          </DrawerHeader>
+          {children}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
