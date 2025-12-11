@@ -36,9 +36,17 @@ interface TicketCategoriesLocalProps {
   categories: PendingTicketCategory[];
   onCategoriesChange: (categories: PendingTicketCategory[]) => void;
   stripeConnected?: boolean | null;
+  eventCapacity?: number | null;
+  capacityUnlimited?: boolean;
 }
 
-export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeConnected }: TicketCategoriesLocalProps) {
+export function TicketCategoriesLocal({ 
+  categories, 
+  onCategoriesChange, 
+  stripeConnected,
+  eventCapacity,
+  capacityUnlimited 
+}: TicketCategoriesLocalProps) {
   const { i18n } = useTranslation();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({
@@ -185,12 +193,24 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
                   <Input
                     type="number"
                     min="1"
+                    max={!capacityUnlimited && eventCapacity ? eventCapacity : undefined}
                     value={category.max_quantity || ""}
-                    onChange={(e) => handleUpdateCategory(category.id, { 
-                      max_quantity: e.target.value ? parseInt(e.target.value) : null 
-                    })}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : null;
+                      // Clamp to eventCapacity if set
+                      const clampedValue = value && !capacityUnlimited && eventCapacity && value > eventCapacity 
+                        ? eventCapacity 
+                        : value;
+                      handleUpdateCategory(category.id, { max_quantity: clampedValue });
+                    }}
+                    onKeyDown={blockInvalidChars}
                     placeholder={i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited'}
                   />
+                  {!capacityUnlimited && eventCapacity && (
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.language === 'de' ? `Max. ${eventCapacity} (Event-Kapazität)` : `Max. ${eventCapacity} (event capacity)`}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -281,10 +301,25 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
               <Input
                 type="number"
                 min="1"
+                max={!capacityUnlimited && eventCapacity ? eventCapacity : undefined}
                 value={newCategory.maxQuantity}
-                onChange={(e) => setNewCategory({ ...newCategory, maxQuantity: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Clamp to eventCapacity if set
+                  if (value && !capacityUnlimited && eventCapacity && parseInt(value) > eventCapacity) {
+                    setNewCategory({ ...newCategory, maxQuantity: eventCapacity.toString() });
+                  } else {
+                    setNewCategory({ ...newCategory, maxQuantity: value });
+                  }
+                }}
+                onKeyDown={blockInvalidChars}
                 placeholder={i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited'}
               />
+              {!capacityUnlimited && eventCapacity && (
+                <p className="text-xs text-muted-foreground">
+                  {i18n.language === 'de' ? `Max. ${eventCapacity} (Event-Kapazität)` : `Max. ${eventCapacity} (event capacity)`}
+                </p>
+              )}
             </div>
           </div>
 
