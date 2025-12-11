@@ -22,6 +22,8 @@
   },
   "eventForm": {
     "dateTime": "Date & Time",
+    "startLabel": "Start",
+    "endLabel": "End",
     "startTime": "Start",
     "endTime": "End",
     "confirm": "Confirm",

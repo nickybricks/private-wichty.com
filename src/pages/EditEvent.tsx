@@ -96,6 +96,7 @@ export default function EditEvent() {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [eventDate, setEventDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
@@ -189,6 +190,7 @@ export default function EditEvent() {
       setDescription(eventData.description || "");
       setIsPublic(eventData.is_public ?? true);
       setEventDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
+      setEndDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
       setStartTime(eventData.event_time || "");
       setEndTime(eventData.end_time || "");
       setLocation(eventData.location || "");
@@ -794,10 +796,12 @@ export default function EditEvent() {
         date={eventDate}
         startTime={startTime}
         endTime={endTime}
-        onConfirm={(date, start, end) => {
+        endDate={endDate}
+        onConfirm={(date, start, end, eDate) => {
           setEventDate(date);
           setStartTime(start);
           setEndTime(end);
+          setEndDate(eDate);
         }}
       />
       <LocationPopup
