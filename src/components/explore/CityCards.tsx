@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { POPULAR_CITIES } from "@/data/cities";
+import { fetchCities, City, FALLBACK_CITIES } from "@/data/cities";
 
 interface CityCardsProps {
   availableCities: string[];
@@ -10,9 +11,14 @@ interface CityCardsProps {
 export function CityCards({ availableCities }: CityCardsProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("explore");
+  const [cities, setCities] = useState<City[]>(FALLBACK_CITIES);
+
+  useEffect(() => {
+    fetchCities().then(setCities);
+  }, []);
 
   // Filter cities to only show those with events
-  const citiesToShow = POPULAR_CITIES.filter(city =>
+  const citiesToShow = cities.filter(city =>
     availableCities.some(ac =>
       ac.toLowerCase().includes(city.name.toLowerCase()) ||
       city.name.toLowerCase().includes(ac.toLowerCase())
@@ -37,7 +43,7 @@ export function CityCards({ availableCities }: CityCardsProps) {
               className="group flex-shrink-0 w-28 h-28 relative rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
             >
               <img
-                src={city.image}
+                src={city.image_url || ""}
                 alt={city.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />

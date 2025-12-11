@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      cities: {
+        Row: {
+          country: string
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          id: string
+          image_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           attendance_count: number | null
