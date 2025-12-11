@@ -689,6 +689,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         ticketCategories={ticketCategories}
         stripeConnected={stripeConnected}
         onConfirm={setTicketCategories}
+        eventCapacity={maxCapacity ? parseInt(maxCapacity) : null}
+        capacityUnlimited={capacityUnlimited}
       />
       <CapacityPopup
         open={capacityPopupOpen}

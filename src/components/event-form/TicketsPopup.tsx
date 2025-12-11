@@ -13,6 +13,8 @@ interface TicketsPopupProps {
   ticketCategories: PendingTicketCategory[];
   stripeConnected: boolean | null;
   onConfirm: (categories: PendingTicketCategory[]) => void;
+  eventCapacity?: number | null;
+  capacityUnlimited?: boolean;
 }
 
 export function TicketsPopup({
@@ -21,6 +23,8 @@ export function TicketsPopup({
   ticketCategories: initialCategories,
   stripeConnected,
   onConfirm,
+  eventCapacity,
+  capacityUnlimited,
 }: TicketsPopupProps) {
   const { t, i18n } = useTranslation("forms");
   const [categories, setCategories] = useState<PendingTicketCategory[]>(initialCategories);
@@ -85,6 +89,8 @@ export function TicketsPopup({
           categories={categories}
           onCategoriesChange={setCategories}
           stripeConnected={stripeConnected}
+          eventCapacity={eventCapacity}
+          capacityUnlimited={capacityUnlimited}
         />
 
         <Button 
