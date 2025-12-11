@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Gift, Check, Pencil } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Gift, Check, Pencil, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EditWishDialog } from "./EditWishDialog";
 
@@ -45,6 +46,10 @@ export function ParticipantsList({ participants, eventStatus, onUpdate }: Partic
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const isAnonymous = (name: string) => {
+    return name.toLowerCase() === 'anonym' || name.toLowerCase() === 'anonymous';
   };
   
   const currentParticipant = currentUserId 
@@ -115,18 +120,30 @@ export function ParticipantsList({ participants, eventStatus, onUpdate }: Partic
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Avatar className="h-10 w-10 border-2 border-border">
-                  <AvatarFallback className="bg-secondary text-secondary-foreground font-medium">
-                    {getInitials(participant.name)}
+                <Avatar className={`h-10 w-10 border-2 ${isAnonymous(participant.name) ? 'border-muted bg-muted' : 'border-border'}`}>
+                  <AvatarFallback className={`font-medium ${isAnonymous(participant.name) ? 'bg-muted text-muted-foreground' : 'bg-secondary text-secondary-foreground'}`}>
+                    {isAnonymous(participant.name) ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      getInitials(participant.name)
+                    )}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {participant.name}
-                    {isCurrentUser && (
-                      <span className="text-xs text-muted-foreground ml-2">{t('you')}</span>
+                  <div className="flex items-center gap-2">
+                    <p className={`font-medium truncate ${isAnonymous(participant.name) ? 'text-muted-foreground italic' : ''}`}>
+                      {participant.name}
+                    </p>
+                    {isAnonymous(participant.name) && (
+                      <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-muted-foreground border-muted">
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        {t('anonymous', 'Anonym')}
+                      </Badge>
                     )}
-                  </p>
+                    {isCurrentUser && (
+                      <span className="text-xs text-muted-foreground">({t('you')})</span>
+                    )}
+                  </div>
                   {shouldShowWish && (
                     <p className="text-sm text-muted-foreground truncate">
                       {t('wish')}: {participant.wish}
