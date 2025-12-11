@@ -47,7 +47,8 @@ export function JoinEventSheet({
 }: JoinEventSheetProps) {
   const { t, i18n } = useTranslation('event');
   const { t: ta } = useTranslation('auth');
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -84,10 +85,12 @@ export function JoinEventSheet({
 
       if (profile) {
         setUserProfile(profile);
-        // Pre-fill name from profile
-        const profileName = getProfileDisplayName(profile);
-        if (profileName) {
-          setName(profileName);
+        // Pre-fill names from profile
+        if (profile.first_name) {
+          setFirstName(profile.first_name);
+        }
+        if (profile.last_name) {
+          setLastName(profile.last_name);
         }
       }
     } catch (error) {
@@ -218,10 +221,21 @@ export function JoinEventSheet({
   };
 
   const handleJoin = async () => {
-    const displayName = name.trim() || getProfileDisplayName(userProfile);
+    const firstNameTrimmed = firstName.trim();
+    const lastNameTrimmed = lastName.trim();
+    
+    // Build display name from first/last or fallback to profile
+    let displayName = "";
+    if (firstNameTrimmed && lastNameTrimmed) {
+      displayName = `${firstNameTrimmed} ${lastNameTrimmed}`;
+    } else if (firstNameTrimmed) {
+      displayName = firstNameTrimmed;
+    } else {
+      displayName = getProfileDisplayName(userProfile);
+    }
     
     if (!displayName) {
-      toast.error(i18n.language === 'de' ? 'Bitte gib deinen Namen ein' : 'Please enter your name');
+      toast.error(i18n.language === 'de' ? 'Bitte gib deinen Vor- und Nachnamen ein' : 'Please enter your first and last name');
       return;
     }
 
@@ -233,11 +247,14 @@ export function JoinEventSheet({
     setLoading(true);
 
     try {
-      // If user entered a new name and didn't have one before, save it to their profile
-      if (name.trim() && !hasProfile && userId) {
+      // If user entered names and didn't have them before, save to their profile
+      if (firstNameTrimmed && !hasProfile && userId) {
         await supabase
           .from("profiles")
-          .update({ display_name: name.trim() })
+          .update({ 
+            first_name: firstNameTrimmed,
+            last_name: lastNameTrimmed || null
+          })
           .eq("id", userId);
       }
 
@@ -354,7 +371,8 @@ export function JoinEventSheet({
       }
 
       onSuccess();
-      setName("");
+      setFirstName("");
+      setLastName("");
     } catch (error: any) {
       console.error("Error joining event:", error);
       toast.error(error.message || t('join.error'));
@@ -444,8 +462,8 @@ export function JoinEventSheet({
               <Check className="h-5 w-5 text-green-500" />
             </div>
           ) : (
-            // No profile name - ask for name and save to profile
-            <div className="space-y-3">
+            // No profile name - ask for first and last name
+            <div className="space-y-4">
               <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
                 <p className="text-sm text-amber-800">
                   {i18n.language === 'de' 
@@ -453,18 +471,28 @@ export function JoinEventSheet({
                     : "You haven't set a name in your profile yet. The name will be saved automatically."}
                 </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-base">
-                  {t('join.yourName')}
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-base">
+                    {i18n.language === 'de' ? 'Vorname' : 'First name'}
+                  </Label>
                   <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={t('join.namePlaceholder')}
-                    className="pl-10"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder={i18n.language === 'de' ? 'Max' : 'John'}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-base">
+                    {i18n.language === 'de' ? 'Nachname' : 'Last name'}
+                  </Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder={i18n.language === 'de' ? 'Mustermann' : 'Doe'}
                     required
                   />
                 </div>
