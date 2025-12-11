@@ -75,11 +75,13 @@ export default function ExploreCity() {
     const fetchEvents = async () => {
       setLoading(true);
       try {
+        const today = new Date().toISOString().split('T')[0];
         let query = supabase
           .from("events")
           .select("*")
           .eq("is_public", true)
           .ilike("city", `%${currentCity}%`)
+          .gte("event_date", today)
           .order("event_date", { ascending: true });
 
         if (selectedTags.length > 0) {
