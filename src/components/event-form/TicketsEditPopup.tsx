@@ -12,6 +12,8 @@ interface TicketsEditPopupProps {
   eventId: string;
   isPaidEvent: boolean;
   stripeConnected: boolean | null;
+  eventCapacity?: number | null;
+  capacityUnlimited?: boolean;
 }
 
 export function TicketsEditPopup({
@@ -20,6 +22,8 @@ export function TicketsEditPopup({
   eventId,
   isPaidEvent,
   stripeConnected,
+  eventCapacity,
+  capacityUnlimited,
 }: TicketsEditPopupProps) {
   const { t, i18n } = useTranslation("forms");
 
@@ -60,6 +64,8 @@ export function TicketsEditPopup({
           eventId={eventId}
           isPaidEvent={isPaidEvent}
           stripeConnected={stripeConnected}
+          eventCapacity={eventCapacity}
+          capacityUnlimited={capacityUnlimited}
         />
 
         <Button 

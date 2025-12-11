@@ -857,6 +857,8 @@ export default function EditEvent() {
         eventId={id!}
         isPaidEvent={isPaid}
         stripeConnected={stripeConnected}
+        eventCapacity={maxCapacity ? parseInt(maxCapacity) : null}
+        capacityUnlimited={capacityUnlimited}
       />
     </div>
   );

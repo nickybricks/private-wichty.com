@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Plus,
   Trash2,
@@ -16,6 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+// Helper to block "e", "E", "+", "-" in number inputs
+const blockInvalidChars = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (["e", "E", "+", "-"].includes(e.key)) {
+    e.preventDefault();
+  }
+};
 
 interface TicketCategory {
   id: string;
@@ -33,9 +41,18 @@ interface TicketCategoriesProps {
   isPaidEvent: boolean;
   stripeConnected?: boolean | null;
   onCategoriesChange?: (categories: TicketCategory[]) => void;
+  eventCapacity?: number | null;
+  capacityUnlimited?: boolean;
 }
 
-export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCategoriesChange }: TicketCategoriesProps) {
+export function TicketCategories({ 
+  eventId, 
+  isPaidEvent, 
+  stripeConnected, 
+  onCategoriesChange,
+  eventCapacity,
+  capacityUnlimited 
+}: TicketCategoriesProps) {
   const { i18n } = useTranslation();
   const [categories, setCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -241,6 +258,7 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
                       onChange={(e) => handleUpdateCategory(category.id, { 
                         price_cents: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0 
                       })}
+                      onKeyDown={blockInvalidChars}
                       className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
                       placeholder="0.00"
                       disabled={stripeConnected === false}
@@ -252,6 +270,17 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
                       {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
                     </p>
                   )}
+                  {category.price_cents > 0 && (
+                    <div className="flex items-center justify-between gap-2 pt-2">
+                      <Label className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
+                      </Label>
+                      <Switch
+                        checked={false}
+                        onCheckedChange={() => {}}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -259,12 +288,23 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
                   <Input
                     type="number"
                     min="1"
+                    max={!capacityUnlimited && eventCapacity ? eventCapacity : undefined}
                     value={category.max_quantity || ""}
-                    onChange={(e) => handleUpdateCategory(category.id, { 
-                      max_quantity: e.target.value ? parseInt(e.target.value) : null 
-                    })}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : null;
+                      const clampedValue = value && !capacityUnlimited && eventCapacity && value > eventCapacity 
+                        ? eventCapacity 
+                        : value;
+                      handleUpdateCategory(category.id, { max_quantity: clampedValue });
+                    }}
+                    onKeyDown={blockInvalidChars}
                     placeholder={i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited'}
                   />
+                  {!capacityUnlimited && eventCapacity && (
+                    <p className="text-xs text-muted-foreground">
+                      {i18n.language === 'de' ? `Max. ${eventCapacity} (Event-Kapazität)` : `Max. ${eventCapacity} (event capacity)`}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -322,6 +362,7 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
                   step="0.50"
                   value={newCategory.price}
                   onChange={(e) => setNewCategory({ ...newCategory, price: e.target.value })}
+                  onKeyDown={blockInvalidChars}
                   className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
                   placeholder={stripeConnected === false 
                     ? (i18n.language === 'de' ? 'Stripe verbinden' : 'Connect Stripe')
@@ -335,6 +376,17 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
                   {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
                 </p>
               )}
+              {parseFloat(newCategory.price) > 0 && (
+                <div className="flex items-center justify-between gap-2 pt-2">
+                  <Label className="text-sm text-muted-foreground">
+                    {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
+                  </Label>
+                  <Switch
+                    checked={false}
+                    onCheckedChange={() => {}}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -342,10 +394,24 @@ export function TicketCategories({ eventId, isPaidEvent, stripeConnected, onCate
               <Input
                 type="number"
                 min="1"
+                max={!capacityUnlimited && eventCapacity ? eventCapacity : undefined}
                 value={newCategory.maxQuantity}
-                onChange={(e) => setNewCategory({ ...newCategory, maxQuantity: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value && !capacityUnlimited && eventCapacity && parseInt(value) > eventCapacity) {
+                    setNewCategory({ ...newCategory, maxQuantity: eventCapacity.toString() });
+                  } else {
+                    setNewCategory({ ...newCategory, maxQuantity: value });
+                  }
+                }}
+                onKeyDown={blockInvalidChars}
                 placeholder={i18n.language === 'de' ? 'Unbegrenzt' : 'Unlimited'}
               />
+              {!capacityUnlimited && eventCapacity && (
+                <p className="text-xs text-muted-foreground">
+                  {i18n.language === 'de' ? `Max. ${eventCapacity} (Event-Kapazität)` : `Max. ${eventCapacity} (event capacity)`}
+                </p>
+              )}
             </div>
           </div>
 
