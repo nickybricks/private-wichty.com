@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { 
   Plus, 
   Trash2, 
@@ -14,6 +15,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Helper to block "e", "E", "+", "-" in number inputs
+const blockInvalidChars = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (["e", "E", "+", "-"].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
 export interface PendingTicketCategory {
   id: string;
   name: string;
@@ -21,6 +29,7 @@ export interface PendingTicketCategory {
   price_cents: number;
   max_quantity: number | null;
   sort_order: number;
+  pass_fee_to_customer?: boolean;
 }
 
 interface TicketCategoriesLocalProps {
@@ -36,7 +45,8 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
     name: "",
     description: "",
     price: "",
-    maxQuantity: ""
+    maxQuantity: "",
+    passFeeToCustomer: false
   });
   const [showNewForm, setShowNewForm] = useState(false);
 
@@ -51,11 +61,12 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
       description: newCategory.description.trim(),
       price_cents: priceCents,
       max_quantity: newCategory.maxQuantity ? parseInt(newCategory.maxQuantity) : null,
-      sort_order: categories.length
+      sort_order: categories.length,
+      pass_fee_to_customer: priceCents > 0 ? newCategory.passFeeToCustomer : false
     };
 
     onCategoriesChange([...categories, newCat]);
-    setNewCategory({ name: "", description: "", price: "", maxQuantity: "" });
+    setNewCategory({ name: "", description: "", price: "", maxQuantity: "", passFeeToCustomer: false });
     setShowNewForm(false);
   };
 
@@ -145,6 +156,7 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
                       onChange={(e) => handleUpdateCategory(category.id, { 
                         price_cents: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0 
                       })}
+                      onKeyDown={blockInvalidChars}
                       className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
                       placeholder="0.00"
                       disabled={stripeConnected === false}
@@ -154,6 +166,17 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
                     <p className="text-xs text-muted-foreground">
                       {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
                     </p>
+                  )}
+                  {category.price_cents > 0 && (
+                    <div className="flex items-center justify-between gap-2 pt-2">
+                      <Label className="text-sm text-muted-foreground">
+                        {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
+                      </Label>
+                      <Switch
+                        checked={category.pass_fee_to_customer || false}
+                        onCheckedChange={(checked) => handleUpdateCategory(category.id, { pass_fee_to_customer: checked })}
+                      />
+                    </div>
                   )}
                 </div>
 
@@ -226,6 +249,7 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
                   step="0.50"
                   value={newCategory.price}
                   onChange={(e) => setNewCategory({ ...newCategory, price: e.target.value })}
+                  onKeyDown={blockInvalidChars}
                   className={cn("pl-9", stripeConnected === false && "bg-muted cursor-not-allowed")}
                   placeholder={stripeConnected === false 
                     ? (i18n.language === 'de' ? 'Stripe verbinden' : 'Connect Stripe')
@@ -238,6 +262,17 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
                 <p className="text-xs text-muted-foreground">
                   {i18n.language === 'de' ? 'Stripe erforderlich' : 'Stripe required'}
                 </p>
+              )}
+              {parseFloat(newCategory.price) > 0 && (
+                <div className="flex items-center justify-between gap-2 pt-2">
+                  <Label className="text-sm text-muted-foreground">
+                    {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
+                  </Label>
+                  <Switch
+                    checked={newCategory.passFeeToCustomer}
+                    onCheckedChange={(checked) => setNewCategory({ ...newCategory, passFeeToCustomer: checked })}
+                  />
+                </div>
               )}
             </div>
 
@@ -260,7 +295,7 @@ export function TicketCategoriesLocal({ categories, onCategoriesChange, stripeCo
               className="flex-1"
               onClick={() => {
                 setShowNewForm(false);
-                setNewCategory({ name: "", description: "", price: "", maxQuantity: "" });
+                setNewCategory({ name: "", description: "", price: "", maxQuantity: "", passFeeToCustomer: false });
               }}
             >
               {i18n.language === 'de' ? 'Abbrechen' : 'Cancel'}
