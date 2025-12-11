@@ -12,8 +12,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, CreditCard, Check, Clock } from "lucide-react";
+import { Loader2, User, CreditCard, Check, Clock, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 interface JoinEventSheetProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function JoinEventSheet({
   const { t: ta } = useTranslation('auth');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -221,22 +223,28 @@ export function JoinEventSheet({
   };
 
   const handleJoin = async () => {
-    const firstNameTrimmed = firstName.trim();
-    const lastNameTrimmed = lastName.trim();
-    
-    // Build display name from first/last or fallback to profile
     let displayName = "";
-    if (firstNameTrimmed && lastNameTrimmed) {
-      displayName = `${firstNameTrimmed} ${lastNameTrimmed}`;
-    } else if (firstNameTrimmed) {
-      displayName = firstNameTrimmed;
-    } else {
-      displayName = getProfileDisplayName(userProfile);
-    }
     
-    if (!displayName) {
-      toast.error(i18n.language === 'de' ? 'Bitte gib deinen Vor- und Nachnamen ein' : 'Please enter your first and last name');
-      return;
+    // If anonymous, use "Anonym" as display name
+    if (isAnonymous) {
+      displayName = i18n.language === 'de' ? 'Anonym' : 'Anonymous';
+    } else {
+      const firstNameTrimmed = firstName.trim();
+      const lastNameTrimmed = lastName.trim();
+      
+      // Build display name from first/last or fallback to profile
+      if (firstNameTrimmed && lastNameTrimmed) {
+        displayName = `${firstNameTrimmed} ${lastNameTrimmed}`;
+      } else if (firstNameTrimmed) {
+        displayName = firstNameTrimmed;
+      } else {
+        displayName = getProfileDisplayName(userProfile);
+      }
+      
+      if (!displayName) {
+        toast.error(i18n.language === 'de' ? 'Bitte gib deinen Vor- und Nachnamen ein' : 'Please enter your first and last name');
+        return;
+      }
     }
 
     if (!userId) {
@@ -247,13 +255,13 @@ export function JoinEventSheet({
     setLoading(true);
 
     try {
-      // If user entered names and didn't have them before, save to their profile
-      if (firstNameTrimmed && !hasProfile && userId) {
+      // If user entered names and didn't have them before, save to their profile (only if not anonymous)
+      if (!isAnonymous && firstName.trim() && !hasProfile && userId) {
         await supabase
           .from("profiles")
           .update({ 
-            first_name: firstNameTrimmed,
-            last_name: lastNameTrimmed || null
+            first_name: firstName.trim(),
+            last_name: lastName.trim() || null
           })
           .eq("id", userId);
       }
@@ -443,60 +451,87 @@ export function JoinEventSheet({
         </SheetHeader>
 
         <div className="space-y-6 pb-6">
+          {/* Anonymous Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                <EyeOff className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-medium">
+                  {i18n.language === 'de' ? 'Anonym teilnehmen' : 'Join anonymously'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {i18n.language === 'de' ? 'Dein Name wird nicht angezeigt' : 'Your name won\'t be shown'}
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={isAnonymous}
+              onCheckedChange={setIsAnonymous}
+            />
+          </div>
+
           {loadingProfile ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : hasProfile ? (
-            // User has a profile - show confirmation
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">{profileName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {i18n.language === 'de' ? 'Dein Profil' : 'Your profile'}
-                </p>
-              </div>
-              <Check className="h-5 w-5 text-green-500" />
-            </div>
           ) : (
-            // No profile name - ask for first and last name
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-                <p className="text-sm text-amber-800">
-                  {i18n.language === 'de' 
-                    ? 'Du hast noch keinen Namen in deinem Profil hinterlegt. Der Name wird automatisch gespeichert.' 
-                    : "You haven't set a name in your profile yet. The name will be saved automatically."}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-base">
-                    {i18n.language === 'de' ? 'Vorname' : 'First name'}
-                  </Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={i18n.language === 'de' ? 'Max' : 'John'}
-                    required
-                  />
+            <div className={`transition-opacity duration-200 ${isAnonymous ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+              {hasProfile ? (
+                // User has a profile - show confirmation
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">{profileName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {i18n.language === 'de' ? 'Dein Profil' : 'Your profile'}
+                    </p>
+                  </div>
+                  <Check className="h-5 w-5 text-green-500" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-base">
-                    {i18n.language === 'de' ? 'Nachname' : 'Last name'}
-                  </Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder={i18n.language === 'de' ? 'Mustermann' : 'Doe'}
-                    required
-                  />
+              ) : (
+                // No profile name - ask for first and last name
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                    <p className="text-sm text-amber-800">
+                      {i18n.language === 'de' 
+                        ? 'Du hast noch keinen Namen in deinem Profil hinterlegt. Der Name wird automatisch gespeichert.' 
+                        : "You haven't set a name in your profile yet. The name will be saved automatically."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="text-base">
+                        {i18n.language === 'de' ? 'Vorname' : 'First name'}
+                      </Label>
+                      <Input
+                        id="firstName"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder={i18n.language === 'de' ? 'Max' : 'John'}
+                        disabled={isAnonymous}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-base">
+                        {i18n.language === 'de' ? 'Nachname' : 'Last name'}
+                      </Label>
+                      <Input
+                        id="lastName"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder={i18n.language === 'de' ? 'Mustermann' : 'Doe'}
+                        disabled={isAnonymous}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
