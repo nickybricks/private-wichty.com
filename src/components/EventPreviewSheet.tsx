@@ -42,6 +42,7 @@ interface Event {
   image_url: string | null;
   event_date: string | null;
   event_time: string | null;
+  end_time: string | null;
   location: string | null;
   user_id: string | null;
   is_paid: boolean;
@@ -423,16 +424,30 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
                 <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div className="min-w-0 flex-1">
                   {event.event_date ? (
-                    <>
-                      <p className="font-medium truncate">
-                        {format(new Date(event.event_date), "EEEE, d. MMMM", { locale: dateLocale })}
-                      </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {event.event_time 
-                          ? `${event.event_time.slice(0, 5)} ${i18n.language === 'de' ? 'Uhr' : ''}`
-                          : (i18n.language === 'de' ? 'Ganztägig' : 'All day')}
-                      </p>
-                    </>
+                    <div className="space-y-1">
+                      {/* Start date & time */}
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium truncate">
+                          {format(new Date(event.event_date), "EEE, d. MMM", { locale: dateLocale })}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {event.event_time 
+                            ? `${event.event_time.slice(0, 5)} ${i18n.language === 'de' ? 'Uhr' : ''}`
+                            : (i18n.language === 'de' ? 'Ganztägig' : 'All day')}
+                        </p>
+                      </div>
+                      {/* End date & time - only show if end_time exists */}
+                      {event.end_time && (
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <p className="text-sm truncate">
+                            {format(new Date(event.event_date), "EEE, d. MMM", { locale: dateLocale })}
+                          </p>
+                          <p className="text-sm">
+                            {event.end_time.slice(0, 5)} {i18n.language === 'de' ? 'Uhr' : ''}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <p className="font-medium text-muted-foreground truncate">
                       {t('noDate')}

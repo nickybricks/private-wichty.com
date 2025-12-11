@@ -26,6 +26,7 @@
     "endLabel": "Ende",
     "startTime": "Start",
     "endTime": "Ende",
+    "endTimeError": "Endzeit muss nach der Startzeit liegen",
     "confirm": "Bestätigen",
     "done": "Fertig",
     "location": "Veranstaltungsort",
