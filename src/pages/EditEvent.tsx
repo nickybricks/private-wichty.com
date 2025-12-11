@@ -55,6 +55,7 @@ interface Event {
   status: "waiting" | "active" | "completed";
   image_url: string | null;
   event_date: string | null;
+  end_date: string | null;
   event_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -190,7 +191,7 @@ export default function EditEvent() {
       setDescription(eventData.description || "");
       setIsPublic(eventData.is_public ?? true);
       setEventDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
-      setEndDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
+      setEndDate(eventData.end_date ? new Date(eventData.end_date) : (eventData.event_date ? new Date(eventData.event_date) : undefined));
       setStartTime(eventData.event_time || "");
       setEndTime(eventData.end_time || "");
       setLocation(eventData.location || "");
@@ -316,6 +317,7 @@ export default function EditEvent() {
         description: description.trim() || null,
         is_public: isPublic,
         event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
+        end_date: endDate ? format(endDate, "yyyy-MM-dd") : (eventDate ? format(eventDate, "yyyy-MM-dd") : null),
         event_time: startTime || null,
         end_time: endTime || null,
         location: location.trim() || null,

@@ -295,6 +295,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           description: description.trim() || null,
           is_public: isPublic,
           event_date: format(eventDate, "yyyy-MM-dd"),
+          end_date: endDate ? format(endDate, "yyyy-MM-dd") : format(eventDate, "yyyy-MM-dd"),
           event_time: startTime || null,
           end_time: endTime || null,
           location: location.trim() || null,
