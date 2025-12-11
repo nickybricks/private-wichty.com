@@ -41,6 +41,7 @@ interface Event {
   status: "waiting" | "active" | "completed";
   image_url: string | null;
   event_date: string | null;
+  end_date: string | null;
   event_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -436,14 +437,18 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
                             : (i18n.language === 'de' ? 'Ganztägig' : 'All day')}
                         </p>
                       </div>
-                      {/* End date & time - only show if end_time exists */}
-                      {event.end_time && (
+                      {/* End date & time - show if end_date is different or end_time exists */}
+                      {(event.end_time || (event.end_date && event.end_date !== event.event_date)) && (
                         <div className="flex items-center justify-between text-muted-foreground">
                           <p className="text-sm truncate">
-                            {format(new Date(event.event_date), "EEE, d. MMM", { locale: dateLocale })}
+                            {event.end_date && event.end_date !== event.event_date
+                              ? format(new Date(event.end_date), "EEE, d. MMM", { locale: dateLocale })
+                              : format(new Date(event.event_date), "EEE, d. MMM", { locale: dateLocale })}
                           </p>
                           <p className="text-sm">
-                            {event.end_time.slice(0, 5)} {i18n.language === 'de' ? 'Uhr' : ''}
+                            {event.end_time 
+                              ? `${event.end_time.slice(0, 5)} ${i18n.language === 'de' ? 'Uhr' : ''}`
+                              : ''}
                           </p>
                         </div>
                       )}
