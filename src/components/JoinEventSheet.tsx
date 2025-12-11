@@ -233,6 +233,14 @@ export function JoinEventSheet({
     setLoading(true);
 
     try {
+      // If user entered a new name and didn't have one before, save it to their profile
+      if (name.trim() && !hasProfile && userId) {
+        await supabase
+          .from("profiles")
+          .update({ display_name: name.trim() })
+          .eq("id", userId);
+      }
+
       // For events requiring approval (non-paid), create a join request
       if (requiresApproval && !isPaidEvent) {
         await handleJoinRequest(displayName);
@@ -436,21 +444,30 @@ export function JoinEventSheet({
               <Check className="h-5 w-5 text-green-500" />
             </div>
           ) : (
-            // No profile name - ask for name
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">
-                {t('join.yourName')}
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('join.namePlaceholder')}
-                  className="pl-10"
-                  required
-                />
+            // No profile name - ask for name and save to profile
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                <p className="text-sm text-amber-800">
+                  {i18n.language === 'de' 
+                    ? 'Du hast noch keinen Namen in deinem Profil hinterlegt. Der Name wird automatisch gespeichert.' 
+                    : "You haven't set a name in your profile yet. The name will be saved automatically."}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-base">
+                  {t('join.yourName')}
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t('join.namePlaceholder')}
+                    className="pl-10"
+                    required
+                  />
+                </div>
               </div>
             </div>
           )}
