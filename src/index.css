@@ -8,22 +8,29 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Pure white background */
     --background: 0 0% 100%;
+    /* Anthracite gray for primary text #1D1D1F */
     --foreground: 240 3% 12%;
 
-    --card: 0 0% 100%;
+    /* Very light gray for cards #FBFBFD */
+    --card: 240 20% 99%;
     --card-foreground: 240 3% 12%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 240 3% 12%;
 
+    /* Vibrant Pink #FF6788 */
     --primary: 347 100% 70%;
     --primary-foreground: 0 0% 100%;
 
+    /* Anthracite gray for secondary buttons #1D1D1F */
     --secondary: 240 3% 12%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 96%;
+    /* Very light gray for muted surfaces */
+    --muted: 240 20% 99%;
+    /* Medium gray for secondary text #6E6E73 */
     --muted-foreground: 240 2% 44%;
 
     --accent: 347 100% 96%;
@@ -43,11 +50,12 @@ All colors MUST be HSL.
     --max-width-wide: 960px;
     --max-width-extra-wide: 1080px;
 
+    /* Soft shadows */
     --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05);
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.08);
     --shadow-strong: 0 10px 30px 0 rgb(0 0 0 / 0.12);
 
-    /* Accent gradient (warm to cool) */
+    /* Wichty Gradient: from-[#FFB86C] via-[#FF6788] to-[#C088FF] */
     --gradient-accent: linear-gradient(90deg, #ffb86c 0%, #ff6788 50%, #c088ff 100%);
     --gradient-accent-transparent: linear-gradient(
       90deg,
@@ -55,6 +63,10 @@ All colors MUST be HSL.
       rgba(255, 103, 136, 0.15) 50%,
       rgba(192, 136, 255, 0.15) 100%
     );
+
+    /* Liquid Glass effect for headers */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-blur: blur(12px);
   }
 
   .dark {
@@ -98,7 +110,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased text-lg;
   }
 
   h1,
@@ -107,7 +119,31 @@ All colors MUST be HSL.
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-semibold tracking-tight text-foreground;
+  }
+
+  /* Ensure minimum 16px for inputs to prevent iOS zoom */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  /* Liquid Glass effect */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+  .card-hover:hover {
+    @apply shadow-medium -translate-y-1;
   }
 }
 
