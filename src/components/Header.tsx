@@ -57,9 +57,26 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               onClick={() => navigate("/dashboard")}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
+              <Sparkles 
+                className="h-6 w-6" 
+                style={{ 
+                  background: 'linear-gradient(90deg, #FFB86C 0%, #FF6788 50%, #C088FF 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  stroke: 'url(#icon-gradient)',
+                  fill: 'none'
+                }} 
+              />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#FFB86C" />
+                    <stop offset="50%" stopColor="#FF6788" />
+                    <stop offset="100%" stopColor="#C088FF" />
+                  </linearGradient>
+                </defs>
+              </svg>
               <span className="text-xl font-bold tracking-tight text-foreground">Wichty</span>
             </button>
           </div>
@@ -121,7 +138,8 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
 
             <button
               onClick={() => setCreateDrawerOpen(true)}
-              className="h-9 w-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow"
+              className="h-9 w-9 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6687' }}
             >
               <Plus className="h-5 w-5 text-white" />
             </button>
