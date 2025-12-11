@@ -526,14 +526,30 @@ export default function EditEvent() {
                         <CalendarIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                         <div className="min-w-0 flex-1">
                           {eventDate ? (
-                            <>
-                              <p className="font-medium truncate">
-                                {format(eventDate, "EEEE, d. MMMM", { locale: dateLocale })}
-                              </p>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {startTime || "00:00"} — {endTime || "00:00"}
-                              </p>
-                            </>
+                            <div className="space-y-0.5">
+                              {/* Start date & time */}
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium truncate">
+                                  {format(eventDate, "EEE, d. MMM", { locale: dateLocale })}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {startTime || "00:00"}
+                                </p>
+                              </div>
+                              {/* End date & time */}
+                              {(endTime || (endDate && endDate.toDateString() !== eventDate.toDateString())) && (
+                                <div className="flex items-center justify-between text-muted-foreground">
+                                  <p className="text-sm truncate">
+                                    {endDate && endDate.toDateString() !== eventDate.toDateString()
+                                      ? format(endDate, "EEE, d. MMM", { locale: dateLocale })
+                                      : format(eventDate, "EEE, d. MMM", { locale: dateLocale })}
+                                  </p>
+                                  <p className="text-sm">
+                                    {endTime || "00:00"}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           ) : (
                             <>
                               <p className="font-medium text-muted-foreground truncate">
