@@ -26,6 +26,7 @@
     "endLabel": "End",
     "startTime": "Start",
     "endTime": "End",
+    "endTimeError": "End time must be after start time",
     "confirm": "Confirm",
     "done": "Done",
     "location": "Location",

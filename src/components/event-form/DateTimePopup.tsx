@@ -7,6 +7,7 @@ import { EventFieldPopup } from "./EventFieldPopup";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface DateTimePopupProps {
   open: boolean;
@@ -168,6 +169,19 @@ export function DateTimePopup({
   }, [open, initialDate, initialStartTime, initialEndTime, initialEndDate]);
 
   const handleConfirm = () => {
+    // Validate that end time is after start time if same date
+    if (startDate && endDate && startDate.toDateString() === endDate.toDateString()) {
+      const [startH, startM] = startTime.split(":").map(Number);
+      const [endH, endM] = endTime.split(":").map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+      
+      if (endMinutes <= startMinutes) {
+        toast.error(t("eventForm.endTimeError", "End time must be after start time"));
+        return;
+      }
+    }
+    
     onConfirm(startDate, startTime, endTime, endDate);
     onOpenChange(false);
   };
