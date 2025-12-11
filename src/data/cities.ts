@@ -15,7 +15,7 @@ export const POPULAR_CITIES = [
     id: "hamburg",
     name: "Hamburg",
     country: "Deutschland",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1566464905538-84cf49fe9afb?w=400&h=400&fit=crop",
   },
   {
     id: "koeln",
