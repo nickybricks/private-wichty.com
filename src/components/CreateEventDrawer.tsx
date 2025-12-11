@@ -60,6 +60,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   
   // Date & Time - pre-filled with today
   const [eventDate, setEventDate] = useState<Date | undefined>(new Date());
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState(format(new Date(), "HH:00"));
   const [endTime, setEndTime] = useState(format(new Date(Date.now() + 2 * 60 * 60 * 1000), "HH:00"));
   
@@ -638,10 +639,12 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         date={eventDate}
         startTime={startTime}
         endTime={endTime}
-        onConfirm={(date, start, end) => {
+        endDate={endDate}
+        onConfirm={(date, start, end, eDate) => {
           setEventDate(date);
           setStartTime(start);
           setEndTime(end);
+          setEndDate(eDate);
         }}
       />
       <LocationPopup
