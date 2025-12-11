@@ -5,7 +5,8 @@
     "dashboard": "Meine Events",
     "explore": "Erkunden",
     "settings": "Einstellungen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "createEvent": "Event erstellen"
   },
   "footer": {
     "about": "Über uns",

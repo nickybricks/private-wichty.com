@@ -121,7 +121,14 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               </Button>
             )}
 
-            <LanguageToggle />
+            <button
+              onClick={() => setCreateDrawerOpen(true)}
+              className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
+              style={{ backgroundColor: '#FF6687' }}
+            >
+              <Plus className="h-4 w-4" />
+              {t('header.createEvent')}
+            </button>
           </div>
 
           {/* Mobile Navigation */}
