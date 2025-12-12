@@ -152,9 +152,9 @@ export default function Landing() {
         <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-28 pb-16 sm:pb-24">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left: Text Content (Desktop) / Center Content (Mobile) */}
-            <div className="space-y-6 sm:space-y-8 order-1 text-center lg:text-left">
+            <div className="space-y-2 lg:space-y-6 order-1 text-center lg:text-left">
               {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-[32px] lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">{t('hero.title')}</span>
                 <br />
                 <span className="bg-gradient-to-r from-[#FF6788] via-[#FF8066] to-[#FFB86C] bg-clip-text text-transparent">
@@ -163,26 +163,26 @@ export default function Landing() {
               </h1>
               
               {/* Subline */}
-              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
+              <p className="text-[19px] lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
                 {t('hero.subtitle')}
               </p>
 
               {/* CTA Button */}
-              <div className="pt-2 flex justify-center lg:justify-start">
+              <div className="py-2 lg:pt-2 flex justify-center lg:justify-start">
                 <Button
                   onClick={handleCreateEvent}
-                  className="h-11 px-6 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  className="h-9 px-5 text-sm font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
                 >
                   {t('hero.cta')}
                 </Button>
               </div>
 
               {/* Mobile: Image after CTA button */}
-              <div className="lg:hidden flex justify-center pt-4">
+              <div className="lg:hidden flex justify-center pt-1">
                 <img 
                   src={heroMockup} 
                   alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
-                  className="w-[60%] max-w-xs"
+                  className="w-[50%] max-w-[180px]"
                 />
               </div>
 
