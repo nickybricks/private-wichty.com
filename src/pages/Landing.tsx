@@ -170,9 +170,8 @@ export default function Landing() {
               {/* CTA Button */}
               <div className="pt-2 flex justify-center lg:justify-start">
                 <Button
-                  size="lg"
                   onClick={handleCreateEvent}
-                  className="h-14 px-8 text-lg font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  className="h-11 px-6 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
                 >
                   {t('hero.cta')}
                 </Button>
