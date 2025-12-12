@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, User, CreditCard, Check, Clock, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { AuthDialog } from "@/components/AuthDialog";
 
 interface JoinEventSheetProps {
   open: boolean;
@@ -56,16 +57,68 @@ export function JoinEventSheet({
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [existingRequest, setExistingRequest] = useState<{ status: string } | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
-  // Fetch user profile when sheet opens
+  // Check auth and fetch user profile when sheet opens
   useEffect(() => {
     if (open) {
-      fetchUserProfile();
-      if (requiresApproval) {
-        checkExistingRequest();
-      }
+      checkAuthAndFetchProfile();
+    } else {
+      // Reset auth check when sheet closes
+      setAuthChecked(false);
     }
-  }, [open, requiresApproval]);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && authChecked && userId && requiresApproval) {
+      checkExistingRequest();
+    }
+  }, [open, authChecked, userId, requiresApproval]);
+
+  const checkAuthAndFetchProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      // User not logged in - show auth dialog
+      setAuthChecked(true);
+      setShowAuthDialog(true);
+      return;
+    }
+
+    setUserId(user.id);
+    setAuthChecked(true);
+    
+    // Fetch profile
+    setLoadingProfile(true);
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, first_name, last_name, username")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setUserProfile(profile);
+        if (profile.first_name) {
+          setFirstName(profile.first_name);
+        }
+        if (profile.last_name) {
+          setLastName(profile.last_name);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const handleAuthSuccess = async () => {
+    setShowAuthDialog(false);
+    // Re-check auth and fetch profile after successful login
+    await checkAuthAndFetchProfile();
+  };
 
   const fetchUserProfile = async () => {
     setLoadingProfile(true);
@@ -417,6 +470,7 @@ export function JoinEventSheet({
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto">
         <SheetHeader className="space-y-3 pb-6">
@@ -562,5 +616,19 @@ export function JoinEventSheet({
         </div>
       </SheetContent>
     </Sheet>
+
+    <AuthDialog
+      open={showAuthDialog}
+      onOpenChange={(open) => {
+        setShowAuthDialog(open);
+        // If user closes auth dialog without logging in, close the sheet too
+        if (!open && !userId) {
+          onOpenChange(false);
+        }
+      }}
+      onSuccess={handleAuthSuccess}
+      defaultTab="signup"
+    />
+  </>
   );
 }
