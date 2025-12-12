@@ -151,8 +151,8 @@ export default function Landing() {
         {/* Hero Section */}
         <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-28 pb-16 sm:pb-24">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left: Text Content */}
-            <div className="space-y-6 sm:space-y-8 order-1">
+            {/* Left: Text Content (Desktop) / Center Content (Mobile) */}
+            <div className="space-y-6 sm:space-y-8 order-1 text-center lg:text-left">
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">{t('hero.title')}</span>
@@ -163,21 +163,12 @@ export default function Landing() {
               </h1>
               
               {/* Subline */}
-              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl">
+              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
                 {t('hero.subtitle')}
               </p>
 
-              {/* Mobile: Image between subline and button */}
-              <div className="lg:hidden">
-                <img 
-                  src={heroMockup} 
-                  alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
-                  className="w-full max-w-sm mx-auto"
-                />
-              </div>
-
               {/* CTA Button */}
-              <div className="pt-2">
+              <div className="pt-2 flex justify-center lg:justify-start">
                 <Button
                   size="lg"
                   onClick={handleCreateEvent}
@@ -185,6 +176,15 @@ export default function Landing() {
                 >
                   {t('hero.cta')}
                 </Button>
+              </div>
+
+              {/* Mobile: Image after CTA button */}
+              <div className="lg:hidden flex justify-center pt-4">
+                <img 
+                  src={heroMockup} 
+                  alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
+                  className="w-[60%] max-w-xs"
+                />
               </div>
 
               {/* Trust Line */}
