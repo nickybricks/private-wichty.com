@@ -2,8 +2,7 @@
   "header": {
     "login": "Sign In",
     "getStarted": "Get Started",
-    "dashboard": "Dashboard",
-    "myEvents": "My Events",
+    "dashboard": "My Events",
     "explore": "Explore",
     "settings": "Settings",
     "logout": "Log Out",

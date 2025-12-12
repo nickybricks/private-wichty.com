@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft, Plus } from "lucide-react";
+import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft, Compass, Plus, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 
 interface HeaderProps {
@@ -87,7 +88,8 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               size="sm"
               onClick={() => navigate("/explore")}
             >
-              🌎 {t('header.explore')}
+              <Compass className="h-4 w-4 mr-2" />
+              {t('header.explore')}
             </Button>
 
             <Button
@@ -96,7 +98,7 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               onClick={() => navigate("/dashboard")}
             >
               <LayoutDashboard className="h-4 w-4 mr-2" />
-              {t('header.myEvents')}
+              {t('header.dashboard')}
             </Button>
 
             <Button
@@ -108,14 +110,6 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               {t('header.settings')}
             </Button>
 
-            <button
-              onClick={() => setCreateDrawerOpen(true)}
-              className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
-              style={{ backgroundColor: '#FF6687' }}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-
             {user && (
               <Button
                 variant="ghost"
@@ -126,6 +120,15 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
                 {t('header.logout')}
               </Button>
             )}
+
+            <button
+              onClick={() => setCreateDrawerOpen(true)}
+              className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
+              style={{ backgroundColor: '#FF6687' }}
+            >
+              <Plus className="h-4 w-4" />
+              {t('header.createEvent')}
+            </button>
           </div>
 
           {/* Mobile Navigation */}
@@ -136,7 +139,8 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               onClick={() => navigate("/explore")}
               className="text-sm px-2"
             >
-              🌎 {t('header.explore')}
+              {t('header.explore')}
+              <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
             </Button>
 
             <button
@@ -160,7 +164,8 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
                     className="justify-start"
                     onClick={() => handleNavigation("/explore")}
                   >
-                    🌎 <span className="ml-3">{t('header.explore')}</span>
+                    <Compass className="h-5 w-5 mr-3" />
+                    {t('header.explore')}
                   </Button>
 
                   <Button
@@ -169,7 +174,7 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
                     onClick={() => handleNavigation("/dashboard")}
                   >
                     <LayoutDashboard className="h-5 w-5 mr-3" />
-                    {t('header.myEvents')}
+                    {t('header.dashboard')}
                   </Button>
 
                   <Button
@@ -194,6 +199,10 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
                       {t('header.logout')}
                     </Button>
                   )}
+
+                  <div className="pt-4 border-t border-border">
+                    <LanguageToggle />
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
