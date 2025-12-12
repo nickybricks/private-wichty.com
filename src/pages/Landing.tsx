@@ -136,7 +136,13 @@ export default function Landing() {
                 <span className="text-xl font-bold tracking-tight">Wichty</span>
               </div>
               <div className="flex items-center gap-3">
-                <LanguageToggle />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/explore")}
+                >
+                  🌎 {tc('header.explore')}
+                </Button>
                 <Button
                   onClick={() => setShowAuthDialog(true)}
                   className="shadow-medium hover:shadow-strong transition-all"

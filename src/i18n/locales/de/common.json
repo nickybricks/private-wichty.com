@@ -2,7 +2,8 @@
   "header": {
     "login": "Anmelden",
     "getStarted": "Loslegen",
-    "dashboard": "Meine Events",
+    "dashboard": "Dashboard",
+    "myEvents": "Meine Events",
     "explore": "Erkunden",
     "settings": "Einstellungen",
     "logout": "Abmelden",
