@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { AuthDialog } from "@/components/AuthDialog";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
@@ -117,36 +115,7 @@ export default function Landing() {
 
       <div className="min-h-screen bg-background">
         {/* Header */}
-        {user ? (
-          <Header user={user} />
-        ) : (
-          <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-            <div className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#FFB86C" />
-                      <stop offset="50%" stopColor="#FF6788" />
-                      <stop offset="100%" stopColor="#C088FF" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <Sparkles className="h-6 w-6" style={{ stroke: 'url(#icon-gradient)' }} />
-                <span className="text-xl font-bold tracking-tight">Wichty</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <LanguageToggle />
-                <Button
-                  onClick={() => setShowAuthDialog(true)}
-                  className="shadow-medium hover:shadow-strong transition-all"
-                >
-                  {tc('header.login')}
-                </Button>
-              </div>
-            </div>
-          </header>
-        )}
+        <Header user={user} />
 
         {/* Hero Section */}
         <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-28 pb-16 sm:pb-24">

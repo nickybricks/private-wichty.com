@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft, Compass, Plus, ArrowUpRight } from "lucide-react";
+import { Sparkles, LogOut, LayoutDashboard, Settings, Menu, ArrowLeft, Compass, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { CreateEventDrawer } from "@/components/CreateEventDrawer";
+import { AuthDialog } from "@/components/AuthDialog";
 
 interface HeaderProps {
   user: any;
@@ -20,13 +20,14 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
   const { t: ta } = useTranslation('auth');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       toast.success(ta('success.logout'));
-      navigate("/auth");
+      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
       toast.error(ta('errors.logoutError'));
@@ -38,10 +39,16 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
     setMobileMenuOpen(false);
   };
 
+  const handleAuthSuccess = () => {
+    setShowAuthDialog(false);
+    navigate("/dashboard");
+  };
+
   return (
     <>
       <header className="border-b border-border bg-card shadow-soft sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Left: Back button + Logo */}
           <div className="flex items-center gap-4">
             {showBackButton && (
               <Button
@@ -54,7 +61,7 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               </Button>
             )}
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(user ? "/dashboard" : "/")}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <Sparkles 
@@ -81,138 +88,184 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/explore")}
-            >
-              <Compass className="h-4 w-4 mr-2" />
-              {t('header.explore')}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-            >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              {t('header.dashboard')}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/settings")}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              {t('header.settings')}
-            </Button>
-
-            {user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                {t('header.logout')}
-              </Button>
-            )}
-
-            <button
-              onClick={() => setCreateDrawerOpen(true)}
-              className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
-              style={{ backgroundColor: '#FF6687' }}
-            >
-              <Plus className="h-4 w-4" />
-              {t('header.createEvent')}
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          <div className="md:hidden flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/explore")}
-              className="text-sm px-2"
-            >
-              {t('header.explore')}
-              <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
-            </Button>
-
-            <button
-              onClick={() => setCreateDrawerOpen(true)}
-              className="h-9 w-9 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:opacity-90 transition-all"
-              style={{ backgroundColor: '#FF6687' }}
-            >
-              <Plus className="h-5 w-5 text-white" />
-            </button>
-
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
+          {/* Right Navigation - Logged In */}
+          {user ? (
+            <>
+              {/* Desktop Navigation - Logged In */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/explore")}
+                >
+                  <Compass className="h-4 w-4 mr-2" />
+                  {t('header.explore')}
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-64">
-                <nav className="flex flex-col gap-4 mt-8">
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => handleNavigation("/explore")}
-                  >
-                    <Compass className="h-5 w-5 mr-3" />
-                    {t('header.explore')}
-                  </Button>
 
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => handleNavigation("/dashboard")}
-                  >
-                    <LayoutDashboard className="h-5 w-5 mr-3" />
-                    {t('header.dashboard')}
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  {t('header.dashboard')}
+                </Button>
 
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => handleNavigation("/settings")}
-                  >
-                    <Settings className="h-5 w-5 mr-3" />
-                    {t('header.settings')}
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/settings")}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  {t('header.settings')}
+                </Button>
 
-                  {user && (
-                    <Button
-                      variant="ghost"
-                      className="justify-start"
-                      onClick={() => {
-                        handleSignOut();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="h-5 w-5 mr-3" />
-                      {t('header.logout')}
+                <button
+                  onClick={() => setCreateDrawerOpen(true)}
+                  className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
+                  style={{ backgroundColor: '#FF6687' }}
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('header.createEvent')}
+                </button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {t('header.logout')}
+                </Button>
+              </div>
+
+              {/* Mobile Navigation - Logged In */}
+              <div className="md:hidden flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/explore")}
+                  className="text-sm px-2"
+                >
+                  <Compass className="h-4 w-4 mr-1" />
+                  {t('header.explore')}
+                </Button>
+
+                <button
+                  onClick={() => setCreateDrawerOpen(true)}
+                  className="h-9 w-9 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#FF6687' }}
+                >
+                  <Plus className="h-5 w-5 text-white" />
+                </button>
+
+                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Menu className="h-6 w-6" />
                     </Button>
-                  )}
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-64">
+                    <nav className="flex flex-col gap-4 mt-8">
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => handleNavigation("/explore")}
+                      >
+                        <Compass className="h-5 w-5 mr-3" />
+                        {t('header.explore')}
+                      </Button>
 
-                  <div className="pt-4 border-t border-border">
-                    <LanguageToggle />
-                  </div>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => handleNavigation("/dashboard")}
+                      >
+                        <LayoutDashboard className="h-5 w-5 mr-3" />
+                        {t('header.dashboard')}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => handleNavigation("/settings")}
+                      >
+                        <Settings className="h-5 w-5 mr-3" />
+                        {t('header.settings')}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => {
+                          handleSignOut();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-5 w-5 mr-3" />
+                        {t('header.logout')}
+                      </Button>
+                    </nav>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Desktop Navigation - Not Logged In */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/explore")}
+                >
+                  <Compass className="h-4 w-4 mr-2" />
+                  {t('header.explore')}
+                </Button>
+
+                <Button
+                  onClick={() => setShowAuthDialog(true)}
+                  className="shadow-md hover:shadow-lg transition-all"
+                >
+                  {t('header.login')}
+                </Button>
+              </div>
+
+              {/* Mobile Navigation - Not Logged In */}
+              <div className="md:hidden flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/explore")}
+                  className="text-sm px-2"
+                >
+                  <Compass className="h-4 w-4 mr-1" />
+                  {t('header.explore')}
+                </Button>
+
+                <Button
+                  onClick={() => setShowAuthDialog(true)}
+                  size="sm"
+                  className="shadow-md hover:shadow-lg transition-all"
+                >
+                  {t('header.login')}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
       <CreateEventDrawer 
         open={createDrawerOpen} 
         onOpenChange={setCreateDrawerOpen}
+      />
+
+      <AuthDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        onSuccess={handleAuthSuccess}
+        defaultTab="login"
       />
     </>
   );
