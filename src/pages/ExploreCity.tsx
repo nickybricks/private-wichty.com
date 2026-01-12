@@ -56,7 +56,7 @@ export default function ExploreCity() {
         .from("events")
         .select("tags")
         .eq("is_public", true)
-        .or(`city.ilike.%${currentCity}%,location.ilike.%${currentCity}%`);
+        .ilike("city", `%${currentCity}%`);
 
       if (data) {
         const tags = new Set<string>();
@@ -80,7 +80,7 @@ export default function ExploreCity() {
           .from("events")
           .select("*")
           .eq("is_public", true)
-          .or(`city.ilike.%${currentCity}%,location.ilike.%${currentCity}%`)
+          .ilike("city", `%${currentCity}%`)
           .gte("event_date", today)
           .order("event_date", { ascending: true });
 
