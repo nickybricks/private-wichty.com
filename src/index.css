@@ -263,3 +263,32 @@ All colors MUST be HSL.
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Safe area insets for iOS */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Smooth input focus transition for mobile keyboards */
+input:focus,
+textarea:focus,
+[contenteditable]:focus {
+  scroll-margin-top: 100px;
+  scroll-margin-bottom: 100px;
+}
+
+/* Prevent content jumping when virtual keyboard appears */
+@supports (height: 100svh) {
+  .drawer-stable {
+    height: 100svh;
+  }
+}
+
+/* Ensure proper overscroll behavior */
+.overscroll-contain {
+  overscroll-behavior: contain;
+}

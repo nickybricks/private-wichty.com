@@ -3,8 +3,18 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
 
-const Drawer = ({ shouldScaleBackground = true, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
+const Drawer = ({ 
+  shouldScaleBackground = true, 
+  repositionInputs = true,
+  ...props 
+}: React.ComponentProps<typeof DrawerPrimitive.Root> & {
+  repositionInputs?: boolean;
+}) => (
+  <DrawerPrimitive.Root 
+    shouldScaleBackground={shouldScaleBackground}
+    repositionInputs={repositionInputs}
+    {...props} 
+  />
 );
 Drawer.displayName = "Drawer";
 
@@ -36,7 +46,8 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[10px] border bg-background",
-        fullScreenOnMobile ? "h-[100dvh] max-h-[100dvh]" : "mt-24 h-auto max-h-[95vh]",
+        // Use svh (small viewport height) for stable height when keyboard appears
+        fullScreenOnMobile ? "h-[100svh] max-h-[100svh]" : "mt-24 h-auto max-h-[85vh]",
         className,
       )}
       {...props}

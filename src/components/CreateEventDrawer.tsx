@@ -711,11 +711,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent fullScreenOnMobile>
-          <div className="mx-auto w-full overflow-y-auto px-4 pb-12">
-            <DrawerHeader className="text-center pb-2">
-              <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
-            </DrawerHeader>
+        <DrawerContent fullScreenOnMobile className="flex flex-col">
+          <DrawerHeader className="text-center pb-2 flex-shrink-0 px-4">
+            <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-safe">
             {formContent}
           </div>
         </DrawerContent>
