@@ -287,6 +287,22 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
       // Determine if event is paid based on ticket categories
       const hasPaidTickets = ticketCategories.some(cat => cat.price_cents > 0);
 
+      // Try to extract city from location if not set by Google Places
+      let finalCity = city;
+      let finalCountry = country;
+      
+      if (!finalCity && location.trim()) {
+        // Try to extract city from location string (e.g., "Berlin, Deutschland")
+        const parts = location.split(',').map(p => p.trim()).filter(p => p);
+        if (parts.length >= 2) {
+          // Usually format is "Address, City, Country" or "City, Country"
+          finalCity = parts[parts.length - 2] || parts[0];
+          finalCountry = parts[parts.length - 1] || null;
+        } else if (parts.length === 1) {
+          finalCity = parts[0];
+        }
+      }
+
       const { data, error } = await supabase
         .from("events")
         .insert({
@@ -298,8 +314,8 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           event_time: startTime || null,
           end_time: endTime || null,
           location: location.trim() || null,
-          city: city || null,
-          country: country || null,
+          city: finalCity || null,
+          country: finalCountry || null,
           tags: tags.length > 0 ? tags : null,
           image_url: imageUrl,
           is_paid: hasPaidTickets,

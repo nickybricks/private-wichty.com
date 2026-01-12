@@ -312,6 +312,22 @@ export default function EditEvent() {
         imageUrl = null;
       }
 
+      // Try to extract city from location if not set by Google Places
+      let finalCity = city;
+      let finalCountry = country;
+      
+      if (!finalCity && location.trim()) {
+        // Try to extract city from location string (e.g., "Berlin, Deutschland")
+        const parts = location.split(',').map(p => p.trim()).filter(p => p);
+        if (parts.length >= 2) {
+          // Usually format is "Address, City, Country" or "City, Country"
+          finalCity = parts[parts.length - 2] || parts[0];
+          finalCountry = parts[parts.length - 1] || null;
+        } else if (parts.length === 1) {
+          finalCity = parts[0];
+        }
+      }
+
       const updateData: any = {
         name: name.trim(),
         description: description.trim() || null,
@@ -321,8 +337,8 @@ export default function EditEvent() {
         event_time: startTime || null,
         end_time: endTime || null,
         location: location.trim() || null,
-        city: city || null,
-        country: country || null,
+        city: finalCity || null,
+        country: finalCountry || null,
         capacity_unlimited: capacityUnlimited,
         target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
         requires_approval: requiresApproval,
