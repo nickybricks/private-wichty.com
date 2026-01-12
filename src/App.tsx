@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import Landing from "./pages/Landing";
 import Event from "./pages/Event";
 import EditEvent from "./pages/EditEvent";
@@ -25,37 +26,39 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Main landing page */}
-          <Route path="/" element={<Landing />} />
-          {/* Redirects */}
-          <Route path="/wichtel-app" element={<Navigate to="/" replace />} />
-          <Route path="/auth" element={<Navigate to="/" replace />} />
-          <Route path="/create" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/explore/category/:tag" element={<ExploreCategory />} />
-          <Route path="/explore/city/:cityName" element={<ExploreCity />} />
-          <Route path="/event/:id" element={<Event />} />
-          <Route path="/event/:id/edit" element={<EditEvent />} />
-          <Route path="/host/:id" element={<HostProfile />} />
-          <Route path="/impressum" element={<Impressum />} />
-          <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/ratgeber" element={<Blog />} />
-          <Route path="/ratgeber/:slug" element={<BlogPost />} />
-          <Route path="/ticket/:ticketCode" element={<Ticket />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      <CookieConsent />
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Main landing page */}
+            <Route path="/" element={<Landing />} />
+            {/* Redirects */}
+            <Route path="/wichtel-app" element={<Navigate to="/" replace />} />
+            <Route path="/auth" element={<Navigate to="/" replace />} />
+            <Route path="/create" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/explore/category/:tag" element={<ExploreCategory />} />
+            <Route path="/explore/city/:cityName" element={<ExploreCity />} />
+            <Route path="/event/:id" element={<Event />} />
+            <Route path="/event/:id/edit" element={<EditEvent />} />
+            <Route path="/host/:id" element={<HostProfile />} />
+            <Route path="/impressum" element={<Impressum />} />
+            <Route path="/datenschutz" element={<Datenschutz />} />
+            <Route path="/ratgeber" element={<Blog />} />
+            <Route path="/ratgeber/:slug" element={<BlogPost />} />
+            <Route path="/ticket/:ticketCode" element={<Ticket />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+        <CookieConsent />
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
