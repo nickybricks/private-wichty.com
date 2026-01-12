@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -99,10 +100,13 @@ export default function Explore() {
     const fetchEvents = async () => {
       setLoading(true);
       try {
+        const today = format(new Date(), "yyyy-MM-dd");
+        
         let query = supabase
           .from("events")
           .select("*")
           .eq("is_public", true)
+          .gte("event_date", today)
           .order("attendance_count", { ascending: false })
           .order("view_count", { ascending: false });
 
@@ -119,7 +123,31 @@ export default function Explore() {
         const { data, error } = await query.limit(50);
 
         if (error) throw error;
-        setEvents(data || []);
+        
+        // Filter out events that have already ended today
+        const now = new Date();
+        const currentTimeStr = format(now, "HH:mm");
+        
+        const filteredEvents = (data || []).filter(event => {
+          // If event is in the future, always show it
+          if (event.event_date > today) return true;
+          
+          // For today's events, check if they've ended
+          if (event.event_date === today) {
+            // Use end_time if available, otherwise use event_time
+            const endTime = event.end_time || event.event_time;
+            
+            // If no time info, show the event (assume it's still valid)
+            if (!endTime) return true;
+            
+            // Compare times (format: "HH:mm")
+            return endTime > currentTimeStr;
+          }
+          
+          return false;
+        });
+        
+        setEvents(filteredEvents);
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);
