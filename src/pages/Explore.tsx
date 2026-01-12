@@ -46,7 +46,7 @@ export default function Explore() {
     const fetchAvailableFilters = async () => {
       const { data } = await supabase
         .from("events")
-        .select("tags, city")
+        .select("tags, city, location")
         .eq("is_public", true);
 
       if (data) {
@@ -57,8 +57,17 @@ export default function Explore() {
           if (event.tags) {
             event.tags.forEach((tag: string) => tags.add(tag));
           }
+          // Use city if available, otherwise try to extract from location
           if (event.city) {
             cities.add(event.city);
+          } else if (event.location) {
+            // Try to extract city from location string (e.g., "Berlin, Deutschland")
+            const parts = event.location.split(',').map((p: string) => p.trim());
+            if (parts.length >= 1) {
+              // Usually the city is either the first or second-to-last part
+              const potentialCity = parts.length === 1 ? parts[0] : parts[parts.length - 2] || parts[0];
+              if (potentialCity) cities.add(potentialCity);
+            }
           }
         });
 
@@ -110,9 +119,9 @@ export default function Explore() {
           .order("attendance_count", { ascending: false })
           .order("view_count", { ascending: false });
 
-        // Filter by city if not "All"
+        // Filter by city - search in both city field and location field
         if (currentCity) {
-          query = query.ilike("city", `%${currentCity}%`);
+          query = query.or(`city.ilike.%${currentCity}%,location.ilike.%${currentCity}%`);
         }
 
         // Filter by multiple tags (OR logic)
