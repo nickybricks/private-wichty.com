@@ -38,15 +38,15 @@ export function EventFieldPopup({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent 
           fullScreenOnMobile 
-          className="px-4 pb-8 overflow-y-auto"
+          className="flex flex-col"
         >
-          <DrawerHeader className="px-0 flex-shrink-0">
+          <DrawerHeader className="px-4 flex-shrink-0">
             <DrawerTitle className="flex items-center gap-2 text-lg font-medium">
               {icon}
               {title}
             </DrawerTitle>
           </DrawerHeader>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-safe">
             {children}
           </div>
         </DrawerContent>
