@@ -16,7 +16,7 @@ export function Footer() {
               <span className="text-lg font-bold">Wichty</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Die moderne Art zu wichteln – digital, fair und sicher.
+              {t('footer.tagline')}
             </p>
           </div>
 
