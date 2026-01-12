@@ -277,8 +277,15 @@ All colors MUST be HSL.
 input:focus,
 textarea:focus,
 [contenteditable]:focus {
-  scroll-margin-top: 100px;
-  scroll-margin-bottom: 100px;
+  scroll-margin-top: 120px;
+  scroll-margin-bottom: 120px;
+}
+
+/* Prevent iOS zoom on input focus */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }
 
 /* Prevent content jumping when virtual keyboard appears */
