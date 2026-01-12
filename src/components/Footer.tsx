@@ -20,16 +20,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Resources */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-sm">{t('footer.resources')}</h3>
-            <div className="flex flex-col gap-2">
-              <Link to="/ratgeber" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t('footer.guide')}
-              </Link>
-            </div>
-          </div>
-
           {/* Legal */}
           <div className="space-y-4">
             <h3 className="font-semibold text-sm">{t('footer.legal')}</h3>
