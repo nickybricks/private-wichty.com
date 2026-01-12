@@ -387,30 +387,32 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             </div>
           )}
 
-          {/* 2. Event Image - 300px height */}
-          <div className="w-full h-[300px] rounded-xl overflow-hidden shadow-medium bg-muted relative">
-            {event.image_url ? (
-              <img
-                src={event.image_url}
-                alt={event.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                <Calendar className="h-16 w-16 text-muted-foreground" />
+          {/* 2. Event Image - Square with side padding */}
+          <div className="px-4">
+            <div className="aspect-square w-full max-w-[280px] mx-auto rounded-xl overflow-hidden shadow-medium bg-muted relative">
+              {event.image_url ? (
+                <img
+                  src={event.image_url}
+                  alt={event.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                  <Calendar className="h-16 w-16 text-muted-foreground" />
+                </div>
+              )}
+              
+              {/* Share button on image */}
+              <div className="absolute top-3 right-3">
+                <Button 
+                  variant="secondary" 
+                  size="icon"
+                  className="h-8 w-8 bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
+                  onClick={copyEventLink}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-            
-            {/* Share button on image */}
-            <div className="absolute top-3 right-3">
-              <Button 
-                variant="secondary" 
-                size="icon"
-                className="h-8 w-8 bg-foreground/80 text-background backdrop-blur-sm hover:bg-foreground shadow-lg"
-                onClick={copyEventLink}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
           
