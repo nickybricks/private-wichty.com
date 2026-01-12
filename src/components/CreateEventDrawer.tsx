@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { PendingTicketCategory } from "@/components/TicketCategoriesLocal";
@@ -438,17 +437,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
             </div>
 
             {/* Event Name */}
-            <Textarea
+            <Input
               placeholder={t('createEvent.eventNamePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary min-h-[2.5rem] resize-none overflow-hidden"
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = target.scrollHeight + 'px';
-              }}
+              className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary h-auto py-2"
               required
             />
 

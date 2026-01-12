@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 const Drawer = ({ 
   shouldScaleBackground = true, 
-  repositionInputs = true,
+  repositionInputs = false,
   ...props 
 }: React.ComponentProps<typeof DrawerPrimitive.Root> & {
   repositionInputs?: boolean;
