@@ -8,6 +8,12 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -170,6 +176,25 @@ export default function Landing() {
               />
             </div>
           </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">
+            {t('faq.title')}
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            {(t('faq.items', { returnObjects: true }) as Array<{ question: string; answer: string }>).map((item, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left text-base sm:text-lg font-medium">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </section>
 
         <Footer />
