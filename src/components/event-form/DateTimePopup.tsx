@@ -34,11 +34,14 @@ function TimePicker({
   className?: string;
 }) {
   const [hours, minutes] = value.split(":").map((v) => parseInt(v, 10) || 0);
+  const [displayHour, setDisplayHour] = useState(hours);
+  const [displayMinute, setDisplayMinute] = useState(minutes);
   const hoursRef = useRef<HTMLDivElement>(null);
   const minutesRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<{ hours?: NodeJS.Timeout; minutes?: NodeJS.Timeout }>({});
   const lastHourIndexRef = useRef<number>(hours);
   const lastMinuteIndexRef = useRef<number>(Math.floor(minutes / 5));
+  const isScrollingRef = useRef(false);
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
@@ -47,90 +50,129 @@ function TimePicker({
   const containerHeight = 220;
   const centerOffset = (containerHeight - itemHeight) / 2;
 
-  // Haptic feedback function
+  // Haptic feedback function - works on Android, uses selection feedback on iOS
   const triggerHaptic = () => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(10); // Short 10ms vibration
+    try {
+      // Try vibration API first (Android)
+      if ('vibrate' in navigator) {
+        navigator.vibrate(8);
+      }
+      // For iOS, we can use a small audio context trick or rely on CSS
+      if ('AudioContext' in window || 'webkitAudioContext' in window) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const audioCtx = new AudioContextClass();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.value = 0.001; // Nearly silent
+        oscillator.frequency.value = 1;
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.001);
+      }
+    } catch (e) {
+      // Silently fail if haptics not supported
     }
   };
 
-  // Initial scroll to selected values
+  // Initial scroll to selected values (without smooth behavior)
   useEffect(() => {
-    if (hoursRef.current) {
-      hoursRef.current.scrollTop = hours * itemHeight;
-      lastHourIndexRef.current = hours;
-    }
-    if (minutesRef.current) {
-      const minuteIndex = Math.floor(minutes / 5);
-      minutesRef.current.scrollTop = minuteIndex * itemHeight;
-      lastMinuteIndexRef.current = minuteIndex;
-    }
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      if (hoursRef.current) {
+        hoursRef.current.style.scrollBehavior = 'auto';
+        hoursRef.current.scrollTop = hours * itemHeight;
+        lastHourIndexRef.current = hours;
+        setTimeout(() => {
+          if (hoursRef.current) hoursRef.current.style.scrollBehavior = 'smooth';
+        }, 50);
+      }
+      if (minutesRef.current) {
+        const minuteIndex = Math.floor(minutes / 5);
+        minutesRef.current.style.scrollBehavior = 'auto';
+        minutesRef.current.scrollTop = minuteIndex * itemHeight;
+        lastMinuteIndexRef.current = minuteIndex;
+        setTimeout(() => {
+          if (minutesRef.current) minutesRef.current.style.scrollBehavior = 'smooth';
+        }, 50);
+      }
+    });
   }, []);
 
   const handleHourScroll = () => {
-    if (hoursRef.current) {
-      const scrollTop = hoursRef.current.scrollTop;
-      const currentIndex = Math.round(scrollTop / itemHeight);
-      const clampedIndex = Math.max(0, Math.min(currentIndex, hourOptions.length - 1));
-      
-      // Trigger haptic when crossing to a new index
-      if (clampedIndex !== lastHourIndexRef.current) {
-        triggerHaptic();
-        lastHourIndexRef.current = clampedIndex;
-      }
+    if (!hoursRef.current) return;
+    
+    const scrollTop = hoursRef.current.scrollTop;
+    const currentIndex = Math.round(scrollTop / itemHeight);
+    const clampedIndex = Math.max(0, Math.min(currentIndex, hourOptions.length - 1));
+    
+    // Update display and trigger haptic when crossing to a new index
+    if (clampedIndex !== lastHourIndexRef.current) {
+      triggerHaptic();
+      lastHourIndexRef.current = clampedIndex;
+      setDisplayHour(hourOptions[clampedIndex]);
     }
 
     if (scrollTimeoutRef.current.hours) {
       clearTimeout(scrollTimeoutRef.current.hours);
     }
+    
     scrollTimeoutRef.current.hours = setTimeout(() => {
       if (hoursRef.current) {
-        const scrollTop = hoursRef.current.scrollTop;
-        const selectedIndex = Math.round(scrollTop / itemHeight);
-        const clampedIndex = Math.max(0, Math.min(selectedIndex, hourOptions.length - 1));
-        const newHour = hourOptions[clampedIndex];
+        const finalScrollTop = hoursRef.current.scrollTop;
+        const selectedIndex = Math.round(finalScrollTop / itemHeight);
+        const finalClampedIndex = Math.max(0, Math.min(selectedIndex, hourOptions.length - 1));
+        const newHour = hourOptions[finalClampedIndex];
         
-        // Snap to position
-        hoursRef.current.scrollTop = clampedIndex * itemHeight;
+        // Smooth snap to final position
+        hoursRef.current.scrollTo({
+          top: finalClampedIndex * itemHeight,
+          behavior: 'smooth'
+        });
         
         if (newHour !== hours) {
           onChange(`${newHour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
         }
       }
-    }, 100);
+    }, 80);
   };
 
   const handleMinuteScroll = () => {
-    if (minutesRef.current) {
-      const scrollTop = minutesRef.current.scrollTop;
-      const currentIndex = Math.round(scrollTop / itemHeight);
-      const clampedIndex = Math.max(0, Math.min(currentIndex, minuteOptions.length - 1));
-      
-      // Trigger haptic when crossing to a new index
-      if (clampedIndex !== lastMinuteIndexRef.current) {
-        triggerHaptic();
-        lastMinuteIndexRef.current = clampedIndex;
-      }
+    if (!minutesRef.current) return;
+    
+    const scrollTop = minutesRef.current.scrollTop;
+    const currentIndex = Math.round(scrollTop / itemHeight);
+    const clampedIndex = Math.max(0, Math.min(currentIndex, minuteOptions.length - 1));
+    
+    // Update display and trigger haptic when crossing to a new index
+    if (clampedIndex !== lastMinuteIndexRef.current) {
+      triggerHaptic();
+      lastMinuteIndexRef.current = clampedIndex;
+      setDisplayMinute(minuteOptions[clampedIndex]);
     }
 
     if (scrollTimeoutRef.current.minutes) {
       clearTimeout(scrollTimeoutRef.current.minutes);
     }
+    
     scrollTimeoutRef.current.minutes = setTimeout(() => {
       if (minutesRef.current) {
-        const scrollTop = minutesRef.current.scrollTop;
-        const selectedIndex = Math.round(scrollTop / itemHeight);
-        const clampedIndex = Math.max(0, Math.min(selectedIndex, minuteOptions.length - 1));
-        const newMinute = minuteOptions[clampedIndex];
+        const finalScrollTop = minutesRef.current.scrollTop;
+        const selectedIndex = Math.round(finalScrollTop / itemHeight);
+        const finalClampedIndex = Math.max(0, Math.min(selectedIndex, minuteOptions.length - 1));
+        const newMinute = minuteOptions[finalClampedIndex];
         
-        // Snap to position
-        minutesRef.current.scrollTop = clampedIndex * itemHeight;
+        // Smooth snap to final position
+        minutesRef.current.scrollTo({
+          top: finalClampedIndex * itemHeight,
+          behavior: 'smooth'
+        });
         
         if (newMinute !== minutes) {
           onChange(`${hours.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`);
         }
       }
-    }, 100);
+    }, 80);
   };
 
   return (
@@ -161,16 +203,19 @@ function TimePicker({
         <div
           ref={hoursRef}
           onScroll={handleHourScroll}
-          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar"
-          style={{ scrollSnapType: 'y mandatory' }}
+          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar overscroll-contain"
+          style={{ 
+            scrollSnapType: 'y mandatory',
+            WebkitOverflowScrolling: 'touch'
+          }}
         >
           <div style={{ height: `${centerOffset}px` }} />
-          {hourOptions.map((hour, index) => (
+          {hourOptions.map((hour) => (
             <div
               key={hour}
               className={cn(
-                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-all",
-                hours === hour
+                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-colors duration-150",
+                displayHour === hour
                   ? "text-foreground"
                   : "text-muted-foreground/40"
               )}
@@ -186,16 +231,19 @@ function TimePicker({
         <div
           ref={minutesRef}
           onScroll={handleMinuteScroll}
-          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar"
-          style={{ scrollSnapType: 'y mandatory' }}
+          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar overscroll-contain"
+          style={{ 
+            scrollSnapType: 'y mandatory',
+            WebkitOverflowScrolling: 'touch'
+          }}
         >
           <div style={{ height: `${centerOffset}px` }} />
-          {minuteOptions.map((minute, index) => (
+          {minuteOptions.map((minute) => (
             <div
               key={minute}
               className={cn(
-                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-all",
-                minutes === minute
+                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-colors duration-150",
+                displayMinute === minute
                   ? "text-foreground"
                   : "text-muted-foreground/40"
               )}
