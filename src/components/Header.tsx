@@ -12,9 +12,10 @@ import { AuthDialog } from "@/components/AuthDialog";
 interface HeaderProps {
   user: any;
   showBackButton?: boolean;
+  onBackClick?: () => void;
 }
 
-export function Header({ user, showBackButton = false }: HeaderProps) {
+export function Header({ user, showBackButton = false, onBackClick }: HeaderProps) {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { t: ta } = useTranslation('auth');
@@ -54,7 +55,13 @@ export function Header({ user, showBackButton = false }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => {
+                  if (onBackClick) {
+                    onBackClick();
+                  } else {
+                    navigate("/dashboard");
+                  }
+                }}
                 className="hover:bg-accent"
               >
                 <ArrowLeft className="h-5 w-5" />

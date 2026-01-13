@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams, useNavigate, Link, useBlocker } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -191,11 +191,9 @@ export default function EditEvent() {
     imagePreview, waitlistEnabled, imageFile, removeImage, originalValues
   ]);
 
-  // Block navigation when there are unsaved changes
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
-  );
+  // State for showing unsaved changes dialog
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   // Handle browser back/refresh
   useEffect(() => {
@@ -571,9 +569,18 @@ export default function EditEvent() {
     return null;
   }
 
+  const handleBackClick = useCallback(() => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation('/dashboard');
+      setShowUnsavedDialog(true);
+    } else {
+      navigate('/dashboard');
+    }
+  }, [hasUnsavedChanges, navigate]);
+
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} showBackButton={true} />
+      <Header user={user} showBackButton={true} onBackClick={handleBackClick} />
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-[820px]">
           <h1 className="text-2xl font-bold mb-6">{t('editEvent.title')}</h1>
@@ -1040,7 +1047,7 @@ export default function EditEvent() {
       )}
       
       {/* Unsaved changes confirmation dialog */}
-      <AlertDialog open={blocker.state === 'blocked'}>
+      <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -1054,21 +1061,32 @@ export default function EditEvent() {
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel 
-              onClick={() => blocker.reset?.()}
+              onClick={() => {
+                setShowUnsavedDialog(false);
+                setPendingNavigation(null);
+              }}
               className="mt-0"
             >
               {i18n.language === 'de' ? 'Abbrechen' : 'Cancel'}
             </AlertDialogCancel>
             <Button 
               variant="outline"
-              onClick={() => blocker.proceed?.()}
+              onClick={() => {
+                setShowUnsavedDialog(false);
+                if (pendingNavigation) {
+                  navigate(pendingNavigation);
+                }
+              }}
             >
               {i18n.language === 'de' ? 'Verwerfen' : 'Discard'}
             </Button>
             <Button 
               onClick={async () => {
                 await handleSave();
-                blocker.proceed?.();
+                setShowUnsavedDialog(false);
+                if (pendingNavigation) {
+                  navigate(pendingNavigation);
+                }
               }}
               disabled={saving}
             >
