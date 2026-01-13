@@ -33,8 +33,10 @@ import {
   Ticket,
   ChevronRight,
   FileText,
-  ScanLine
+  ScanLine,
+  X
 } from "lucide-react";
+import { ImageCropper } from "@/components/ImageCropper";
 import { QRScanner } from "@/components/QRScanner";
 import { JoinRequestsList } from "@/components/JoinRequestsList";
 import { toast } from "sonner";
@@ -111,6 +113,8 @@ export default function EditEvent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   // Popup states
   const [dateTimePopupOpen, setDateTimePopupOpen] = useState(false);
@@ -261,14 +265,30 @@ export default function EditEvent() {
         toast.error(tf('errors.imageSize'));
         return;
       }
-      setImageFile(file);
-      setRemoveImage(false);
+      // Open cropper with the selected image
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
+        setTempImageSrc(e.target?.result as string);
+        setCropperOpen(true);
       };
       reader.readAsDataURL(file);
     }
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(croppedBlob));
+    setRemoveImage(false);
+    setTempImageSrc(null);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(true);
   };
 
   const handleSave = async () => {
@@ -444,7 +464,7 @@ export default function EditEvent() {
               {/* Desktop: Two-column layout */}
               <div className="md:grid md:grid-cols-2 md:gap-8">
                 {/* Left Column: Image Upload */}
-                <div>
+                <div className="relative">
                   <label
                     htmlFor="edit-image"
                     className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
@@ -471,6 +491,16 @@ export default function EditEvent() {
                       onChange={handleImageChange}
                     />
                   </label>
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border/50 shadow-sm transition-colors"
+                      aria-label={i18n.language === 'de' ? 'Bild entfernen' : 'Remove image'}
+                    >
+                      <X className="h-4 w-4 text-foreground" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Right Column: Event Details */}
@@ -860,6 +890,15 @@ export default function EditEvent() {
         eventCapacity={maxCapacity ? parseInt(maxCapacity) : null}
         capacityUnlimited={capacityUnlimited}
       />
+      {tempImageSrc && (
+        <ImageCropper
+          open={cropperOpen}
+          onOpenChange={setCropperOpen}
+          imageSrc={tempImageSrc}
+          onCropComplete={handleCropComplete}
+          aspectRatio={1}
+        />
+      )}
     </div>
   );
 }
