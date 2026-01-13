@@ -532,20 +532,9 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             {/* 7. Description */}
             {event.description && (
               <div className="pt-2">
-                <div 
-                  className="text-sm text-muted-foreground leading-relaxed prose prose-sm prose-gray dark:prose-invert max-w-none
-                    [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_del]:line-through
-                    [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
-                  dangerouslySetInnerHTML={{
-                    __html: event.description
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                      .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
-                      .replace(/~~(.*?)~~/g, '<del>$1</del>')
-                      .replace(/^• /gm, '<li>')
-                      .replace(/\n/g, '<br/>')
-                  }}
-                />
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {event.description}
+                </p>
               </div>
             )}
 

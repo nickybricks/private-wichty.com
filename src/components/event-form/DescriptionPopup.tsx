@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText, Sparkles, Loader2 } from "lucide-react";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Button } from "@/components/ui/button";
-import { RichTextEditor } from "@/components/RichTextEditor";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -29,12 +29,35 @@ export function DescriptionPopup({
   const { t, i18n } = useTranslation("forms");
   const [description, setDescription] = useState(initialDescription);
   const [isGenerating, setIsGenerating] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (open) {
       setDescription(initialDescription);
     }
   }, [open, initialDescription]);
+
+  // Handle bullet point creation on "- " input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === " ") {
+      const textarea = e.currentTarget;
+      const { selectionStart, value } = textarea;
+      const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
+      const currentLine = value.slice(lineStart, selectionStart);
+      
+      if (currentLine === "-") {
+        e.preventDefault();
+        const before = value.slice(0, lineStart);
+        const after = value.slice(selectionStart);
+        const newValue = before + "• " + after;
+        setDescription(newValue);
+        // Set cursor position after the bullet
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = lineStart + 2;
+        }, 0);
+      }
+    }
+  };
 
   const handleGenerateAI = async () => {
     setIsGenerating(true);
@@ -86,20 +109,23 @@ export function DescriptionPopup({
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          {t('richText.tip', i18n.language === "de"
-            ? 'Cmd+B für Fett, Cmd+I für Kursiv, oder Text markieren'
-            : 'Cmd+B for Bold, Cmd+I for Italic, or select text to format')}
+          {i18n.language === "de"
+            ? 'Tipp: Tippe "- " für einen Aufzählungspunkt'
+            : 'Tip: Type "- " for a bullet point'}
         </p>
 
-        <RichTextEditor
+        <Textarea
+          ref={textareaRef}
           value={description}
-          onChange={setDescription}
+          onChange={(e) => setDescription(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={
             i18n.language === "de"
               ? "Beschreibe dein Event... Was erwartet die Teilnehmer?"
               : "Describe your event... What can attendees expect?"
           }
           rows={8}
+          className="resize-none"
         />
 
         <div className="flex gap-2">

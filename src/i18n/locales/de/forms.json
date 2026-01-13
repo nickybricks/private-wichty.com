@@ -1,11 +1,4 @@
 {
-  "richText": {
-    "tip": "Cmd+B für Fett, Cmd+I für Kursiv, oder Text markieren",
-    "bold": "Fett",
-    "italic": "Kursiv",
-    "underline": "Unterstrichen",
-    "strikethrough": "Durchgestrichen"
-  },
   "createEvent": {
     "title": "Event erstellen",
     "subtitle": "In wenigen Sekunden startklar",
