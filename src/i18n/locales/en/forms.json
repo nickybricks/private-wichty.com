@@ -1,4 +1,11 @@
 {
+  "richText": {
+    "tip": "Cmd+B for Bold, Cmd+I for Italic, or select text to format",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strikethrough": "Strikethrough"
+  },
   "createEvent": {
     "title": "Create event",
     "subtitle": "Ready in seconds",
