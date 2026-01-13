@@ -23,7 +23,7 @@ interface DateTimePopupProps {
 
 type ActivePicker = "none" | "startDate" | "startTime" | "endDate" | "endTime";
 
-// Mobile-friendly time picker component
+// Mobile-friendly wheel-style time picker component
 function TimePicker({
   value,
   onChange,
@@ -36,82 +36,125 @@ function TimePicker({
   const [hours, minutes] = value.split(":").map((v) => parseInt(v, 10) || 0);
   const hoursRef = useRef<HTMLDivElement>(null);
   const minutesRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<{ hours?: NodeJS.Timeout; minutes?: NodeJS.Timeout }>({});
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
+  
+  const itemHeight = 44;
+  const containerHeight = 220;
+  const centerOffset = (containerHeight - itemHeight) / 2;
 
+  // Initial scroll to selected values
   useEffect(() => {
-    // Scroll to selected hour - center the selected item
     if (hoursRef.current) {
-      const hourIndex = hours;
-      const itemHeight = 44;
-      const containerHeight = 220;
-      const centerOffset = (containerHeight - itemHeight) / 2;
-      hoursRef.current.scrollTop = hourIndex * itemHeight - centerOffset;
+      hoursRef.current.scrollTop = hours * itemHeight;
     }
-    // Scroll to selected minute - center the selected item
     if (minutesRef.current) {
       const minuteIndex = Math.floor(minutes / 5);
-      const itemHeight = 44;
-      const containerHeight = 220;
-      const centerOffset = (containerHeight - itemHeight) / 2;
-      minutesRef.current.scrollTop = minuteIndex * itemHeight - centerOffset;
+      minutesRef.current.scrollTop = minuteIndex * itemHeight;
     }
   }, []);
 
-  const handleHourSelect = (hour: number) => {
-    onChange(`${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+  const handleHourScroll = () => {
+    if (scrollTimeoutRef.current.hours) {
+      clearTimeout(scrollTimeoutRef.current.hours);
+    }
+    scrollTimeoutRef.current.hours = setTimeout(() => {
+      if (hoursRef.current) {
+        const scrollTop = hoursRef.current.scrollTop;
+        const selectedIndex = Math.round(scrollTop / itemHeight);
+        const clampedIndex = Math.max(0, Math.min(selectedIndex, hourOptions.length - 1));
+        const newHour = hourOptions[clampedIndex];
+        
+        // Snap to position
+        hoursRef.current.scrollTop = clampedIndex * itemHeight;
+        
+        if (newHour !== hours) {
+          onChange(`${newHour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+        }
+      }
+    }, 100);
   };
 
-  const handleMinuteSelect = (minute: number) => {
-    onChange(`${hours.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`);
+  const handleMinuteScroll = () => {
+    if (scrollTimeoutRef.current.minutes) {
+      clearTimeout(scrollTimeoutRef.current.minutes);
+    }
+    scrollTimeoutRef.current.minutes = setTimeout(() => {
+      if (minutesRef.current) {
+        const scrollTop = minutesRef.current.scrollTop;
+        const selectedIndex = Math.round(scrollTop / itemHeight);
+        const clampedIndex = Math.max(0, Math.min(selectedIndex, minuteOptions.length - 1));
+        const newMinute = minuteOptions[clampedIndex];
+        
+        // Snap to position
+        minutesRef.current.scrollTop = clampedIndex * itemHeight;
+        
+        if (newMinute !== minutes) {
+          onChange(`${hours.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`);
+        }
+      }
+    }, 100);
   };
 
   return (
-    <div className={cn("flex justify-center gap-4 py-2", className)}>
-      {/* Hours */}
-      <div
-        ref={hoursRef}
-        className="h-[220px] w-20 overflow-y-auto scroll-smooth snap-y snap-mandatory hide-scrollbar"
-      >
-        <div className="py-[88px]">
-          {hourOptions.map((hour) => (
-            <button
+    <div className={cn("relative py-2", className)}>
+      {/* Selection indicator bar */}
+      <div 
+        className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-11 bg-muted rounded-full pointer-events-none z-0"
+        style={{ marginTop: '4px' }}
+      />
+      
+      <div className="flex justify-center gap-8 relative z-10">
+        {/* Hours */}
+        <div
+          ref={hoursRef}
+          onScroll={handleHourScroll}
+          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar"
+          style={{ scrollSnapType: 'y mandatory' }}
+        >
+          <div style={{ height: `${centerOffset}px` }} />
+          {hourOptions.map((hour, index) => (
+            <div
               key={hour}
-              onClick={() => handleHourSelect(hour)}
               className={cn(
                 "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-all",
                 hours === hour
-                  ? "text-foreground bg-muted rounded-lg"
-                  : "text-muted-foreground/50"
+                  ? "text-foreground"
+                  : "text-muted-foreground/40"
               )}
+              style={{ scrollSnapAlign: 'center' }}
             >
               {hour.toString().padStart(2, "0")}
-            </button>
+            </div>
           ))}
+          <div style={{ height: `${centerOffset}px` }} />
         </div>
-      </div>
 
-      {/* Minutes */}
-      <div
-        ref={minutesRef}
-        className="h-[220px] w-20 overflow-y-auto scroll-smooth snap-y snap-mandatory hide-scrollbar"
-      >
-        <div className="py-[88px]">
-          {minuteOptions.map((minute) => (
-            <button
+        {/* Minutes */}
+        <div
+          ref={minutesRef}
+          onScroll={handleMinuteScroll}
+          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar"
+          style={{ scrollSnapType: 'y mandatory' }}
+        >
+          <div style={{ height: `${centerOffset}px` }} />
+          {minuteOptions.map((minute, index) => (
+            <div
               key={minute}
-              onClick={() => handleMinuteSelect(minute)}
               className={cn(
                 "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-all",
                 minutes === minute
-                  ? "text-foreground bg-muted rounded-lg"
-                  : "text-muted-foreground/50"
+                  ? "text-foreground"
+                  : "text-muted-foreground/40"
               )}
+              style={{ scrollSnapAlign: 'center' }}
             >
               {minute.toString().padStart(2, "0")}
-            </button>
+            </div>
           ))}
+          <div style={{ height: `${centerOffset}px` }} />
         </div>
       </div>
     </div>
