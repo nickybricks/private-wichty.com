@@ -41,7 +41,9 @@ function TimePicker({
   const scrollTimeoutRef = useRef<{ hours?: NodeJS.Timeout; minutes?: NodeJS.Timeout }>({});
   const lastHourIndexRef = useRef<number>(hours);
   const lastMinuteIndexRef = useRef<number>(Math.floor(minutes / 5));
-  const isScrollingRef = useRef(false);
+  const lastScrollTimeRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
+  const velocityRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
+  const lastScrollTopRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
@@ -75,26 +77,43 @@ function TimePicker({
     }
   };
 
+  // Smooth animated scroll with easing
+  const animateScrollTo = (element: HTMLDivElement, targetTop: number, duration: number = 200) => {
+    const startTop = element.scrollTop;
+    const distance = targetTop - startTop;
+    const startTime = performance.now();
+    
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      
+      element.scrollTop = startTop + distance * easedProgress;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  };
+
   // Initial scroll to selected values (without smooth behavior)
   useEffect(() => {
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
       if (hoursRef.current) {
-        hoursRef.current.style.scrollBehavior = 'auto';
         hoursRef.current.scrollTop = hours * itemHeight;
         lastHourIndexRef.current = hours;
-        setTimeout(() => {
-          if (hoursRef.current) hoursRef.current.style.scrollBehavior = 'smooth';
-        }, 50);
+        lastScrollTopRef.current.hours = hours * itemHeight;
       }
       if (minutesRef.current) {
         const minuteIndex = Math.floor(minutes / 5);
-        minutesRef.current.style.scrollBehavior = 'auto';
         minutesRef.current.scrollTop = minuteIndex * itemHeight;
         lastMinuteIndexRef.current = minuteIndex;
-        setTimeout(() => {
-          if (minutesRef.current) minutesRef.current.style.scrollBehavior = 'smooth';
-        }, 50);
+        lastScrollTopRef.current.minutes = minuteIndex * itemHeight;
       }
     });
   }, []);
@@ -102,9 +121,18 @@ function TimePicker({
   const handleHourScroll = () => {
     if (!hoursRef.current) return;
     
+    const now = performance.now();
     const scrollTop = hoursRef.current.scrollTop;
     const currentIndex = Math.round(scrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(currentIndex, hourOptions.length - 1));
+    
+    // Calculate velocity for deceleration
+    const timeDelta = now - lastScrollTimeRef.current.hours;
+    if (timeDelta > 0 && timeDelta < 100) {
+      velocityRef.current.hours = (scrollTop - lastScrollTopRef.current.hours) / timeDelta;
+    }
+    lastScrollTimeRef.current.hours = now;
+    lastScrollTopRef.current.hours = scrollTop;
     
     // Update display and trigger haptic when crossing to a new index
     if (clampedIndex !== lastHourIndexRef.current) {
@@ -117,32 +145,45 @@ function TimePicker({
       clearTimeout(scrollTimeoutRef.current.hours);
     }
     
+    // Longer timeout for high velocity scrolls (let momentum settle)
+    const velocity = Math.abs(velocityRef.current.hours);
+    const timeout = velocity > 1 ? 150 : velocity > 0.5 ? 100 : 60;
+    
     scrollTimeoutRef.current.hours = setTimeout(() => {
       if (hoursRef.current) {
         const finalScrollTop = hoursRef.current.scrollTop;
         const selectedIndex = Math.round(finalScrollTop / itemHeight);
         const finalClampedIndex = Math.max(0, Math.min(selectedIndex, hourOptions.length - 1));
         const newHour = hourOptions[finalClampedIndex];
+        const targetScrollTop = finalClampedIndex * itemHeight;
         
-        // Smooth snap to final position
-        hoursRef.current.scrollTo({
-          top: finalClampedIndex * itemHeight,
-          behavior: 'smooth'
-        });
+        // Smooth animated snap with easing
+        if (Math.abs(finalScrollTop - targetScrollTop) > 1) {
+          animateScrollTo(hoursRef.current, targetScrollTop, 180);
+        }
         
         if (newHour !== hours) {
           onChange(`${newHour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
         }
       }
-    }, 80);
+    }, timeout);
   };
 
   const handleMinuteScroll = () => {
     if (!minutesRef.current) return;
     
+    const now = performance.now();
     const scrollTop = minutesRef.current.scrollTop;
     const currentIndex = Math.round(scrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(currentIndex, minuteOptions.length - 1));
+    
+    // Calculate velocity for deceleration
+    const timeDelta = now - lastScrollTimeRef.current.minutes;
+    if (timeDelta > 0 && timeDelta < 100) {
+      velocityRef.current.minutes = (scrollTop - lastScrollTopRef.current.minutes) / timeDelta;
+    }
+    lastScrollTimeRef.current.minutes = now;
+    lastScrollTopRef.current.minutes = scrollTop;
     
     // Update display and trigger haptic when crossing to a new index
     if (clampedIndex !== lastMinuteIndexRef.current) {
@@ -155,24 +196,28 @@ function TimePicker({
       clearTimeout(scrollTimeoutRef.current.minutes);
     }
     
+    // Longer timeout for high velocity scrolls (let momentum settle)
+    const velocity = Math.abs(velocityRef.current.minutes);
+    const timeout = velocity > 1 ? 150 : velocity > 0.5 ? 100 : 60;
+    
     scrollTimeoutRef.current.minutes = setTimeout(() => {
       if (minutesRef.current) {
         const finalScrollTop = minutesRef.current.scrollTop;
         const selectedIndex = Math.round(finalScrollTop / itemHeight);
         const finalClampedIndex = Math.max(0, Math.min(selectedIndex, minuteOptions.length - 1));
         const newMinute = minuteOptions[finalClampedIndex];
+        const targetScrollTop = finalClampedIndex * itemHeight;
         
-        // Smooth snap to final position
-        minutesRef.current.scrollTo({
-          top: finalClampedIndex * itemHeight,
-          behavior: 'smooth'
-        });
+        // Smooth animated snap with easing
+        if (Math.abs(finalScrollTop - targetScrollTop) > 1) {
+          animateScrollTo(minutesRef.current, targetScrollTop, 180);
+        }
         
         if (newMinute !== minutes) {
           onChange(`${hours.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`);
         }
       }
-    }, 80);
+    }, timeout);
   };
 
   return (
