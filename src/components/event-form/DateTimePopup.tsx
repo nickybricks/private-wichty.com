@@ -37,6 +37,8 @@ function TimePicker({
   const hoursRef = useRef<HTMLDivElement>(null);
   const minutesRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<{ hours?: NodeJS.Timeout; minutes?: NodeJS.Timeout }>({});
+  const lastHourIndexRef = useRef<number>(hours);
+  const lastMinuteIndexRef = useRef<number>(Math.floor(minutes / 5));
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
@@ -45,18 +47,39 @@ function TimePicker({
   const containerHeight = 220;
   const centerOffset = (containerHeight - itemHeight) / 2;
 
+  // Haptic feedback function
+  const triggerHaptic = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10); // Short 10ms vibration
+    }
+  };
+
   // Initial scroll to selected values
   useEffect(() => {
     if (hoursRef.current) {
       hoursRef.current.scrollTop = hours * itemHeight;
+      lastHourIndexRef.current = hours;
     }
     if (minutesRef.current) {
       const minuteIndex = Math.floor(minutes / 5);
       minutesRef.current.scrollTop = minuteIndex * itemHeight;
+      lastMinuteIndexRef.current = minuteIndex;
     }
   }, []);
 
   const handleHourScroll = () => {
+    if (hoursRef.current) {
+      const scrollTop = hoursRef.current.scrollTop;
+      const currentIndex = Math.round(scrollTop / itemHeight);
+      const clampedIndex = Math.max(0, Math.min(currentIndex, hourOptions.length - 1));
+      
+      // Trigger haptic when crossing to a new index
+      if (clampedIndex !== lastHourIndexRef.current) {
+        triggerHaptic();
+        lastHourIndexRef.current = clampedIndex;
+      }
+    }
+
     if (scrollTimeoutRef.current.hours) {
       clearTimeout(scrollTimeoutRef.current.hours);
     }
@@ -78,6 +101,18 @@ function TimePicker({
   };
 
   const handleMinuteScroll = () => {
+    if (minutesRef.current) {
+      const scrollTop = minutesRef.current.scrollTop;
+      const currentIndex = Math.round(scrollTop / itemHeight);
+      const clampedIndex = Math.max(0, Math.min(currentIndex, minuteOptions.length - 1));
+      
+      // Trigger haptic when crossing to a new index
+      if (clampedIndex !== lastMinuteIndexRef.current) {
+        triggerHaptic();
+        lastMinuteIndexRef.current = clampedIndex;
+      }
+    }
+
     if (scrollTimeoutRef.current.minutes) {
       clearTimeout(scrollTimeoutRef.current.minutes);
     }
