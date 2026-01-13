@@ -135,6 +135,22 @@ function TimePicker({
 
   return (
     <div className={cn("relative py-2", className)}>
+      {/* Top fade gradient */}
+      <div 
+        className="absolute left-0 right-0 top-2 h-16 pointer-events-none z-20"
+        style={{ 
+          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background) / 0.8) 30%, transparent 100%)' 
+        }}
+      />
+      
+      {/* Bottom fade gradient */}
+      <div 
+        className="absolute left-0 right-0 bottom-2 h-16 pointer-events-none z-20"
+        style={{ 
+          background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.8) 30%, transparent 100%)' 
+        }}
+      />
+      
       {/* Selection indicator bar */}
       <div 
         className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-11 bg-muted rounded-full pointer-events-none z-0"
