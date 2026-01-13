@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText, Sparkles, Loader2, Bold, Italic, Underline, Strikethrough, List } from "lucide-react";
 import { EventFieldPopup } from "./EventFieldPopup";
@@ -30,8 +30,40 @@ export function DescriptionPopup({
   const [description, setDescription] = useState(initialDescription);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const [toolbarBottom, setToolbarBottom] = useState(0);
   const editorRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  // Track visual viewport to position toolbar above keyboard
+  useEffect(() => {
+    if (!isMobile || !isEditorFocused) return;
+
+    const updateToolbarPosition = () => {
+      if (window.visualViewport) {
+        const viewport = window.visualViewport;
+        // Calculate how much the keyboard has pushed up the viewport
+        const keyboardHeight = window.innerHeight - viewport.height - viewport.offsetTop;
+        setToolbarBottom(Math.max(keyboardHeight, 0));
+      }
+    };
+
+    // Initial position
+    updateToolbarPosition();
+
+    // Listen for viewport changes (keyboard show/hide)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateToolbarPosition);
+      window.visualViewport.addEventListener("scroll", updateToolbarPosition);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateToolbarPosition);
+        window.visualViewport.removeEventListener("scroll", updateToolbarPosition);
+      }
+    };
+  }, [isMobile, isEditorFocused]);
 
   useEffect(() => {
     if (open) {
@@ -100,11 +132,11 @@ export function DescriptionPopup({
     }
   };
 
-  const applyFormatting = (command: string) => {
+  const applyFormatting = useCallback((command: string) => {
     editorRef.current?.focus();
     document.execCommand(command, false);
     handleInput();
-  };
+  }, []);
 
   const handleGenerateAI = async () => {
     setIsGenerating(true);
@@ -222,6 +254,12 @@ export function DescriptionPopup({
         <div
           ref={editorRef}
           contentEditable
+          autoCorrect="off"
+          autoCapitalize="sentences"
+          spellCheck="true"
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onFocus={handleEditorFocus}
@@ -256,12 +294,17 @@ export function DescriptionPopup({
         </div>
       </div>
 
-      {/* Mobile Floating Toolbar - Liquid Glass Style */}
+      {/* Mobile Floating Toolbar - Liquid Glass Style - positioned above keyboard */}
       {isMobile && isEditorFocused && (
-        <div className="fixed bottom-0 left-0 right-0 p-3 pb-6 z-[9999]">
+        <div 
+          ref={toolbarRef}
+          className="fixed left-0 right-0 p-3 z-[9999] transition-all duration-150"
+          style={{ bottom: `${toolbarBottom + 8}px` }}
+        >
           <div className="mx-auto max-w-xs flex items-center justify-center gap-1 px-4 py-2.5 rounded-2xl bg-black/80 dark:bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl">
             <button
               type="button"
+              onTouchStart={(e) => e.preventDefault()}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => applyFormatting("bold")}
               className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
@@ -270,6 +313,7 @@ export function DescriptionPopup({
             </button>
             <button
               type="button"
+              onTouchStart={(e) => e.preventDefault()}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => applyFormatting("italic")}
               className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
@@ -278,6 +322,7 @@ export function DescriptionPopup({
             </button>
             <button
               type="button"
+              onTouchStart={(e) => e.preventDefault()}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => applyFormatting("underline")}
               className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
@@ -287,6 +332,7 @@ export function DescriptionPopup({
             <div className="w-px h-6 bg-white/20 mx-1" />
             <button
               type="button"
+              onTouchStart={(e) => e.preventDefault()}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => applyFormatting("strikeThrough")}
               className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
@@ -295,6 +341,7 @@ export function DescriptionPopup({
             </button>
             <button
               type="button"
+              onTouchStart={(e) => e.preventDefault()}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => applyFormatting("insertUnorderedList")}
               className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
