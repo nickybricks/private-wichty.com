@@ -39,17 +39,21 @@ function TimePicker({
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
 
   useEffect(() => {
-    // Scroll to selected hour
+    // Scroll to selected hour - center the selected item
     if (hoursRef.current) {
       const hourIndex = hours;
       const itemHeight = 44;
-      hoursRef.current.scrollTop = hourIndex * itemHeight - itemHeight * 2;
+      const containerHeight = 220;
+      const centerOffset = (containerHeight - itemHeight) / 2;
+      hoursRef.current.scrollTop = hourIndex * itemHeight - centerOffset;
     }
-    // Scroll to selected minute
+    // Scroll to selected minute - center the selected item
     if (minutesRef.current) {
       const minuteIndex = Math.floor(minutes / 5);
       const itemHeight = 44;
-      minutesRef.current.scrollTop = minuteIndex * itemHeight - itemHeight * 2;
+      const containerHeight = 220;
+      const centerOffset = (containerHeight - itemHeight) / 2;
+      minutesRef.current.scrollTop = minuteIndex * itemHeight - centerOffset;
     }
   }, []);
 
