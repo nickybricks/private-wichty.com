@@ -118,7 +118,7 @@ export default function Landing() {
         <Header user={user} />
 
         {/* Hero Section */}
-        <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-28 pb-16 sm:pb-24">
+        <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-8 pb-16 sm:pb-24">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left: Text Content (Desktop) / Center Content (Mobile) */}
             <div className="space-y-2 lg:space-y-6 order-1 text-center lg:text-left">
