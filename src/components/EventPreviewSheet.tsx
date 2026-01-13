@@ -532,9 +532,10 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             {/* 7. Description */}
             {event.description && (
               <div className="pt-2">
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {event.description}
-                </p>
+                <div 
+                  className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-strong:font-semibold"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
               </div>
             )}
 
