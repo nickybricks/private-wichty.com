@@ -19,14 +19,32 @@ serve(async (req) => {
     }
 
     const systemPrompt = language === "de" 
-      ? `Du bist ein Event-Beschreibungs-Assistent. Erstelle ansprechende, einladende Event-Beschreibungen auf Deutsch. 
-         Halte die Beschreibung zwischen 2-4 Sätzen. Sei freundlich und motivierend.
-         Wenn der Nutzer bereits Text eingegeben hat, verbessere und erweitere diesen.
-         Nutze Bullet Points (•) für wichtige Infos wenn sinnvoll.`
+      ? `Du bist ein Event-Beschreibungs-Assistent. Erstelle ansprechende, einladende Event-Beschreibungen auf Deutsch.
+
+WICHTIGE FORMATIERUNGSREGELN:
+- Nutze HTML-Tags für Formatierung: <b>fett</b>, <i>kursiv</i>, <u>unterstrichen</u>
+- NIEMALS Markdown wie *text* oder **text** verwenden!
+- Nutze <br> für Zeilenumbrüche zwischen Absätzen
+- Nutze • am Zeilenanfang für Aufzählungspunkte, gefolgt von <br>
+- Strukturiere den Text gut lesbar mit Absätzen
+
+STIL:
+- 3-5 kurze Absätze oder eine Mischung aus Fließtext und Aufzählung
+- Freundlich und einladend
+- Hebe wichtige Infos wie Zeit, Ort oder Highlights mit <b>fett</b> hervor`
       : `You are an event description assistant. Create engaging, inviting event descriptions in English.
-         Keep the description between 2-4 sentences. Be friendly and motivating.
-         If the user has already entered text, improve and expand on it.
-         Use bullet points (•) for key info when appropriate.`;
+
+IMPORTANT FORMATTING RULES:
+- Use HTML tags for formatting: <b>bold</b>, <i>italic</i>, <u>underline</u>
+- NEVER use Markdown like *text* or **text**!
+- Use <br> for line breaks between paragraphs
+- Use • at the start of lines for bullet points, followed by <br>
+- Structure text with good readability using paragraphs
+
+STYLE:
+- 3-5 short paragraphs or a mix of prose and bullet points
+- Friendly and inviting
+- Highlight important info like time, location, or highlights with <b>bold</b>`;
 
     const userPrompt = language === "de"
       ? `Erstelle eine Event-Beschreibung für:
@@ -76,7 +94,15 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const generatedText = data.choices?.[0]?.message?.content || "";
+    let generatedText = data.choices?.[0]?.message?.content || "";
+
+    // Convert any remaining Markdown to HTML (fallback)
+    generatedText = generatedText
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')  // **bold** to <b>
+      .replace(/\*([^*]+)\*/g, '<i>$1</i>')       // *italic* to <i>
+      .replace(/__([^_]+)__/g, '<u>$1</u>')       // __underline__ to <u>
+      .replace(/\n\n/g, '<br><br>')               // Double newlines to <br><br>
+      .replace(/\n/g, '<br>');                    // Single newlines to <br>
 
     console.log("Generated description:", generatedText);
 
