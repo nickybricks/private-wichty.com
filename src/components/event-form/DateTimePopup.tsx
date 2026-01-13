@@ -154,7 +154,6 @@ function TimePicker({
       {/* Selection indicator bar */}
       <div 
         className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-11 bg-muted rounded-full pointer-events-none z-0"
-        style={{ marginTop: '4px' }}
       />
       
       <div className="flex justify-center gap-8 relative z-10">
