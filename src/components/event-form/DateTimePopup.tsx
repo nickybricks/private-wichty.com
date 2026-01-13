@@ -23,7 +23,7 @@ interface DateTimePopupProps {
 
 type ActivePicker = "none" | "startDate" | "startTime" | "endDate" | "endTime";
 
-// Mobile-friendly wheel-style time picker component
+// Mobile-friendly wheel-style time picker component with iOS-like infinite scroll
 function TimePicker({
   value,
   onChange,
@@ -41,54 +41,48 @@ function TimePicker({
   const scrollTimeoutRef = useRef<{ hours?: NodeJS.Timeout; minutes?: NodeJS.Timeout }>({});
   const lastHourIndexRef = useRef<number>(hours);
   const lastMinuteIndexRef = useRef<number>(Math.floor(minutes / 5));
-  const lastScrollTimeRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
-  const velocityRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
-  const lastScrollTopRef = useRef<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
+  const isRepositioningRef = useRef<{ hours: boolean; minutes: boolean }>({ hours: false, minutes: false });
 
+  // Create repeated options for infinite scroll effect (3 sets)
   const hourOptions = Array.from({ length: 24 }, (_, i) => i);
   const minuteOptions = Array.from({ length: 12 }, (_, i) => i * 5);
+  
+  // Triple the options for infinite scroll
+  const repeatedHours = [...hourOptions, ...hourOptions, ...hourOptions];
+  const repeatedMinutes = [...minuteOptions, ...minuteOptions, ...minuteOptions];
   
   const itemHeight = 44;
   const containerHeight = 220;
   const centerOffset = (containerHeight - itemHeight) / 2;
+  
+  // Middle set starts at this index
+  const hourMiddleStart = hourOptions.length;
+  const minuteMiddleStart = minuteOptions.length;
 
-  // Haptic feedback function - works on Android, uses selection feedback on iOS
+  // Haptic feedback function
   const triggerHaptic = () => {
     try {
-      // Try vibration API first (Android)
       if ('vibrate' in navigator) {
-        navigator.vibrate(8);
-      }
-      // For iOS, we can use a small audio context trick or rely on CSS
-      if ('AudioContext' in window || 'webkitAudioContext' in window) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const audioCtx = new AudioContextClass();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        gainNode.gain.value = 0.001; // Nearly silent
-        oscillator.frequency.value = 1;
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.001);
+        navigator.vibrate(6);
       }
     } catch (e) {
-      // Silently fail if haptics not supported
+      // Silently fail
     }
   };
 
-  // Smooth animated scroll with easing
-  const animateScrollTo = (element: HTMLDivElement, targetTop: number, duration: number = 200) => {
+  // iOS-like easing function (longer deceleration)
+  const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
+
+  // Smooth animated scroll with iOS-like easing
+  const animateScrollTo = (element: HTMLDivElement, targetTop: number, duration: number = 350) => {
     const startTop = element.scrollTop;
     const distance = targetTop - startTop;
     const startTime = performance.now();
     
-    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-    
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutCubic(progress);
+      const easedProgress = easeOutQuint(progress);
       
       element.scrollTop = startTop + distance * easedProgress;
       
@@ -100,141 +94,161 @@ function TimePicker({
     requestAnimationFrame(animate);
   };
 
-  // Initial scroll to selected values (without smooth behavior)
+  // Reposition to middle set without visual jump
+  const repositionToMiddle = (
+    element: HTMLDivElement, 
+    currentIndex: number, 
+    optionsLength: number, 
+    middleStart: number,
+    isHours: boolean
+  ) => {
+    const refKey = isHours ? 'hours' : 'minutes';
+    if (isRepositioningRef.current[refKey]) return;
+    
+    // Check if we're in the first or last set
+    if (currentIndex < optionsLength || currentIndex >= optionsLength * 2) {
+      isRepositioningRef.current[refKey] = true;
+      const normalizedIndex = currentIndex % optionsLength;
+      const middleIndex = middleStart + normalizedIndex;
+      
+      // Instant reposition (no animation)
+      element.style.scrollBehavior = 'auto';
+      element.scrollTop = middleIndex * itemHeight;
+      
+      requestAnimationFrame(() => {
+        isRepositioningRef.current[refKey] = false;
+      });
+    }
+  };
+
+  // Initial scroll to middle set
   useEffect(() => {
-    // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
       if (hoursRef.current) {
-        hoursRef.current.scrollTop = hours * itemHeight;
+        const initialIndex = hourMiddleStart + hours;
+        hoursRef.current.scrollTop = initialIndex * itemHeight;
         lastHourIndexRef.current = hours;
-        lastScrollTopRef.current.hours = hours * itemHeight;
       }
       if (minutesRef.current) {
         const minuteIndex = Math.floor(minutes / 5);
-        minutesRef.current.scrollTop = minuteIndex * itemHeight;
+        const initialIndex = minuteMiddleStart + minuteIndex;
+        minutesRef.current.scrollTop = initialIndex * itemHeight;
         lastMinuteIndexRef.current = minuteIndex;
-        lastScrollTopRef.current.minutes = minuteIndex * itemHeight;
       }
     });
   }, []);
 
   const handleHourScroll = () => {
-    if (!hoursRef.current) return;
+    if (!hoursRef.current || isRepositioningRef.current.hours) return;
     
-    const now = performance.now();
     const scrollTop = hoursRef.current.scrollTop;
     const currentIndex = Math.round(scrollTop / itemHeight);
-    const clampedIndex = Math.max(0, Math.min(currentIndex, hourOptions.length - 1));
+    const normalizedIndex = ((currentIndex % hourOptions.length) + hourOptions.length) % hourOptions.length;
+    const actualHour = hourOptions[normalizedIndex];
     
-    // Calculate velocity for deceleration
-    const timeDelta = now - lastScrollTimeRef.current.hours;
-    if (timeDelta > 0 && timeDelta < 100) {
-      velocityRef.current.hours = (scrollTop - lastScrollTopRef.current.hours) / timeDelta;
-    }
-    lastScrollTimeRef.current.hours = now;
-    lastScrollTopRef.current.hours = scrollTop;
-    
-    // Update display and trigger haptic when crossing to a new index
-    if (clampedIndex !== lastHourIndexRef.current) {
+    // Update display and trigger haptic when crossing to a new value
+    if (actualHour !== lastHourIndexRef.current) {
       triggerHaptic();
-      lastHourIndexRef.current = clampedIndex;
-      setDisplayHour(hourOptions[clampedIndex]);
+      lastHourIndexRef.current = actualHour;
+      setDisplayHour(actualHour);
     }
 
     if (scrollTimeoutRef.current.hours) {
       clearTimeout(scrollTimeoutRef.current.hours);
     }
     
-    // Longer timeout for high velocity scrolls (let momentum settle)
-    const velocity = Math.abs(velocityRef.current.hours);
-    const timeout = velocity > 1 ? 150 : velocity > 0.5 ? 100 : 60;
-    
+    // Longer timeout for iOS-like momentum
     scrollTimeoutRef.current.hours = setTimeout(() => {
-      if (hoursRef.current) {
+      if (hoursRef.current && !isRepositioningRef.current.hours) {
         const finalScrollTop = hoursRef.current.scrollTop;
         const selectedIndex = Math.round(finalScrollTop / itemHeight);
-        const finalClampedIndex = Math.max(0, Math.min(selectedIndex, hourOptions.length - 1));
-        const newHour = hourOptions[finalClampedIndex];
-        const targetScrollTop = finalClampedIndex * itemHeight;
+        const targetScrollTop = selectedIndex * itemHeight;
         
-        // Smooth animated snap with easing
+        // Smooth animated snap with iOS-like easing
         if (Math.abs(finalScrollTop - targetScrollTop) > 1) {
-          animateScrollTo(hoursRef.current, targetScrollTop, 180);
+          animateScrollTo(hoursRef.current, targetScrollTop, 300);
         }
+        
+        // Reposition to middle after settling
+        setTimeout(() => {
+          if (hoursRef.current) {
+            repositionToMiddle(hoursRef.current, selectedIndex, hourOptions.length, hourMiddleStart, true);
+          }
+        }, 350);
+        
+        const normalizedFinal = ((selectedIndex % hourOptions.length) + hourOptions.length) % hourOptions.length;
+        const newHour = hourOptions[normalizedFinal];
         
         if (newHour !== hours) {
           onChange(`${newHour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
         }
       }
-    }, timeout);
+    }, 120);
   };
 
   const handleMinuteScroll = () => {
-    if (!minutesRef.current) return;
+    if (!minutesRef.current || isRepositioningRef.current.minutes) return;
     
-    const now = performance.now();
     const scrollTop = minutesRef.current.scrollTop;
     const currentIndex = Math.round(scrollTop / itemHeight);
-    const clampedIndex = Math.max(0, Math.min(currentIndex, minuteOptions.length - 1));
+    const normalizedIndex = ((currentIndex % minuteOptions.length) + minuteOptions.length) % minuteOptions.length;
+    const actualMinute = minuteOptions[normalizedIndex];
     
-    // Calculate velocity for deceleration
-    const timeDelta = now - lastScrollTimeRef.current.minutes;
-    if (timeDelta > 0 && timeDelta < 100) {
-      velocityRef.current.minutes = (scrollTop - lastScrollTopRef.current.minutes) / timeDelta;
-    }
-    lastScrollTimeRef.current.minutes = now;
-    lastScrollTopRef.current.minutes = scrollTop;
-    
-    // Update display and trigger haptic when crossing to a new index
-    if (clampedIndex !== lastMinuteIndexRef.current) {
+    // Update display and trigger haptic when crossing to a new value
+    if (actualMinute !== lastMinuteIndexRef.current * 5) {
       triggerHaptic();
-      lastMinuteIndexRef.current = clampedIndex;
-      setDisplayMinute(minuteOptions[clampedIndex]);
+      lastMinuteIndexRef.current = normalizedIndex;
+      setDisplayMinute(actualMinute);
     }
 
     if (scrollTimeoutRef.current.minutes) {
       clearTimeout(scrollTimeoutRef.current.minutes);
     }
     
-    // Longer timeout for high velocity scrolls (let momentum settle)
-    const velocity = Math.abs(velocityRef.current.minutes);
-    const timeout = velocity > 1 ? 150 : velocity > 0.5 ? 100 : 60;
-    
+    // Longer timeout for iOS-like momentum
     scrollTimeoutRef.current.minutes = setTimeout(() => {
-      if (minutesRef.current) {
+      if (minutesRef.current && !isRepositioningRef.current.minutes) {
         const finalScrollTop = minutesRef.current.scrollTop;
         const selectedIndex = Math.round(finalScrollTop / itemHeight);
-        const finalClampedIndex = Math.max(0, Math.min(selectedIndex, minuteOptions.length - 1));
-        const newMinute = minuteOptions[finalClampedIndex];
-        const targetScrollTop = finalClampedIndex * itemHeight;
+        const targetScrollTop = selectedIndex * itemHeight;
         
-        // Smooth animated snap with easing
+        // Smooth animated snap with iOS-like easing
         if (Math.abs(finalScrollTop - targetScrollTop) > 1) {
-          animateScrollTo(minutesRef.current, targetScrollTop, 180);
+          animateScrollTo(minutesRef.current, targetScrollTop, 300);
         }
+        
+        // Reposition to middle after settling
+        setTimeout(() => {
+          if (minutesRef.current) {
+            repositionToMiddle(minutesRef.current, selectedIndex, minuteOptions.length, minuteMiddleStart, false);
+          }
+        }, 350);
+        
+        const normalizedFinal = ((selectedIndex % minuteOptions.length) + minuteOptions.length) % minuteOptions.length;
+        const newMinute = minuteOptions[normalizedFinal];
         
         if (newMinute !== minutes) {
           onChange(`${hours.toString().padStart(2, "0")}:${newMinute.toString().padStart(2, "0")}`);
         }
       }
-    }, timeout);
+    }, 120);
   };
 
   return (
     <div className={cn("relative py-2", className)}>
       {/* Top fade gradient */}
       <div 
-        className="absolute left-0 right-0 top-2 h-16 pointer-events-none z-20"
+        className="absolute left-0 right-0 top-2 h-20 pointer-events-none z-20"
         style={{ 
-          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background) / 0.8) 30%, transparent 100%)' 
+          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background) / 0.9) 40%, transparent 100%)' 
         }}
       />
       
       {/* Bottom fade gradient */}
       <div 
-        className="absolute left-0 right-0 bottom-2 h-16 pointer-events-none z-20"
+        className="absolute left-0 right-0 bottom-2 h-20 pointer-events-none z-20"
         style={{ 
-          background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.8) 30%, transparent 100%)' 
+          background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.9) 40%, transparent 100%)' 
         }}
       />
       
@@ -244,27 +258,27 @@ function TimePicker({
       />
       
       <div className="flex justify-center gap-8 relative z-10">
-        {/* Hours */}
+        {/* Hours - infinite scroll */}
         <div
           ref={hoursRef}
           onScroll={handleHourScroll}
-          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar overscroll-contain"
+          className="h-[220px] w-20 overflow-y-auto hide-scrollbar"
           style={{ 
-            scrollSnapType: 'y mandatory',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}
         >
           <div style={{ height: `${centerOffset}px` }} />
-          {hourOptions.map((hour) => (
+          {repeatedHours.map((hour, index) => (
             <div
-              key={hour}
+              key={`hour-${index}`}
               className={cn(
-                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-colors duration-150",
+                "w-full h-11 flex items-center justify-center text-xl font-medium transition-colors duration-100",
                 displayHour === hour
                   ? "text-foreground"
                   : "text-muted-foreground/40"
               )}
-              style={{ scrollSnapAlign: 'center' }}
             >
               {hour.toString().padStart(2, "0")}
             </div>
@@ -272,27 +286,27 @@ function TimePicker({
           <div style={{ height: `${centerOffset}px` }} />
         </div>
 
-        {/* Minutes */}
+        {/* Minutes - infinite scroll */}
         <div
           ref={minutesRef}
           onScroll={handleMinuteScroll}
-          className="h-[220px] w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar overscroll-contain"
+          className="h-[220px] w-20 overflow-y-auto hide-scrollbar"
           style={{ 
-            scrollSnapType: 'y mandatory',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}
         >
           <div style={{ height: `${centerOffset}px` }} />
-          {minuteOptions.map((minute) => (
+          {repeatedMinutes.map((minute, index) => (
             <div
-              key={minute}
+              key={`minute-${index}`}
               className={cn(
-                "w-full h-11 flex items-center justify-center text-xl font-medium snap-center transition-colors duration-150",
+                "w-full h-11 flex items-center justify-center text-xl font-medium transition-colors duration-100",
                 displayMinute === minute
                   ? "text-foreground"
                   : "text-muted-foreground/40"
               )}
-              style={{ scrollSnapAlign: 'center' }}
             >
               {minute.toString().padStart(2, "0")}
             </div>
