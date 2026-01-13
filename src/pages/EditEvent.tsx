@@ -1,10 +1,20 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams, useNavigate, Link, useBlocker } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,8 +134,81 @@ export default function EditEvent() {
   const [ticketsPopupOpen, setTicketsPopupOpen] = useState(false);
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
   const [ticketCategoriesCount, setTicketCategoriesCount] = useState(0);
+  
+  // Track original values to detect changes
+  const [originalValues, setOriginalValues] = useState<{
+    name: string;
+    description: string;
+    isPublic: boolean;
+    eventDate: Date | undefined;
+    endDate: Date | undefined;
+    startTime: string;
+    endTime: string;
+    location: string;
+    capacityUnlimited: boolean;
+    maxCapacity: string;
+    isPaid: boolean;
+    price: string;
+    requiresApproval: boolean;
+    imagePreview: string | null;
+    waitlistEnabled: boolean;
+  } | null>(null);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    if (!originalValues) return false;
+    
+    const dateChanged = (current: Date | undefined, original: Date | undefined) => {
+      if (!current && !original) return false;
+      if (!current || !original) return true;
+      return current.getTime() !== original.getTime();
+    };
+    
+    return (
+      name !== originalValues.name ||
+      description !== originalValues.description ||
+      isPublic !== originalValues.isPublic ||
+      dateChanged(eventDate, originalValues.eventDate) ||
+      dateChanged(endDate, originalValues.endDate) ||
+      startTime !== originalValues.startTime ||
+      endTime !== originalValues.endTime ||
+      location !== originalValues.location ||
+      capacityUnlimited !== originalValues.capacityUnlimited ||
+      maxCapacity !== originalValues.maxCapacity ||
+      isPaid !== originalValues.isPaid ||
+      price !== originalValues.price ||
+      requiresApproval !== originalValues.requiresApproval ||
+      imagePreview !== originalValues.imagePreview ||
+      waitlistEnabled !== originalValues.waitlistEnabled ||
+      imageFile !== null ||
+      removeImage
+    );
+  }, [
+    name, description, isPublic, eventDate, endDate, startTime, endTime,
+    location, capacityUnlimited, maxCapacity, isPaid, price, requiresApproval,
+    imagePreview, waitlistEnabled, imageFile, removeImage, originalValues
+  ]);
+
+  // Block navigation when there are unsaved changes
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // Handle browser back/refresh
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     checkAuth();
@@ -191,23 +274,58 @@ export default function EditEvent() {
       setEvent(eventData);
       
       // Set form state
-      setName(eventData.name);
-      setDescription(eventData.description || "");
-      setIsPublic(eventData.is_public ?? true);
-      setEventDate(eventData.event_date ? new Date(eventData.event_date) : undefined);
-      setEndDate(eventData.end_date ? new Date(eventData.end_date) : (eventData.event_date ? new Date(eventData.event_date) : undefined));
-      setStartTime(eventData.event_time || "");
-      setEndTime(eventData.end_time || "");
-      setLocation(eventData.location || "");
+      const initialName = eventData.name;
+      const initialDescription = eventData.description || "";
+      const initialIsPublic = eventData.is_public ?? true;
+      const initialEventDate = eventData.event_date ? new Date(eventData.event_date) : undefined;
+      const initialEndDate = eventData.end_date ? new Date(eventData.end_date) : (eventData.event_date ? new Date(eventData.event_date) : undefined);
+      const initialStartTime = eventData.event_time || "";
+      const initialEndTime = eventData.end_time || "";
+      const initialLocation = eventData.location || "";
+      const initialCapacityUnlimited = eventData.capacity_unlimited ?? true;
+      const initialMaxCapacity = eventData.capacity_unlimited ? "" : eventData.target_participants.toString();
+      const initialIsPaid = eventData.is_paid || false;
+      const initialPrice = eventData.price_cents ? (eventData.price_cents / 100).toString() : "";
+      const initialRequiresApproval = eventData.requires_approval || false;
+      const initialImagePreview = eventData.image_url;
+      const initialWaitlistEnabled = eventData.waitlist_enabled || false;
+      
+      setName(initialName);
+      setDescription(initialDescription);
+      setIsPublic(initialIsPublic);
+      setEventDate(initialEventDate);
+      setEndDate(initialEndDate);
+      setStartTime(initialStartTime);
+      setEndTime(initialEndTime);
+      setLocation(initialLocation);
       setCity(eventData.city || null);
       setCountry(eventData.country || null);
-      setCapacityUnlimited(eventData.capacity_unlimited ?? true);
-      setMaxCapacity(eventData.capacity_unlimited ? "" : eventData.target_participants.toString());
-      setIsPaid(eventData.is_paid || false);
-      setPrice(eventData.price_cents ? (eventData.price_cents / 100).toString() : "");
-      setRequiresApproval(eventData.requires_approval || false);
-      setImagePreview(eventData.image_url);
-      setWaitlistEnabled(eventData.waitlist_enabled || false);
+      setCapacityUnlimited(initialCapacityUnlimited);
+      setMaxCapacity(initialMaxCapacity);
+      setIsPaid(initialIsPaid);
+      setPrice(initialPrice);
+      setRequiresApproval(initialRequiresApproval);
+      setImagePreview(initialImagePreview);
+      setWaitlistEnabled(initialWaitlistEnabled);
+      
+      // Store original values for change detection
+      setOriginalValues({
+        name: initialName,
+        description: initialDescription,
+        isPublic: initialIsPublic,
+        eventDate: initialEventDate,
+        endDate: initialEndDate,
+        startTime: initialStartTime,
+        endTime: initialEndTime,
+        location: initialLocation,
+        capacityUnlimited: initialCapacityUnlimited,
+        maxCapacity: initialMaxCapacity,
+        isPaid: initialIsPaid,
+        price: initialPrice,
+        requiresApproval: initialRequiresApproval,
+        imagePreview: initialImagePreview,
+        waitlistEnabled: initialWaitlistEnabled,
+      });
 
       // Fetch participants
       const { data: participantsData } = await supabase
@@ -367,6 +485,27 @@ export default function EditEvent() {
       
       // Update local event state with new data
       setEvent(prev => prev ? { ...prev, ...updateData } : null);
+      
+      // Reset original values to current values after successful save
+      setOriginalValues({
+        name: name.trim(),
+        description: description.trim(),
+        isPublic,
+        eventDate,
+        endDate,
+        startTime,
+        endTime,
+        location: location.trim(),
+        capacityUnlimited,
+        maxCapacity,
+        isPaid,
+        price,
+        requiresApproval,
+        imagePreview: imageUrl,
+        waitlistEnabled,
+      });
+      setImageFile(null);
+      setRemoveImage(false);
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error(t('edit.error'));
@@ -899,6 +1038,52 @@ export default function EditEvent() {
           aspectRatio={1}
         />
       )}
+      
+      {/* Unsaved changes confirmation dialog */}
+      <AlertDialog open={blocker.state === 'blocked'}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {i18n.language === 'de' ? 'Ungespeicherte Änderungen' : 'Unsaved Changes'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {i18n.language === 'de' 
+                ? 'Du hast ungespeicherte Änderungen. Möchtest du sie speichern bevor du gehst?' 
+                : 'You have unsaved changes. Would you like to save them before leaving?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel 
+              onClick={() => blocker.reset?.()}
+              className="mt-0"
+            >
+              {i18n.language === 'de' ? 'Abbrechen' : 'Cancel'}
+            </AlertDialogCancel>
+            <Button 
+              variant="outline"
+              onClick={() => blocker.proceed?.()}
+            >
+              {i18n.language === 'de' ? 'Verwerfen' : 'Discard'}
+            </Button>
+            <Button 
+              onClick={async () => {
+                await handleSave();
+                blocker.proceed?.();
+              }}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {i18n.language === 'de' ? 'Speichern...' : 'Saving...'}
+                </>
+              ) : (
+                i18n.language === 'de' ? 'Speichern' : 'Save'
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
