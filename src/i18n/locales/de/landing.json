@@ -5,5 +5,42 @@
     "subtitle": "Die einfachste App für Sportvereine, Turniere und private Partys. In 3 Minuten startklar.",
     "cta": "Jetzt Event erstellen",
     "trust": "Keine Kreditkarte nötig • Made in Berlin"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "items": [
+      {
+        "question": "Was ist Wichty?",
+        "answer": "Wichty ist eine intuitive Event-Plattform, die speziell für den Amateursport und private Veranstaltungen in Deutschland entwickelt wurde. Unser Ziel ist es, die Organisation von Events so einfach wie möglich zu gestalten – ohne unübersichtliche WhatsApp-Gruppen oder komplexe Ticketing-Systeme."
+      },
+      {
+        "question": "Für wen ist Wichty gedacht?",
+        "answer": "Wichty richtet sich an alle, die Events organisieren, insbesondere an: Amateursportvereine (z.B. für Turniere, Sommerfeste, Trainingscamps), Organisatoren von privaten Veranstaltungen (z.B. Geburtstage, Partys), Trainer und Kassenwarte, die den Überblick über Teilnehmer und Zahlungen behalten möchten."
+      },
+      {
+        "question": "Was kostet die Nutzung von Wichty?",
+        "answer": "Wir berechnen eine Servicegebühr von 5 % des Ticketpreises, mindestens jedoch 0,50 € pro Ticket. Als Veranstalter hast du die Möglichkeit, diese Gebühr auf den Käufer umzulegen."
+      },
+      {
+        "question": "Welche Zahlungsmethoden werden unterstützt?",
+        "answer": "Wichty unterstützt gängige Online-Zahlungsmethoden wie PayPal, Kreditkarte und Apple Pay, um deinen Teilnehmern einen schnellen und einfachen Kaufprozess zu ermöglichen."
+      },
+      {
+        "question": "Wie erstelle ich ein Event auf Wichty?",
+        "answer": "Die Erstellung eines Events ist kinderleicht und in wenigen Minuten erledigt. Unsere Plattform ist \"radikal einfach\" gestaltet, sodass du keine Anleitung benötigst."
+      },
+      {
+        "question": "Kann ich Wichty auch für private Feiern nutzen?",
+        "answer": "Ja, absolut! Wichty eignet sich auch hervorragend für die Organisation von privaten Veranstaltungen wie Geburtstagen oder WG-Partys."
+      },
+      {
+        "question": "Gibt es eine mobile App?",
+        "answer": "Aktuell starten wir mit einer mobil-optimierten Web-App, die auf allen Geräten funktioniert. Die Entwicklung nativer Apps für iOS und Android ist für die Zukunft geplant."
+      },
+      {
+        "question": "Was unterscheidet Wichty von anderen Anbietern?",
+        "answer": "Im Gegensatz zu komplexen und teuren Systemen wie Eventbrite oder Eventim-Light, konzentrieren wir uns auf radikale Einfachheit und einen transparenten, fairen Preis. Wir wollen die Organisation von Events für jeden zugänglich machen."
+      }
+    ]
   }
 }

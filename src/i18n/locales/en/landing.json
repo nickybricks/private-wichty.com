@@ -5,5 +5,42 @@
     "subtitle": "The easiest app for sports clubs, tournaments and private parties. Ready in 3 minutes.",
     "cta": "Create Event Now",
     "trust": "No credit card required • Made in Berlin"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "What is Wichty?",
+        "answer": "Wichty is an intuitive event platform specifically designed for amateur sports and private events in Germany. Our goal is to make organizing events as simple as possible – without confusing WhatsApp groups or complex ticketing systems."
+      },
+      {
+        "question": "Who is Wichty for?",
+        "answer": "Wichty is designed for anyone organizing events, especially: Amateur sports clubs (e.g., for tournaments, summer festivals, training camps), organizers of private events (e.g., birthdays, parties), coaches and treasurers who want to keep track of participants and payments."
+      },
+      {
+        "question": "How much does Wichty cost?",
+        "answer": "We charge a service fee of 5% of the ticket price, with a minimum of €0.50 per ticket. As an organizer, you have the option to pass this fee on to the buyer."
+      },
+      {
+        "question": "What payment methods are supported?",
+        "answer": "Wichty supports common online payment methods such as PayPal, credit card, and Apple Pay to provide your participants with a quick and easy checkout process."
+      },
+      {
+        "question": "How do I create an event on Wichty?",
+        "answer": "Creating an event is incredibly easy and done in just a few minutes. Our platform is designed to be \"radically simple\" so you don't need any instructions."
+      },
+      {
+        "question": "Can I use Wichty for private celebrations?",
+        "answer": "Yes, absolutely! Wichty is also great for organizing private events like birthdays or house parties."
+      },
+      {
+        "question": "Is there a mobile app?",
+        "answer": "We're currently starting with a mobile-optimized web app that works on all devices. Native apps for iOS and Android are planned for the future."
+      },
+      {
+        "question": "What sets Wichty apart from other providers?",
+        "answer": "Unlike complex and expensive systems like Eventbrite or Eventim-Light, we focus on radical simplicity and transparent, fair pricing. We want to make event organization accessible to everyone."
+      }
+    ]
   }
 }
