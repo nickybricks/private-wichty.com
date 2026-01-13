@@ -6,8 +6,10 @@ import { de, enUS } from "date-fns/locale";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DateTimePopupProps {
   open: boolean;
@@ -116,7 +118,30 @@ function TimePicker({
   );
 }
 
-// Date/Time button pill component
+// Desktop time input component
+function TimeInput({
+  value,
+  onChange,
+  className,
+}: {
+  value: string;
+  onChange: (time: string) => void;
+  className?: string;
+}) {
+  return (
+    <Input
+      type="time"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cn(
+        "w-[100px] text-center font-medium bg-muted border-0 rounded-full px-4 py-2 h-auto",
+        className
+      )}
+    />
+  );
+}
+
+// Date/Time button pill component (for mobile time selection)
 function DateTimePill({
   value,
   isActive,
@@ -155,6 +180,7 @@ export function DateTimePopup({
 }: DateTimePopupProps) {
   const { t, i18n } = useTranslation("forms");
   const locale = i18n.language === "de" ? de : enUS;
+  const isMobile = useIsMobile();
 
   const [startDate, setStartDate] = useState<Date | undefined>(initialDate);
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate || initialDate);
@@ -227,11 +253,15 @@ export function DateTimePopup({
               isActive={activePicker === "startDate"}
               onClick={() => togglePicker("startDate")}
             />
-            <DateTimePill
-              value={startTime}
-              isActive={activePicker === "startTime"}
-              onClick={() => togglePicker("startTime")}
-            />
+            {isMobile ? (
+              <DateTimePill
+                value={startTime}
+                isActive={activePicker === "startTime"}
+                onClick={() => togglePicker("startTime")}
+              />
+            ) : (
+              <TimeInput value={startTime} onChange={setStartTime} />
+            )}
           </div>
         </div>
 
@@ -252,8 +282,8 @@ export function DateTimePopup({
           </div>
         )}
 
-        {/* Start Time Picker */}
-        {activePicker === "startTime" && (
+        {/* Start Time Picker (mobile only) */}
+        {isMobile && activePicker === "startTime" && (
           <div className="py-3 border-b border-border/30">
             <TimePicker value={startTime} onChange={setStartTime} />
           </div>
@@ -270,11 +300,15 @@ export function DateTimePopup({
               isActive={activePicker === "endDate"}
               onClick={() => togglePicker("endDate")}
             />
-            <DateTimePill
-              value={endTime}
-              isActive={activePicker === "endTime"}
-              onClick={() => togglePicker("endTime")}
-            />
+            {isMobile ? (
+              <DateTimePill
+                value={endTime}
+                isActive={activePicker === "endTime"}
+                onClick={() => togglePicker("endTime")}
+              />
+            ) : (
+              <TimeInput value={endTime} onChange={setEndTime} />
+            )}
           </div>
         </div>
 
@@ -296,8 +330,8 @@ export function DateTimePopup({
           </div>
         )}
 
-        {/* End Time Picker */}
-        {activePicker === "endTime" && (
+        {/* End Time Picker (mobile only) */}
+        {isMobile && activePicker === "endTime" && (
           <div className="py-3 border-b border-border/30">
             <TimePicker value={endTime} onChange={setEndTime} />
           </div>
