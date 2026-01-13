@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, Sparkles, Loader2, Bold, Italic, Underline } from "lucide-react";
+import { FileText, Sparkles, Loader2, Bold, Italic, Underline, Strikethrough, List } from "lucide-react";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,7 @@ export function DescriptionPopup({
   const { t, i18n } = useTranslation("forms");
   const [description, setDescription] = useState(initialDescription);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -149,6 +150,15 @@ export function DescriptionPopup({
     onOpenChange(false);
   };
 
+  const handleEditorFocus = () => {
+    setIsEditorFocused(true);
+  };
+
+  const handleEditorBlur = () => {
+    // Delay to allow button clicks to register before hiding toolbar
+    setTimeout(() => setIsEditorFocused(false), 150);
+  };
+
   return (
     <EventFieldPopup
       open={open}
@@ -214,6 +224,8 @@ export function DescriptionPopup({
           contentEditable
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onFocus={handleEditorFocus}
+          onBlur={handleEditorBlur}
           className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 overflow-auto"
           style={{ whiteSpace: "pre-wrap" }}
           data-placeholder={
@@ -243,6 +255,55 @@ export function DescriptionPopup({
           </Button>
         </div>
       </div>
+
+      {/* Mobile Floating Toolbar - Liquid Glass Style */}
+      {isMobile && isEditorFocused && (
+        <div className="fixed bottom-0 left-0 right-0 p-3 pb-6 z-[9999]">
+          <div className="mx-auto max-w-xs flex items-center justify-center gap-1 px-4 py-2.5 rounded-2xl bg-black/80 dark:bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyFormatting("bold")}
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            >
+              <Bold className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyFormatting("italic")}
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            >
+              <Italic className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyFormatting("underline")}
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            >
+              <Underline className="h-5 w-5" />
+            </button>
+            <div className="w-px h-6 bg-white/20 mx-1" />
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyFormatting("strikeThrough")}
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            >
+              <Strikethrough className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyFormatting("insertUnorderedList")}
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white/90 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            >
+              <List className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </EventFieldPopup>
   );
 }
