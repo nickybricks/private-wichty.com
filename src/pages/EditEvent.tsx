@@ -208,6 +208,16 @@ export default function EditEvent() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  // Handle back navigation with unsaved changes check
+  const handleBackClick = useCallback(() => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation('/dashboard');
+      setShowUnsavedDialog(true);
+    } else {
+      navigate('/dashboard');
+    }
+  }, [hasUnsavedChanges, navigate]);
+
   useEffect(() => {
     checkAuth();
   }, [id]);
@@ -568,15 +578,6 @@ export default function EditEvent() {
   if (!event) {
     return null;
   }
-
-  const handleBackClick = useCallback(() => {
-    if (hasUnsavedChanges) {
-      setPendingNavigation('/dashboard');
-      setShowUnsavedDialog(true);
-    } else {
-      navigate('/dashboard');
-    }
-  }, [hasUnsavedChanges, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
