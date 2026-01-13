@@ -212,6 +212,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     }
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
   const resetForm = () => {
     setName("");
     setDescription("");
@@ -381,7 +386,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         {/* Desktop: Two-column layout */}
         <div className="md:grid md:grid-cols-[330px_1fr] md:gap-8">
           {/* Left Column: Image Upload */}
-          <div>
+          <div className="relative">
             <label
               htmlFor="drawer-image"
               className="block relative aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 cursor-pointer hover:from-primary/30 hover:to-primary/10 transition-colors overflow-hidden"
@@ -408,6 +413,16 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
                 onChange={handleImageChange}
               />
             </label>
+            {imagePreview && (
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border/50 shadow-sm transition-colors"
+                aria-label={i18n.language === 'de' ? 'Bild entfernen' : 'Remove image'}
+              >
+                <X className="h-4 w-4 text-foreground" />
+              </button>
+            )}
           </div>
 
           {/* Right Column: Event Details */}
