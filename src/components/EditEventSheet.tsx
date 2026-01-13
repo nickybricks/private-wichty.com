@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
-import { ImageCropper } from "@/components/ImageCropper";
 import { Loader2, Users, CalendarIcon, MapPin, Clock, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -55,8 +54,6 @@ export function EditEventSheet({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(event.image_url);
   const [removeImage, setRemoveImage] = useState(false);
-  const [cropperOpen, setCropperOpen] = useState(false);
-  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -83,24 +80,14 @@ export function EditEventSheet({
         toast.error(tf('errors.imageSize'));
         return;
       }
-      // Open cropper with the selected image
+      setImageFile(file);
+      setRemoveImage(false);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setTempImageSrc(e.target?.result as string);
-        setCropperOpen(true);
+        setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
-    // Reset input so same file can be selected again
-    e.target.value = '';
-  };
-
-  const handleCropComplete = (croppedBlob: Blob) => {
-    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(croppedBlob));
-    setRemoveImage(false);
-    setTempImageSrc(null);
   };
 
   const handleRemoveImage = () => {
@@ -354,16 +341,6 @@ export function EditEventSheet({
           </form>
         </div>
       </DrawerContent>
-      
-      {tempImageSrc && (
-        <ImageCropper
-          open={cropperOpen}
-          onOpenChange={setCropperOpen}
-          imageSrc={tempImageSrc}
-          onCropComplete={handleCropComplete}
-          aspectRatio={1}
-        />
-      )}
     </Drawer>
   );
 }

@@ -13,7 +13,6 @@ import { LocationPopup } from "@/components/event-form/LocationPopup";
 import { DescriptionPopup } from "@/components/event-form/DescriptionPopup";
 import { TicketsPopup } from "@/components/event-form/TicketsPopup";
 import { CapacityPopup } from "@/components/event-form/CapacityPopup";
-import { ImageCropper } from "@/components/ImageCropper";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Loader2, 
@@ -93,10 +92,6 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [ticketsPopupOpen, setTicketsPopupOpen] = useState(false);
   const [capacityPopupOpen, setCapacityPopupOpen] = useState(false);
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
-  
-  // Image cropper state
-  const [cropperOpen, setCropperOpen] = useState(false);
-  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -208,23 +203,13 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         toast.error(t('errors.imageSize'));
         return;
       }
-      // Open cropper with the selected image
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setTempImageSrc(e.target?.result as string);
-        setCropperOpen(true);
+        setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
-    // Reset input so same file can be selected again
-    e.target.value = '';
-  };
-
-  const handleCropComplete = (croppedBlob: Blob) => {
-    const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(croppedBlob));
-    setTempImageSrc(null);
   };
 
   const handleRemoveImage = () => {
@@ -733,49 +718,27 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   // Mobile: Use Drawer (bottom sheet)
   if (isMobile) {
     return (
-      <>
-        <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent fullScreenOnMobile className="flex flex-col">
-            <DrawerHeader className="text-center pb-2 flex-shrink-0 px-4">
-              <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
-            </DrawerHeader>
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-safe">
-              {formContent}
-            </div>
-          </DrawerContent>
-        </Drawer>
-        {tempImageSrc && (
-          <ImageCropper
-            open={cropperOpen}
-            onOpenChange={setCropperOpen}
-            imageSrc={tempImageSrc}
-            onCropComplete={handleCropComplete}
-            aspectRatio={1}
-          />
-        )}
-      </>
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent fullScreenOnMobile className="flex flex-col">
+          <DrawerHeader className="text-center pb-2 flex-shrink-0 px-4">
+            <DrawerTitle className="text-2xl font-bold">{t('createEvent.drawerTitle')}</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-safe">
+            {formContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
     );
   }
 
   // Desktop: Use Dialog (centered modal like Notion)
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[960px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl animate-scale-in">
-          <div className="px-6 py-6">
-            {formContent}
-          </div>
-        </DialogContent>
-      </Dialog>
-      {tempImageSrc && (
-        <ImageCropper
-          open={cropperOpen}
-          onOpenChange={setCropperOpen}
-          imageSrc={tempImageSrc}
-          onCropComplete={handleCropComplete}
-          aspectRatio={1}
-        />
-      )}
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[960px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl animate-scale-in">
+        <div className="px-6 py-6">
+          {formContent}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
