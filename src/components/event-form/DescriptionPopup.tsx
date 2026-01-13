@@ -1,28 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  FileText, 
-  Sparkles, 
-  Loader2, 
-  Bold, 
-  Italic, 
-  Underline,
-  Heading2,
-  List,
-  ListOrdered,
-  Link as LinkIcon
-} from "lucide-react";
+import { FileText, Sparkles, Loader2, Bold, Italic, Underline } from "lucide-react";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface DescriptionPopupProps {
   open: boolean;
@@ -87,11 +70,6 @@ export function DescriptionPopup({
         document.execCommand("underline", false);
         return;
       }
-      if (e.key === "k") {
-        e.preventDefault();
-        insertLink();
-        return;
-      }
     }
 
     // Handle bullet point creation on "- " followed by space
@@ -121,40 +99,9 @@ export function DescriptionPopup({
     }
   };
 
-  const applyFormatting = (command: string, value?: string) => {
+  const applyFormatting = (command: string) => {
     editorRef.current?.focus();
-    document.execCommand(command, false, value);
-    handleInput();
-  };
-
-  const insertLink = () => {
-    const selection = window.getSelection();
-    const selectedText = selection?.toString() || "";
-    const url = prompt(
-      i18n.language === "de" ? "Link-URL eingeben:" : "Enter link URL:",
-      "https://"
-    );
-    if (url) {
-      if (selectedText) {
-        document.execCommand("createLink", false, url);
-      } else {
-        const linkText = prompt(
-          i18n.language === "de" ? "Link-Text eingeben:" : "Enter link text:",
-          url
-        );
-        document.execCommand("insertHTML", false, `<a href="${url}" target="_blank">${linkText || url}</a>`);
-      }
-      handleInput();
-    }
-  };
-
-  const applyHeading = (level: "h2" | "h3" | "normal") => {
-    editorRef.current?.focus();
-    if (level === "normal") {
-      document.execCommand("formatBlock", false, "p");
-    } else {
-      document.execCommand("formatBlock", false, level);
-    }
+    document.execCommand(command, false);
     handleInput();
   };
 
@@ -213,36 +160,7 @@ export function DescriptionPopup({
       <div className="space-y-4">
         {/* Formatting toolbar - desktop only */}
         {!isMobile && (
-          <div className="flex items-center gap-1 pb-2 border-b flex-wrap">
-            {/* Text style dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1"
-                  title={i18n.language === "de" ? "Textstil" : "Text style"}
-                >
-                  <Heading2 className="h-4 w-4" />
-                  <span className="text-xs">{i18n.language === "de" ? "Text" : "Text"}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => applyHeading("h2")}>
-                  <span className="font-bold text-lg">{i18n.language === "de" ? "Überschrift" : "Heading"}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => applyHeading("h3")}>
-                  <span className="font-semibold">{i18n.language === "de" ? "Unterüberschrift" : "Subheading"}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => applyHeading("normal")}>
-                  <span>{i18n.language === "de" ? "Normal" : "Normal"}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <div className="w-px h-6 bg-border mx-1" />
-
+          <div className="flex items-center gap-1 pb-2 border-b">
             <Button
               type="button"
               variant="ghost"
@@ -272,42 +190,6 @@ export function DescriptionPopup({
               title="Underline (⌘U)"
             >
               <Underline className="h-4 w-4" />
-            </Button>
-
-            <div className="w-px h-6 bg-border mx-1" />
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => applyFormatting("insertUnorderedList")}
-              className="h-8 w-8 p-0"
-              title={i18n.language === "de" ? "Aufzählung" : "Bullet list"}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => applyFormatting("insertOrderedList")}
-              className="h-8 w-8 p-0"
-              title={i18n.language === "de" ? "Nummerierte Liste" : "Numbered list"}
-            >
-              <ListOrdered className="h-4 w-4" />
-            </Button>
-
-            <div className="w-px h-6 bg-border mx-1" />
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={insertLink}
-              className="h-8 w-8 p-0"
-              title={`${i18n.language === "de" ? "Link" : "Link"} (⌘K)`}
-            >
-              <LinkIcon className="h-4 w-4" />
             </Button>
           </div>
         )}
