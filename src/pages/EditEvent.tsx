@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -134,6 +134,12 @@ export default function EditEvent() {
   const [ticketsPopupOpen, setTicketsPopupOpen] = useState(false);
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
   const [ticketCategoriesCount, setTicketCategoriesCount] = useState(0);
+  
+  // Auto-tagging state
+  const [isAutoTagging, setIsAutoTagging] = useState(false);
+  const autoTagTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const originalNameRef = useRef<string>("");
+  const originalDescriptionRef = useRef<string>("");
   
   // Track original values to detect changes
   const [originalValues, setOriginalValues] = useState<{
@@ -334,6 +340,10 @@ export default function EditEvent() {
         imagePreview: initialImagePreview,
         waitlistEnabled: initialWaitlistEnabled,
       });
+      
+      // Store original values for auto-tagging comparison
+      originalNameRef.current = initialName;
+      originalDescriptionRef.current = initialDescription;
 
       // Fetch participants
       const { data: participantsData } = await supabase
@@ -379,6 +389,61 @@ export default function EditEvent() {
     }
     setIsPaid(checked);
   };
+
+  // Auto-tagging when name or description changes significantly
+  useEffect(() => {
+    // Only trigger if both name and description exist and have changed from original
+    const nameChanged = name.trim() !== originalNameRef.current;
+    const descriptionChanged = description.trim() !== originalDescriptionRef.current;
+    
+    if (!name.trim() || !description.trim() || (!nameChanged && !descriptionChanged)) {
+      return;
+    }
+
+    // Clear existing timeout
+    if (autoTagTimeoutRef.current) {
+      clearTimeout(autoTagTimeoutRef.current);
+    }
+
+    // Debounce auto-tagging by 1 second
+    autoTagTimeoutRef.current = setTimeout(async () => {
+      setIsAutoTagging(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('auto-tag-event', {
+          body: {
+            title: name.trim(),
+            description: description.trim(),
+            language: i18n.language === 'de' ? 'de' : 'en',
+          },
+        });
+
+        if (error) {
+          console.error('Auto-tag error:', error);
+          return;
+        }
+
+        if (data?.tag && id) {
+          // Update tags in database silently
+          await supabase
+            .from('events')
+            .update({ tags: [data.tag] })
+            .eq('id', id);
+          
+          console.log('Event auto-tagged:', data.tag);
+        }
+      } catch (err) {
+        console.error('Auto-tag failed:', err);
+      } finally {
+        setIsAutoTagging(false);
+      }
+    }, 1000);
+
+    return () => {
+      if (autoTagTimeoutRef.current) {
+        clearTimeout(autoTagTimeoutRef.current);
+      }
+    };
+  }, [name, description, i18n.language, id]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
