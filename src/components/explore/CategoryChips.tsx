@@ -5,9 +5,10 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 interface CategoryChipsProps {
   selectedTags: string[];
   onTagToggle: (tag: string) => void;
-  onSelectAll: () => void;
+  onSelectAll?: () => void;
   availableTags: string[];
   language: "de" | "en";
+  showAllButton?: boolean;
 }
 
 export function CategoryChips({ 
@@ -15,7 +16,8 @@ export function CategoryChips({
   onTagToggle, 
   onSelectAll, 
   availableTags, 
-  language 
+  language,
+  showAllButton = true
 }: CategoryChipsProps) {
   const { t } = useTranslation("explore");
 
@@ -29,16 +31,18 @@ export function CategoryChips({
       </h3>
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-2 pb-4">
-          <button
-            onClick={onSelectAll}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedTags.length === 0
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {t("all")}
-          </button>
+          {showAllButton && onSelectAll && (
+            <button
+              onClick={onSelectAll}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedTags.length === 0
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {t("all")}
+            </button>
+          )}
           {tagsToShow.map((tag) => {
             const isSelected = selectedTags.includes(tag.id);
             return (
