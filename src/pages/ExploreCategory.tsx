@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -69,13 +70,16 @@ export default function ExploreCategory() {
 
       setLoading(true);
       try {
+        const today = format(new Date(), "yyyy-MM-dd");
+        
         let query = supabase
           .from("events")
           .select("*")
           .eq("is_public", true)
           .contains("tags", [tag])
-          .order("attendance_count", { ascending: false })
-          .order("view_count", { ascending: false });
+          .gte("event_date", today)
+          .order("event_date", { ascending: true })
+          .order("event_time", { ascending: true });
 
         if (currentCity) {
           query = query.ilike("city", `%${currentCity}%`);
@@ -84,7 +88,22 @@ export default function ExploreCategory() {
         const { data, error } = await query;
 
         if (error) throw error;
-        setEvents(data || []);
+        
+        // Filter out events that have already ended today
+        const now = new Date();
+        const currentTimeStr = format(now, "HH:mm");
+        
+        const filteredEvents = (data || []).filter(event => {
+          if (event.event_date > today) return true;
+          if (event.event_date === today) {
+            const endTime = event.end_time || event.event_time;
+            if (!endTime) return true;
+            return endTime > currentTimeStr;
+          }
+          return false;
+        });
+        
+        setEvents(filteredEvents);
       } catch (error) {
         console.error("Error fetching events:", error);
         setEvents([]);

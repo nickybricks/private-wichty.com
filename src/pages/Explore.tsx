@@ -23,7 +23,7 @@ export default function Explore() {
   const [user, setUser] = useState<any>(null);
   const [currentCity, setCurrentCity] = useState<string>(DEFAULT_CITY);
   const [showCitySelector, setShowCitySelector] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -115,11 +115,6 @@ export default function Explore() {
           query = query.ilike("city", `%${currentCity}%`);
         }
 
-        // Filter by multiple tags (OR logic)
-        if (selectedTags.length > 0) {
-          query = query.overlaps("tags", selectedTags);
-        }
-
         const { data, error } = await query.limit(50);
 
         if (error) throw error;
@@ -157,18 +152,11 @@ export default function Explore() {
     };
 
     fetchEvents();
-  }, [currentCity, selectedTags]);
+  }, [currentCity]);
 
-  const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
-  };
-
-  const handleSelectAll = () => {
-    setSelectedTags([]);
+  const handleTagClick = (tag: string) => {
+    // Navigate to category page with current city
+    navigate(`/explore/category/${tag}?city=${encodeURIComponent(currentCity)}`);
   };
 
   const handleEventClick = (eventId: string) => {
@@ -218,13 +206,13 @@ export default function Explore() {
             />
           )}
 
-          {/* Category Chips */}
+          {/* Category Chips - navigate to category pages */}
           <CategoryChips
-            selectedTags={selectedTags}
-            onTagToggle={handleTagToggle}
-            onSelectAll={handleSelectAll}
+            selectedTags={[]}
+            onTagToggle={handleTagClick}
             availableTags={availableTags}
             language={language}
+            showAllButton={false}
           />
 
           {/* City Cards */}
