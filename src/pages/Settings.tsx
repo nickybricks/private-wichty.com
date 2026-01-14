@@ -513,7 +513,7 @@ export default function Settings() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header user={user} />
       
       <div className="max-w-[820px] mx-auto p-4 md:p-8 space-y-6">
@@ -522,20 +522,35 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="konto" className="w-full">
-          <TabsList className="flex justify-start gap-2 mb-6 w-auto bg-muted p-1 rounded-lg">
-            <TabsTrigger value="konto">
-              {t('settingsPage.tabs.profile')}
-            </TabsTrigger>
-            <TabsTrigger value="einstellungen">
-              {t('settingsPage.tabs.settings')}
-            </TabsTrigger>
-            <TabsTrigger value="zahlung">
-              {t('settingsPage.tabs.payment')}
-            </TabsTrigger>
-            <TabsTrigger value="tickets">
-              {t('settingsPage.tabs.tickets')}
-            </TabsTrigger>
-          </TabsList>
+          {/* Horizontal scrollable tab bar - Liquid Glass Style */}
+          <div className="overflow-x-auto overflow-y-hidden scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            <TabsList className="inline-flex gap-1 p-1 bg-muted/60 backdrop-blur-sm rounded-full w-max min-w-full md:min-w-0">
+              <TabsTrigger 
+                value="konto" 
+                className="rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+              >
+                {t('settingsPage.tabs.profile')}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="einstellungen" 
+                className="rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+              >
+                {t('settingsPage.tabs.settings')}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="zahlung" 
+                className="rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+              >
+                {t('settingsPage.tabs.payment')}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="tickets" 
+                className="rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+              >
+                {t('settingsPage.tabs.tickets')}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Konto Tab */}
           <TabsContent value="konto" className="space-y-6 mt-6">
