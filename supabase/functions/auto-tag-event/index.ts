@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const VALID_TAGS = [
-  "hockey", "fussball", "volleyball", "basketball", "tennis",
+  "hockey", "fussball", "volleyball", "basketball", "tennis", "padel",
   "schwimmen", "laufen", "fitness", "yoga", "tanzen",
   "musik", "kunst", "gaming", "networking", "workshop",
   "party", "outdoor", "wandern", "radfahren", "sonstiges"
