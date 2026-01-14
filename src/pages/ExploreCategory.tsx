@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import { getTagLabel } from "@/data/eventTags";
 import { DEFAULT_CITY } from "@/data/cities";
 import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { Button } from "@/components/ui/button";
 
 export default function ExploreCategory() {
   const { tag } = useParams<{ tag: string }>();
@@ -108,11 +109,14 @@ export default function ExploreCategory() {
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col">
-        <Header user={user} showBackButton />
+        <Header user={user} />
 
         <main className="w-full max-w-[var(--max-width)] mx-auto p-4 md:p-8 space-y-6 flex-1">
           {/* Header */}
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/explore")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <button
               onClick={() => setShowCitySelector(true)}
               className="flex items-center gap-2 text-lg font-semibold"
