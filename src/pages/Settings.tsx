@@ -522,34 +522,41 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="konto" className="w-full">
-          {/* Horizontal scrollable tab bar - Liquid Glass Style */}
-          <div className="overflow-x-auto overflow-y-hidden scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
-            <TabsList className="inline-flex gap-1 p-1 bg-muted/60 backdrop-blur-sm rounded-full w-max min-w-full md:min-w-0 snap-start">
-              <TabsTrigger 
-                value="konto" 
-                className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
-              >
-                {t('settingsPage.tabs.profile')}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="einstellungen" 
-                className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
-              >
-                {t('settingsPage.tabs.settings')}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="zahlung" 
-                className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
-              >
-                {t('settingsPage.tabs.payment')}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="tickets" 
-                className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
-              >
-                {t('settingsPage.tabs.tickets')}
-              </TabsTrigger>
-            </TabsList>
+          {/* Horizontal scrollable tab bar - Liquid Glass Style with fade indicators */}
+          <div className="relative">
+            {/* Left fade gradient */}
+            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none md:hidden" />
+            {/* Right fade gradient */}
+            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none md:hidden" />
+            
+            <div className="overflow-x-auto overflow-y-hidden scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+              <TabsList className="inline-flex gap-1 p-1 bg-muted/60 backdrop-blur-sm rounded-full w-max min-w-full md:min-w-0">
+                <TabsTrigger 
+                  value="konto" 
+                  className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+                >
+                  {t('settingsPage.tabs.profile')}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="einstellungen" 
+                  className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+                >
+                  {t('settingsPage.tabs.settings')}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="zahlung" 
+                  className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+                >
+                  {t('settingsPage.tabs.payment')}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tickets" 
+                  className="snap-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground flex-shrink-0"
+                >
+                  {t('settingsPage.tabs.tickets')}
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           {/* Konto Tab */}
