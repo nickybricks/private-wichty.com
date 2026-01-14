@@ -621,8 +621,8 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
             {/* 11. Event-Kategorie Tag - ganz unten, dezent */}
             {event.tags && event.tags.length > 0 && (
-              <div className="pt-4 pb-2 flex justify-center">
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary/70">
+              <div className="pt-4 pb-2">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground/70">
                   {getTagLabel(event.tags[0], i18n.language as "de" | "en")}
                 </span>
               </div>
