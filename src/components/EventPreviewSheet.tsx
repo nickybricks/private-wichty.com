@@ -364,13 +364,13 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
   };
 
   const content = (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto overscroll-contain bg-background">
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : event ? (
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-4 pb-8">
           {/* 1. Edit Button for Host - above image, right-aligned */}
           {isHost && (
             <div className="flex justify-end">
@@ -698,7 +698,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent fullScreenOnMobile className="flex flex-col">
+        <DrawerContent fullScreenOnMobile className="flex flex-col bg-background">
           {content}
         </DrawerContent>
       </Drawer>

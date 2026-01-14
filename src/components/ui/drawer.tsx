@@ -47,9 +47,11 @@ const DrawerContent = React.forwardRef<
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[10px] border bg-background",
         // Use svh (small viewport height) for stable height when keyboard appears
+        // Ensure drawer extends to bottom with safe area padding
         fullScreenOnMobile ? "h-[100svh] max-h-[100svh]" : "mt-24 h-auto max-h-[85vh]",
         className,
       )}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       {...props}
     >
       <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted flex-shrink-0" />
