@@ -1,21 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ArrowLeft } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CitySelector } from "@/components/explore/CitySelector";
-import { CategoryChips } from "@/components/explore/CategoryChips";
 import { EventCardUnified } from "@/components/EventCardUnified";
 import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 import { getTagLabel } from "@/data/eventTags";
 import { DEFAULT_CITY } from "@/data/cities";
 import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { Button } from "@/components/ui/button";
 
 export default function ExploreCategory() {
   const { tag } = useParams<{ tag: string }>();
@@ -29,7 +27,7 @@ export default function ExploreCategory() {
   const [showCitySelector, setShowCitySelector] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  
 
   // Event Preview Sheet state
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -43,26 +41,6 @@ export default function ExploreCategory() {
     getUser();
   }, []);
 
-  // Fetch available tags
-  useEffect(() => {
-    const fetchAvailableTags = async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("tags")
-        .eq("is_public", true);
-
-      if (data) {
-        const tags = new Set<string>();
-        data.forEach(event => {
-          if (event.tags) {
-            event.tags.forEach((t: string) => tags.add(t));
-          }
-        });
-        setAvailableTags(Array.from(tags));
-      }
-    };
-    fetchAvailableTags();
-  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -115,15 +93,6 @@ export default function ExploreCategory() {
     fetchEvents();
   }, [tag, currentCity]);
 
-  const handleTagToggle = (newTag: string) => {
-    if (newTag !== tag) {
-      navigate(`/explore/category/${newTag}?city=${encodeURIComponent(currentCity)}`);
-    }
-  };
-
-  const handleSelectAll = () => {
-    navigate(`/explore`);
-  };
 
   const handleEventClick = (eventId: string) => {
     setSelectedEventId(eventId);
@@ -144,9 +113,6 @@ export default function ExploreCategory() {
         <main className="w-full max-w-[var(--max-width)] mx-auto p-4 md:p-8 space-y-6 flex-1">
           {/* Header */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/explore")}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <button
               onClick={() => setShowCitySelector(true)}
               className="flex items-center gap-2 text-lg font-semibold"
@@ -157,15 +123,6 @@ export default function ExploreCategory() {
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
-
-          {/* Category Chips */}
-          <CategoryChips
-            selectedTags={tag ? [tag] : []}
-            onTagToggle={handleTagToggle}
-            onSelectAll={handleSelectAll}
-            availableTags={availableTags}
-            language={language}
-          />
 
           {/* Events List */}
           {loading ? (
