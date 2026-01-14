@@ -64,7 +64,7 @@ export function PopularEventsCarousel({ events, language, onEventClick }: Popula
             return (
               <CarouselItem 
                 key={colIndex} 
-                className={`pl-4 ${isLastPage ? 'basis-full' : 'basis-[88%]'}`}
+                className={`pl-4 ${isLastPage ? 'basis-full' : 'basis-[92%]'}`}
               >
                 <div className="space-y-3 pr-2">
                   {column.map((event) => (
