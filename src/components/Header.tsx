@@ -99,7 +99,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
           {user ? (
             <>
               {/* Desktop Navigation - Logged In */}
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -147,7 +147,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
               </div>
 
               {/* Mobile Navigation - Logged In */}
-              <div className="md:hidden flex items-center gap-2">
+              <div className="lg:hidden flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -220,7 +220,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
           ) : (
             <>
               {/* Desktop Navigation - Not Logged In */}
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -239,7 +239,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
               </div>
 
               {/* Mobile Navigation - Not Logged In */}
-              <div className="md:hidden flex items-center gap-2">
+              <div className="lg:hidden flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
