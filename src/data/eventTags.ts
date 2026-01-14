@@ -1,6 +1,7 @@
 export const EVENT_TAGS = [
   { id: "hockey", label: { de: "Hockey", en: "Hockey" }, color: "bg-blue-500" },
   { id: "fussball", label: { de: "Fußball", en: "Football" }, color: "bg-green-500" },
+  { id: "padel", label: { de: "Padel", en: "Padel" }, color: "bg-emerald-500" },
   { id: "volleyball", label: { de: "Volleyball", en: "Volleyball" }, color: "bg-yellow-500" },
   { id: "basketball", label: { de: "Basketball", en: "Basketball" }, color: "bg-orange-500" },
   { id: "tennis", label: { de: "Tennis", en: "Tennis" }, color: "bg-lime-500" },
