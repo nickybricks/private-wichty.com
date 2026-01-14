@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2, Calendar, MapPin, CreditCard, Share2, Pencil, Ticket, User } from "lucide-react";
+import { getTagLabel } from "@/data/eventTags";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { LocationMapPreview } from "@/components/LocationMapPreview";
 import { toast } from "sonner";
@@ -50,6 +51,7 @@ interface Event {
   price_cents: number;
   currency: string;
   requires_approval: boolean;
+  tags: string[] | null;
 }
 
 interface Participant {
@@ -614,6 +616,15 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
                     </span>
                   )}
                 </button>
+              </div>
+            )}
+
+            {/* 11. Event-Kategorie Tag - ganz unten, dezent */}
+            {event.tags && event.tags.length > 0 && (
+              <div className="pt-4 pb-2 flex justify-center">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary/70">
+                  {getTagLabel(event.tags[0], i18n.language as "de" | "en")}
+                </span>
               </div>
             )}
           </div>
