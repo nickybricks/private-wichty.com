@@ -9,6 +9,7 @@ export default function Datenschutz() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
   }, []);
 
