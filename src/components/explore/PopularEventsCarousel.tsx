@@ -45,30 +45,41 @@ export function PopularEventsCarousel({ events, language, onEventClick }: Popula
       columns.push(displayEvents.slice(i, i + 3));
     }
 
+    // Limit to max 3 pages
+    const limitedColumns = columns.slice(0, 3);
+
     return (
       <Carousel
         opts={{
           align: "start",
           slidesToScroll: 1,
+          containScroll: "trimSnaps",
         }}
         className="-mx-4"
       >
         <CarouselContent className="ml-0">
-          {columns.map((column, colIndex) => (
-            <CarouselItem key={colIndex} className="basis-full pl-4 first:pl-4">
-              <div className="space-y-3 pr-2">
-                {column.map((event) => (
-                  <EventCardUnified
-                    key={event.id}
-                    event={event}
-                    participantCount={event.attendance_count}
-                    showAvatars={false}
-                    onClick={onEventClick ? () => onEventClick(event.id) : undefined}
-                  />
-                ))}
-              </div>
-            </CarouselItem>
-          ))}
+          {limitedColumns.map((column, colIndex) => {
+            const isLastPage = colIndex === limitedColumns.length - 1;
+            
+            return (
+              <CarouselItem 
+                key={colIndex} 
+                className={`pl-4 ${isLastPage ? 'basis-full' : 'basis-[88%]'}`}
+              >
+                <div className="space-y-3 pr-2">
+                  {column.map((event) => (
+                    <EventCardUnified
+                      key={event.id}
+                      event={event}
+                      participantCount={event.attendance_count}
+                      showAvatars={false}
+                      onClick={onEventClick ? () => onEventClick(event.id) : undefined}
+                    />
+                  ))}
+                </div>
+              </CarouselItem>
+            );
+          })}
         </CarouselContent>
       </Carousel>
     );
