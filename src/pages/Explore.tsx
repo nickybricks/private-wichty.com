@@ -107,8 +107,8 @@ export default function Explore() {
           .select("*")
           .eq("is_public", true)
           .gte("event_date", today)
-          .order("attendance_count", { ascending: false })
-          .order("view_count", { ascending: false });
+          .order("event_date", { ascending: true })
+          .order("event_time", { ascending: true });
 
         // Filter by city if not "All"
         if (currentCity) {
