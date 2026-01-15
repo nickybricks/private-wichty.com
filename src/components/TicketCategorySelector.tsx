@@ -100,7 +100,7 @@ export function TicketCategorySelector({
               "relative rounded-xl border p-4 cursor-pointer transition-all duration-200",
               selected
                 ? "border-foreground border-2 bg-background shadow-sm"
-                : "border-transparent bg-muted/60"
+                : "border-transparent bg-muted"
             )}
             onClick={() => handleCategoryClick(category.id)}
           >
