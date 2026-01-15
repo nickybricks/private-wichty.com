@@ -34,7 +34,7 @@ export function CategoryChips({
           {showAllButton && onSelectAll && (
             <button
               onClick={onSelectAll}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
                 selectedTags.length === 0
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -49,7 +49,7 @@ export function CategoryChips({
               <button
                 key={tag.id}
                 onClick={() => onTagToggle(tag.id)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all border ${
+                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all border ${
                   isSelected
                     ? `${tag.color} text-white shadow-md border-transparent`
                     : "bg-background text-foreground border-border shadow-sm hover:shadow-md hover:border-foreground/20 active:scale-95"
