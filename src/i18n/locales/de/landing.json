@@ -1,37 +1,109 @@
 {
   "hero": {
-    "title": "Events organisieren.",
-    "titleHighlight": "Ohne Chaos.",
-    "subtitle": "Die einfachste App für Sportvereine, Turniere und private Partys. In 3 Minuten startklar.",
-    "cta": "Jetzt Event erstellen",
-    "trust": "Keine Kreditkarte nötig • Made in Berlin"
+    "title": "Dein Verein.",
+    "titleHighlight": "Deine Events.",
+    "subtitle": "Turniere, Spiele und Vereinsfeste in Sekunden erstellen. Ticketverkauf inklusive – fair und transparent.",
+    "cta": "Jetzt kostenlos starten",
+    "trust": "Keine Kreditkarte • Nur 5% Gebühr • Auszahlung auf euer Vereinskonto"
+  },
+  "benefits": {
+    "title": "Warum Wichty?",
+    "items": [
+      {
+        "title": "In 3 Minuten startklar",
+        "description": "Event erstellen, Link teilen, fertig. Ohne Schulung, ohne Handbuch."
+      },
+      {
+        "title": "Sichere Zahlungen",
+        "description": "Powered by Stripe. PayPal, Kreditkarte, Apple Pay & mehr."
+      },
+      {
+        "title": "Faire Preise",
+        "description": "Nur 5% Gebühr pro Ticket. Keine versteckten Kosten, keine Grundgebühr."
+      }
+    ]
+  },
+  "stats": {
+    "events": "Events erstellt",
+    "clubs": "Vereine vertrauen uns",
+    "location": "Made in Germany"
+  },
+  "howItWorks": {
+    "title": "So einfach geht's",
+    "steps": [
+      {
+        "step": "1",
+        "title": "Event erstellen",
+        "description": "Name, Datum und Ticketkategorien in wenigen Klicks festlegen."
+      },
+      {
+        "step": "2",
+        "title": "Link teilen",
+        "description": "Per WhatsApp, E-Mail oder QR-Code an eure Mitglieder senden."
+      },
+      {
+        "step": "3",
+        "title": "Einnahmen erhalten",
+        "description": "Automatische Auszahlung direkt auf euer Vereinskonto."
+      }
+    ]
+  },
+  "useCases": {
+    "title": "Perfekt für",
+    "items": [
+      {
+        "emoji": "🏆",
+        "title": "Turniere",
+        "description": "Startgelder digital einsammeln"
+      },
+      {
+        "emoji": "🎉",
+        "title": "Vereinsfeste",
+        "description": "Ticketverkauf ohne Bargeld"
+      },
+      {
+        "emoji": "⚽",
+        "title": "Trainingscamps",
+        "description": "Anmeldung und Zahlung in einem"
+      },
+      {
+        "emoji": "🎈",
+        "title": "Private Feiern",
+        "description": "Geburtstage, WG-Partys & mehr"
+      }
+    ]
+  },
+  "finalCta": {
+    "title": "Bereit für euer nächstes Event?",
+    "subtitle": "Kostenlos starten. Keine Kreditkarte nötig.",
+    "button": "Jetzt Event erstellen"
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
     "items": [
       {
-        "question": "Was ist Wichty?",
-        "answer": "Wichty ist eine intuitive Event-Plattform, die speziell für den Amateursport und private Veranstaltungen in Deutschland entwickelt wurde. Unser Ziel ist es, die Organisation von Events so einfach wie möglich zu gestalten – ohne unübersichtliche WhatsApp-Gruppen oder komplexe Ticketing-Systeme."
-      },
-      {
-        "question": "Für wen ist Wichty gedacht?",
-        "answer": "Wichty richtet sich an alle, die Events organisieren, insbesondere an: Amateursportvereine (z.B. für Turniere, Sommerfeste, Trainingscamps), Organisatoren von privaten Veranstaltungen (z.B. Geburtstage, Partys), Trainer und Kassenwarte, die den Überblick über Teilnehmer und Zahlungen behalten möchten."
-      },
-      {
         "question": "Was kostet die Nutzung von Wichty?",
-        "answer": "Wir berechnen eine Servicegebühr von 5 % des Ticketpreises, mindestens jedoch 0,50 € pro Ticket. Als Veranstalter hast du die Möglichkeit, diese Gebühr auf den Käufer umzulegen."
+        "answer": "Wir berechnen eine Servicegebühr von 5% des Ticketpreises, mindestens jedoch 0,50€ pro Ticket. Als Veranstalter hast du die Möglichkeit, diese Gebühr auf den Käufer umzulegen. Es gibt keine Grundgebühr oder versteckte Kosten."
       },
       {
         "question": "Welche Zahlungsmethoden werden unterstützt?",
         "answer": "Wichty unterstützt gängige Online-Zahlungsmethoden wie PayPal, Kreditkarte und Apple Pay, um deinen Teilnehmern einen schnellen und einfachen Kaufprozess zu ermöglichen."
       },
       {
+        "question": "Was ist Wichty?",
+        "answer": "Wichty ist eine intuitive Event-Plattform, die speziell für Amateursportvereine und private Veranstaltungen in Deutschland entwickelt wurde. Unser Ziel ist es, die Organisation von Events und das Einsammeln von Ticketeinnahmen so einfach wie möglich zu gestalten."
+      },
+      {
+        "question": "Für wen ist Wichty gedacht?",
+        "answer": "Wichty richtet sich an alle, die Events organisieren, insbesondere an: Amateursportvereine (z.B. für Turniere, Sommerfeste, Trainingscamps), Organisatoren von privaten Veranstaltungen (z.B. Geburtstage, Partys), Trainer und Kassenwarte, die den Überblick über Teilnehmer und Zahlungen behalten möchten."
+      },
+      {
         "question": "Wie erstelle ich ein Event auf Wichty?",
         "answer": "Die Erstellung eines Events ist kinderleicht und in wenigen Minuten erledigt. Unsere Plattform ist \"radikal einfach\" gestaltet, sodass du keine Anleitung benötigst."
       },
       {
-        "question": "Kann ich Wichty auch für private Feiern nutzen?",
-        "answer": "Ja, absolut! Wichty eignet sich auch hervorragend für die Organisation von privaten Veranstaltungen wie Geburtstagen oder WG-Partys."
+        "question": "Wann bekomme ich meine Einnahmen ausgezahlt?",
+        "answer": "Nach Abschluss des Events werden deine Einnahmen automatisch auf das hinterlegte Bankkonto überwiesen. Die Auszahlung erfolgt in der Regel innerhalb von 2-3 Werktagen."
       },
       {
         "question": "Gibt es eine mobile App?",
@@ -39,7 +111,7 @@
       },
       {
         "question": "Was unterscheidet Wichty von anderen Anbietern?",
-        "answer": "Im Gegensatz zu komplexen und teuren Systemen wie Eventbrite oder Eventim-Light, konzentrieren wir uns auf radikale Einfachheit und einen transparenten, fairen Preis. Wir wollen die Organisation von Events für jeden zugänglich machen."
+        "answer": "Im Gegensatz zu komplexen und teuren Systemen wie Eventbrite oder Eventim-Light, konzentrieren wir uns auf radikale Einfachheit und einen transparenten, fairen Preis. Wir wollen die Organisation von Vereinsevents für jeden zugänglich machen."
       }
     ]
   }

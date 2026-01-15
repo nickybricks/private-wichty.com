@@ -24,9 +24,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
     <!-- Primary Meta Tags -->
-    <title>Wichty – Event App für Sportvereine & private Partys</title>
-    <meta name="title" content="Wichty – Event App für Sportvereine & private Partys" />
-    <meta name="description" content="Events in Sekunden erstellen. Kostenlos, fair & sicher. Teile den Link, lade Teilnehmer ein – perfekt für Sportvereine, Turniere und private Feiern!" />
+    <title>Wichty – Event App für Sportvereine | Ticketing einfach gemacht</title>
+    <meta name="title" content="Wichty – Event App für Sportvereine | Ticketing einfach gemacht" />
+    <meta name="description" content="Die einfachste Event-App für Amateursportvereine. Turniere, Vereinsfeste und Spiele organisieren. Sichere Zahlungen, nur 5% Gebühr. Kostenlos starten!" />
     <meta name="author" content="Wichty" />
     <meta name="robots" content="index, follow" />
     
@@ -36,8 +36,8 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://wichty.de" />
-    <meta property="og:title" content="Wichty – Event App für Sportvereine & private Partys" />
-    <meta property="og:description" content="Events in Sekunden erstellen. Kostenlos, fair & sicher. Teile den Link, lade Teilnehmer ein und verwalte Anmeldungen." />
+    <meta property="og:title" content="Wichty – Event App für Sportvereine | Ticketing einfach gemacht" />
+    <meta property="og:description" content="Die einfachste Event-App für Amateursportvereine. Turniere, Vereinsfeste und Spiele organisieren. Sichere Zahlungen, nur 5% Gebühr." />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:site_name" content="Wichty" />
@@ -45,34 +45,57 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://wichty.de" />
-    <meta name="twitter:title" content="Wichty – Event App für Sportvereine & private Partys" />
-    <meta name="twitter:description" content="Events in Sekunden erstellen. Kostenlos, fair & sicher. Teile den Link, lade Teilnehmer ein und verwalte Anmeldungen." />
+    <meta name="twitter:title" content="Wichty – Event App für Sportvereine | Ticketing einfach gemacht" />
+    <meta name="twitter:description" content="Die einfachste Event-App für Amateursportvereine. Turniere, Vereinsfeste und Spiele organisieren. Sichere Zahlungen, nur 5% Gebühr." />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <!-- Additional SEO -->
-    <meta name="keywords" content="Event App, Sportverein Event, Turnier organisieren, Party planen, Ticketing, Anmeldung verwalten, Event erstellen, kostenlose Event App" />
-    <meta name="theme-color" content="#16a34a" />
+    <meta name="keywords" content="Sportverein Event App, Turnier Ticketing, Vereinsevent organisieren, Startgeld einsammeln, Ticketverkauf Verein, Amateursport Event, Vereinsfest planen, Event App Deutschland" />
+    <meta name="theme-color" content="#FF6788" />
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Wichty",
-      "url": "https://wichty.de",
-      "description": "Kostenlose Event App für Sportvereine, Turniere und private Partys. Erstelle Events in Sekunden, teile den Link und verwalte Anmeldungen.",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Any",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "Wichty UG (haftungsbeschränkt)",
-        "url": "https://wichty.de"
-      }
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Wichty",
+          "url": "https://wichty.de",
+          "description": "Die einfachste Event-App für Amateursportvereine. Turniere, Vereinsfeste und Spiele organisieren mit integriertem Ticketverkauf.",
+          "applicationCategory": "EventApplication",
+          "operatingSystem": "Web",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Kostenlos starten, 5% Gebühr pro Ticket"
+          },
+          "featureList": ["Ticketverkauf", "Teilnehmerverwaltung", "Automatische Auszahlung", "QR-Code Check-in"],
+          "author": {
+            "@type": "Organization",
+            "name": "Wichty UG (haftungsbeschränkt)",
+            "url": "https://wichty.de"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "Wichty",
+          "url": "https://wichty.de",
+          "logo": "https://wichty.de/favicon.ico",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Berlin",
+            "addressCountry": "DE"
+          }
+        },
+        {
+          "@type": "SportsOrganization",
+          "name": "Wichty für Sportvereine",
+          "description": "Die Event-Plattform für Amateursportvereine in Deutschland",
+          "url": "https://wichty.de"
+        }
+      ]
     }
     </script>
   </head>

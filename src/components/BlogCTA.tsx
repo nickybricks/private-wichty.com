@@ -13,10 +13,10 @@ export function BlogCTA({ title, description, buttonText }: BlogCTAProps) {
   const { t, i18n } = useTranslation('blog');
   const lang = i18n.language;
   
-  const defaultTitle = lang === 'de' ? 'Bereit für dein Wichtel-Event?' : 'Ready for your Secret Santa Event?';
+  const defaultTitle = lang === 'de' ? 'Bereit für euer nächstes Event?' : 'Ready for your next event?';
   const defaultDescription = lang === 'de' 
-    ? 'Starte jetzt kostenfrei und organisiere dein perfektes Wichtel-Event in wenigen Sekunden.'
-    : 'Start for free now and organize your perfect Secret Santa event in seconds.';
+    ? 'Starte jetzt kostenfrei und organisiere euer Vereinsevent in wenigen Sekunden.'
+    : 'Start for free now and organize your club event in seconds.';
   const defaultButton = lang === 'de' ? 'Jetzt Event erstellen' : 'Create Event Now';
 
   return (
