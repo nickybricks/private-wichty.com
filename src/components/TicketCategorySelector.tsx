@@ -4,6 +4,9 @@ import { Check, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+// Platform fee percentage (5%)
+const PLATFORM_FEE_PERCENT = 5;
+
 interface TicketCategory {
   id: string;
   name: string;
@@ -11,6 +14,7 @@ interface TicketCategory {
   price_cents: number;
   currency: string;
   max_quantity: number | null;
+  pass_fee_to_customer?: boolean;
 }
 
 export interface SelectedTicket {
@@ -43,6 +47,15 @@ export function TicketCategorySelector({
       style: 'currency',
       currency: currency.toUpperCase(),
     }).format(cents / 100);
+  };
+
+  // Calculate display price including fee if passed to customer
+  const getDisplayPrice = (category: TicketCategory) => {
+    if (category.pass_fee_to_customer && category.price_cents > 0) {
+      const fee = Math.round(category.price_cents * (PLATFORM_FEE_PERCENT / 100));
+      return category.price_cents + fee;
+    }
+    return category.price_cents;
   };
 
   const isSelected = (categoryId: string) => {
@@ -133,8 +146,13 @@ export function TicketCategorySelector({
               {/* Right: Price */}
               <div className="flex-shrink-0 text-right">
                 <p className="font-semibold">
-                  {formatPrice(category.price_cents, category.currency)}
+                  {formatPrice(getDisplayPrice(category), category.currency)}
                 </p>
+                {category.pass_fee_to_customer && category.price_cents > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {i18n.language === 'de' ? 'inkl. Gebühr' : 'incl. fee'}
+                  </p>
+                )}
               </div>
             </div>
 
