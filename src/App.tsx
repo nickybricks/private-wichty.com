@@ -20,6 +20,7 @@ import CookieConsent from "./components/CookieConsent";
 import Explore from "./pages/Explore";
 import ExploreCategory from "./pages/ExploreCategory";
 import ExploreCity from "./pages/ExploreCity";
+import UploadDemoImages from "./pages/UploadDemoImages";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/ratgeber" element={<Blog />} />
           <Route path="/ratgeber/:slug" element={<BlogPost />} />
           <Route path="/ticket/:ticketCode" element={<Ticket />} />
+          <Route path="/admin/upload-demo-images" element={<UploadDemoImages />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
