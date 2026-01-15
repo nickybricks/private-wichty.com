@@ -160,6 +160,7 @@ export default function EditEvent() {
     requiresApproval: boolean;
     imagePreview: string | null;
     waitlistEnabled: boolean;
+    allowMultipleTickets: boolean;
   } | null>(null);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
@@ -190,6 +191,7 @@ export default function EditEvent() {
       requiresApproval !== originalValues.requiresApproval ||
       imagePreview !== originalValues.imagePreview ||
       waitlistEnabled !== originalValues.waitlistEnabled ||
+      allowMultipleTickets !== originalValues.allowMultipleTickets ||
       imageFile !== null ||
       removeImage ||
       ticketsModified
@@ -197,7 +199,7 @@ export default function EditEvent() {
   }, [
     name, description, isPublic, eventDate, endDate, startTime, endTime,
     location, capacityUnlimited, maxCapacity, isPaid, price, requiresApproval,
-    imagePreview, waitlistEnabled, imageFile, removeImage, ticketsModified, originalValues
+    imagePreview, waitlistEnabled, allowMultipleTickets, imageFile, removeImage, ticketsModified, originalValues
   ]);
 
   // State for showing unsaved changes dialog
@@ -344,6 +346,7 @@ export default function EditEvent() {
         requiresApproval: initialRequiresApproval,
         imagePreview: initialImagePreview,
         waitlistEnabled: initialWaitlistEnabled,
+        allowMultipleTickets: initialAllowMultipleTickets,
       });
       
       // Store original values for auto-tagging comparison
@@ -582,6 +585,7 @@ export default function EditEvent() {
         requiresApproval,
         imagePreview: imageUrl,
         waitlistEnabled,
+        allowMultipleTickets,
       });
       setImageFile(null);
       setRemoveImage(false);
