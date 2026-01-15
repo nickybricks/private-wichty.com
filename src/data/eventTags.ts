@@ -19,6 +19,7 @@ export const EVENT_TAGS = [
   { id: "outdoor", label: { de: "Outdoor", en: "Outdoor" }, color: "bg-sky-500" },
   { id: "wandern", label: { de: "Wandern", en: "Hiking" }, color: "bg-stone-500" },
   { id: "radfahren", label: { de: "Radfahren", en: "Cycling" }, color: "bg-slate-500" },
+  { id: "golf", label: { de: "Golf", en: "Golf" }, color: "bg-green-600" },
   { id: "sonstiges", label: { de: "Sonstiges", en: "Other" }, color: "bg-gray-500" },
 ] as const;
 
