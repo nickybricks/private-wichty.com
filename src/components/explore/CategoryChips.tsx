@@ -25,8 +25,8 @@ export function CategoryChips({
   const tagsToShow = EVENT_TAGS.filter(tag => availableTags.includes(tag.id));
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-muted-foreground px-1">
+    <div className="space-y-3">
+      <h3 className="text-lg font-semibold">
         {t("categories")}
       </h3>
       <ScrollArea className="w-full whitespace-nowrap">
@@ -49,10 +49,10 @@ export function CategoryChips({
               <button
                 key={tag.id}
                 onClick={() => onTagToggle(tag.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all border ${
                   isSelected
-                    ? `${tag.color} text-white shadow-md`
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? `${tag.color} text-white shadow-md border-transparent`
+                    : "bg-background text-foreground border-border shadow-sm hover:shadow-md hover:border-foreground/20 active:scale-95"
                 }`}
               >
                 {getTagLabel(tag.id, language)}
