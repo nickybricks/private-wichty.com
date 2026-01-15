@@ -55,7 +55,7 @@ All colors MUST be HSL.
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.08);
     --shadow-strong: 0 10px 30px 0 rgb(0 0 0 / 0.12);
 
-    /* Wichty Gradient: from-[#FFB86C] via-[#FF6788] to-[#C088FF] */
+    /* Accent Gradient: from-[#FFB86C] via-[#FF6788] to-[#C088FF] */
     --gradient-accent: linear-gradient(90deg, #ffb86c 0%, #ff6788 50%, #c088ff 100%);
     --gradient-accent-transparent: linear-gradient(
       90deg,

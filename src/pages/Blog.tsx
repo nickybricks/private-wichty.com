@@ -45,7 +45,7 @@ export default function Blog() {
         <html lang={lang} />
         <title>{t('metaTitle')}</title>
         <meta name="description" content={t('metaDescription')} />
-        <meta name="keywords" content={lang === 'de' ? "Wichtel, Wichteln Ideen, Schrottwichteln, Secret Santa, Wichtel Budget, Online Wichteln" : "Secret Santa, gift exchange ideas, White Elephant, Secret Santa budget, online Secret Santa"} />
+        <meta name="keywords" content={lang === 'de' ? "Event planen, Event organisieren, Sportverein Event, Party planen, Turnier organisieren, Event App" : "Event planning, event organization, sports club event, party planning, tournament organization, event app"} />
         <link rel="canonical" href="https://wichty.de/ratgeber" />
         <link rel="alternate" hrefLang="de" href="https://wichty.de/ratgeber" />
         <link rel="alternate" hrefLang="en" href="https://wichty.de/ratgeber" />

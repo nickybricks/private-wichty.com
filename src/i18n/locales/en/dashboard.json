@@ -8,7 +8,7 @@
   },
   "empty": {
     "title": "No events yet",
-    "subtitle": "Create your first Secret Santa event or join an existing one!",
+    "subtitle": "Create your first event or join an existing one!",
     "button": "Create first event",
     "pastTitle": "No past events",
     "pastSubtitle": "Events whose date has passed will appear here."
