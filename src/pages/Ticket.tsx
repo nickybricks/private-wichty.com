@@ -229,8 +229,6 @@ export default function Ticket() {
       'VERSION:2.0',
       'PRODID:-//wichty//Event Ticket//EN',
       'BEGIN:VEVENT',
-      `UID:${ticket.ticket_code}@wichty.com`,
-      `DTSTAMP:${new Date().toISOString().replace(/-|:|\.\d{3}/g, '').slice(0, -1)}Z`,
       `DTSTART:${startDate}`,
       `DTEND:${endDate}`,
       `SUMMARY:${event.name}`,
@@ -240,26 +238,16 @@ export default function Ticket() {
       'END:VCALENDAR'
     ].join('\r\n');
 
-    // For iOS: Use data URI which opens directly in Calendar app
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     
-    if (isIOS) {
-      // iOS handles data: URIs for calendar events directly
-      const dataUri = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
-      window.location.href = dataUri;
-    } else {
-      // For other devices: Download .ics file
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${event.name.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${event.name.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -474,11 +462,11 @@ function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, ad
               {t('ticketPage.addToCalendar')}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="center" className="w-48 bg-background border shadow-lg">
-            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)} className="text-sm cursor-pointer">
+          <DropdownMenuContent align="center" className="w-48">
+            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)} className="text-sm">
               {t('ticketPage.appleCalendar')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)} className="text-sm cursor-pointer">
+            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)} className="text-sm">
               {t('ticketPage.googleCalendar')}
             </DropdownMenuItem>
           </DropdownMenuContent>
