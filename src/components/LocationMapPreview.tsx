@@ -53,17 +53,11 @@ export function LocationMapPreview({ location, className, showMapOnly = false }:
   };
 
   const openGoogleMaps = () => {
-    if (coordinates) {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${coordinates.lat},${coordinates.lng}`,
-        "_blank"
-      );
-    } else {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`,
-        "_blank"
-      );
-    }
+    // Always use the full address for the query to show exact location
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`,
+      "_blank"
+    );
   };
 
   if (!location) return null;
