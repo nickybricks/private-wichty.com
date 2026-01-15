@@ -97,10 +97,10 @@ export function TicketCategorySelector({
           <div
             key={category.id}
             className={cn(
-              "relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200",
+              "relative rounded-xl border p-4 cursor-pointer transition-all duration-200",
               selected
-                ? "border-foreground bg-background shadow-sm"
-                : "border-transparent bg-muted/50 hover:bg-muted/70"
+                ? "border-foreground border-2 bg-background shadow-sm"
+                : "border-transparent bg-muted/60"
             )}
             onClick={() => handleCategoryClick(category.id)}
           >
