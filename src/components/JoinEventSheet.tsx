@@ -373,16 +373,49 @@ export function JoinEventSheet({
 
       if (error) throw error;
 
-      // Create ticket for the participant
-      const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      
-      await supabase
-        .from("tickets")
-        .insert({
+      // Calculate total tickets (from selectedTickets or 1 for single ticket)
+      const totalTickets = hasSelectedTickets
+        ? selectedTickets.reduce((sum, t) => sum + t.quantity, 0)
+        : 1;
+
+      // Create tickets for the participant
+      const ticketCodes: string[] = [];
+      const ticketInserts: any[] = [];
+      const batchId = Date.now().toString(36).toUpperCase();
+
+      for (let i = 0; i < totalTickets; i++) {
+        const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const ticketCode = `EVT-${batchId}${randomPart}-${i.toString().padStart(2, '0')}`;
+        ticketCodes.push(ticketCode);
+
+        // Find which category this ticket belongs to
+        let categoryId: string | null = null;
+        if (hasSelectedTickets) {
+          let ticketIndex = 0;
+          for (const selected of selectedTickets) {
+            if (i >= ticketIndex && i < ticketIndex + selected.quantity) {
+              categoryId = selected.categoryId;
+              break;
+            }
+            ticketIndex += selected.quantity;
+          }
+        }
+
+        ticketInserts.push({
           participant_id: participantData.id,
           event_id: eventId,
           ticket_code: ticketCode,
+          ticket_category_id: categoryId,
         });
+      }
+
+      console.log("[JoinEventSheet] Creating tickets:", { totalTickets, ticketCodes });
+      
+      const { error: ticketError } = await supabase.from("tickets").insert(ticketInserts);
+      if (ticketError) {
+        console.error("[JoinEventSheet] Error creating tickets:", ticketError);
+        throw ticketError;
+      }
 
       // Get user email and event details for confirmation email
       const { data: { user } } = await supabase.auth.getUser();
@@ -397,7 +430,7 @@ export function JoinEventSheet({
         const baseUrl = window.location.hostname.includes('lovable.app') 
           ? 'https://wichty.com' 
           : window.location.origin;
-        const ticketUrl = `${baseUrl}/ticket/${ticketCode}`;
+        const ticketUrl = `${baseUrl}/ticket/${ticketCodes[0]}`;
         const eventUrl = `${baseUrl}/event/${eventId}`;
 
         // Send RSVP confirmation email to guest (fire and forget)
@@ -413,6 +446,7 @@ export function JoinEventSheet({
             eventLocation: eventDetails?.location,
             eventUrl,
             ticketUrl,
+            ticketCount: totalTickets,
           },
         }).catch(err => console.error("Failed to send RSVP email:", err));
 
