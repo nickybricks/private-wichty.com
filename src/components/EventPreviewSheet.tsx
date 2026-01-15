@@ -598,7 +598,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
             {/* 7. Description */}
             {event.description && (
-              <div className="pt-2">
+              <div className="pt-2 pb-4">
                 <div 
                   className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-strong:font-semibold px-1 py-0.5"
                   style={{ color: '#1E1E20' }}
@@ -607,9 +607,14 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
               </div>
             )}
 
+            {/* Divider between description and location */}
+            {event.description && event.location && (
+              <div className="w-full h-px bg-border/60" />
+            )}
+
             {/* 8. Address + Google Maps Card */}
             {event.location && (
-              <div className="pt-2">
+              <div className="pt-4">
                 <LocationMapPreview location={event.location} />
               </div>
             )}
