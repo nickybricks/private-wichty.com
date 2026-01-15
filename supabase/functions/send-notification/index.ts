@@ -5,6 +5,7 @@ import {
   EMAIL_BRANDING,
   generateNotificationEmailHtml,
   getNotificationContent,
+  generateICSContent,
   type NotificationType,
   type NotificationEmailContent,
 } from "../_shared/email-template.ts";
@@ -27,7 +28,10 @@ interface NotificationRequest {
   eventName?: string;
   eventDate?: string | null;
   eventTime?: string | null;
+  endDate?: string | null; // For multi-day events
+  endTime?: string | null; // Event end time
   eventLocation?: string | null;
+  eventDescription?: string | null; // Event description for calendar
   eventUrl?: string;
   ticketUrl?: string;
   // Participant-related fields (for host notifications)
@@ -212,12 +216,57 @@ const handler = async (req: Request): Promise<Response> => {
       subject: emailContent.subject,
     });
 
+    // Generate ICS calendar attachment for ticket-related notifications
+    let attachments: { filename: string; content: string }[] | undefined;
+    
+    const ticketNotificationTypes: NotificationType[] = [
+      'ticket_purchased',
+      'ticket_rsvp', 
+      'join_request_approved',
+    ];
+    
+    if (ticketNotificationTypes.includes(request.type) && request.eventDate && request.eventName) {
+      try {
+        const icsContent = generateICSContent({
+          eventName: request.eventName,
+          eventDate: request.eventDate,
+          eventTime: request.eventTime,
+          endDate: request.endDate,
+          endTime: request.endTime,
+          location: request.eventLocation,
+          description: request.eventDescription,
+          ticketUrl: request.ticketUrl,
+        });
+
+        // Base64 encode the ICS content for Resend attachment
+        const encoder = new TextEncoder();
+        const icsBytes = encoder.encode(icsContent);
+        const base64ICS = btoa(String.fromCharCode(...icsBytes));
+
+        // Sanitize filename
+        const safeEventName = request.eventName.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').replace(/\s+/g, '-').substring(0, 50);
+
+        attachments = [
+          {
+            filename: `${safeEventName}.ics`,
+            content: base64ICS,
+          },
+        ];
+
+        console.log("Generated ICS calendar attachment for:", request.eventName);
+      } catch (icsError) {
+        console.error("Failed to generate ICS attachment:", icsError);
+        // Continue without attachment
+      }
+    }
+
     // Send email via Resend
     const emailResponse = await resend.emails.send({
       from: sender,
       to: [recipientEmail],
       subject: emailContent.subject,
       html,
+      attachments,
     });
 
     console.log("Email sent successfully:", emailResponse);

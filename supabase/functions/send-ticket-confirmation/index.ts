@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { EMAIL_BRANDING, generateTicketEmailHtml } from "../_shared/email-template.ts";
+import { EMAIL_BRANDING, generateTicketEmailHtml, generateICSContent } from "../_shared/email-template.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -17,7 +17,10 @@ interface TicketEmailRequest {
   event_name: string;
   event_date?: string;
   event_time?: string;
+  end_date?: string;
+  end_time?: string;
   event_location?: string;
+  event_description?: string;
   language?: string;
 }
 
@@ -34,7 +37,10 @@ const handler = async (req: Request): Promise<Response> => {
       event_name,
       event_date,
       event_time,
+      end_date,
+      end_time,
       event_location,
+      event_description,
       language = 'de',
     }: TicketEmailRequest = await req.json();
 
@@ -66,6 +72,36 @@ const handler = async (req: Request): Promise<Response> => {
       language: isGerman ? 'de' : 'en',
     });
 
+    // Generate ICS calendar attachment if event date is available
+    let attachments: Array<{ filename: string; content: string }> | undefined;
+    
+    if (event_date) {
+      const icsContent = generateICSContent({
+        eventName: event_name,
+        eventDate: event_date,
+        eventTime: event_time,
+        endDate: end_date,
+        endTime: end_time,
+        location: event_location,
+        description: event_description,
+        ticketUrl,
+      });
+
+      // Base64 encode the ICS content for Resend attachment
+      const encoder = new TextEncoder();
+      const icsBytes = encoder.encode(icsContent);
+      const base64ICS = btoa(String.fromCharCode(...icsBytes));
+
+      attachments = [
+        {
+          filename: `${event_name.replace(/[^a-zA-Z0-9]/g, '-')}.ics`,
+          content: base64ICS,
+        },
+      ];
+
+      console.log("Generated ICS calendar attachment for event:", event_name);
+    }
+
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -77,6 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: [participant_email],
         subject,
         html,
+        ...(attachments && { attachments }),
       }),
     });
 

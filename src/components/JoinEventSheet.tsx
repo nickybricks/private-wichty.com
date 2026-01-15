@@ -424,7 +424,7 @@ export function JoinEventSheet({
       if (user?.email) {
         const { data: eventDetails } = await supabase
           .from("events")
-          .select("name, event_date, event_time, location, user_id")
+          .select("name, event_date, event_time, end_date, end_time, location, description, user_id")
           .eq("id", eventId)
           .single();
 
@@ -445,7 +445,10 @@ export function JoinEventSheet({
             eventName: eventDetails?.name || '',
             eventDate: eventDetails?.event_date,
             eventTime: eventDetails?.event_time,
+            endDate: eventDetails?.end_date,
+            endTime: eventDetails?.end_time,
             eventLocation: eventDetails?.location,
+            eventDescription: eventDetails?.description,
             eventUrl,
             ticketUrl,
             ticketCount: totalTickets,

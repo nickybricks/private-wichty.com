@@ -43,6 +43,150 @@ export const EMAIL_BRANDING = {
   },
 };
 
+// Generate ICS calendar file content
+// Works with Apple Calendar, Outlook, Google Calendar, and all major calendar apps
+export interface CalendarEventData {
+  eventName: string;
+  eventDate: string; // ISO date string (YYYY-MM-DD)
+  eventTime?: string | null; // Time string (HH:MM)
+  endDate?: string | null; // ISO date string for multi-day events
+  endTime?: string | null; // End time string (HH:MM)
+  location?: string | null;
+  description?: string | null;
+  ticketUrl?: string;
+}
+
+export function generateICSContent(data: CalendarEventData): string {
+  const uid = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}@wichty.com`;
+  const now = new Date();
+  const dtstamp = formatDateToICS(now);
+
+  // Parse start date/time
+  let dtstart: string;
+  let dtend: string;
+
+  if (data.eventTime) {
+    // Event with specific time
+    const [hours, minutes] = data.eventTime.split(':').map(Number);
+    const startDate = new Date(data.eventDate);
+    startDate.setHours(hours, minutes, 0, 0);
+    dtstart = formatDateTimeToICS(startDate);
+
+    // Calculate end time (default 2 hours after start if not specified)
+    if (data.endDate && data.endTime) {
+      const [endHours, endMinutes] = data.endTime.split(':').map(Number);
+      const endDate = new Date(data.endDate);
+      endDate.setHours(endHours, endMinutes, 0, 0);
+      dtend = formatDateTimeToICS(endDate);
+    } else if (data.endTime) {
+      const [endHours, endMinutes] = data.endTime.split(':').map(Number);
+      const endDate = new Date(data.eventDate);
+      endDate.setHours(endHours, endMinutes, 0, 0);
+      dtend = formatDateTimeToICS(endDate);
+    } else {
+      // Default to 2 hours duration
+      const endDate = new Date(startDate);
+      endDate.setHours(endDate.getHours() + 2);
+      dtend = formatDateTimeToICS(endDate);
+    }
+  } else {
+    // All-day event
+    dtstart = formatDateToICSAllDay(new Date(data.eventDate));
+    if (data.endDate) {
+      // For all-day events, end date should be the day after
+      const endDate = new Date(data.endDate);
+      endDate.setDate(endDate.getDate() + 1);
+      dtend = formatDateToICSAllDay(endDate);
+    } else {
+      // Single all-day event
+      const endDate = new Date(data.eventDate);
+      endDate.setDate(endDate.getDate() + 1);
+      dtend = formatDateToICSAllDay(endDate);
+    }
+  }
+
+  // Build description with ticket link
+  let description = data.description || '';
+  if (data.ticketUrl) {
+    description = description 
+      ? `${description}\\n\\nTicket: ${data.ticketUrl}`
+      : `Ticket: ${data.ticketUrl}`;
+  }
+
+  // Escape special characters for ICS format
+  const escapedSummary = escapeICSText(data.eventName);
+  const escapedLocation = data.location ? escapeICSText(data.location) : '';
+  const escapedDescription = escapeICSText(description);
+
+  const icsLines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//wichty.com//Event Ticket//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtstamp}`,
+    data.eventTime ? `DTSTART:${dtstart}` : `DTSTART;VALUE=DATE:${dtstart}`,
+    data.eventTime ? `DTEND:${dtend}` : `DTEND;VALUE=DATE:${dtend}`,
+    `SUMMARY:${escapedSummary}`,
+  ];
+
+  if (escapedLocation) {
+    icsLines.push(`LOCATION:${escapedLocation}`);
+  }
+
+  if (escapedDescription) {
+    icsLines.push(`DESCRIPTION:${escapedDescription}`);
+  }
+
+  if (data.ticketUrl) {
+    icsLines.push(`URL:${data.ticketUrl}`);
+  }
+
+  icsLines.push(
+    'STATUS:CONFIRMED',
+    'TRANSP:OPAQUE',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  );
+
+  return icsLines.join('\r\n');
+}
+
+// Format date for ICS (all-day event): YYYYMMDD
+function formatDateToICSAllDay(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+}
+
+// Format datetime for ICS: YYYYMMDDTHHMMSSZ (UTC)
+function formatDateTimeToICS(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+}
+
+// Format date for DTSTAMP (always UTC)
+function formatDateToICS(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+// Escape special characters in ICS text fields
+function escapeICSText(text: string): string {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
+}
+
 // All notification types supported by the system
 export type NotificationType =
   // Guest notifications
