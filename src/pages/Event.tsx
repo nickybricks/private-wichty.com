@@ -123,7 +123,7 @@ export default function Event() {
           // Get event details for confirmation email
           const { data: eventDetails } = await supabase
             .from("events")
-            .select("name, event_date, event_time, location, user_id")
+            .select("name, event_date, event_time, end_date, end_time, location, description, user_id")
             .eq("id", id)
             .single();
 
@@ -148,7 +148,10 @@ export default function Event() {
                 eventName: eventDetails?.name || '',
                 eventDate: eventDetails?.event_date,
                 eventTime: eventDetails?.event_time,
+                endDate: eventDetails?.end_date,
+                endTime: eventDetails?.end_time,
                 eventLocation: eventDetails?.location,
+                eventDescription: eventDetails?.description,
                 eventUrl,
                 ticketUrl: mainTicketUrl,
                 ticketCount: totalTickets,
