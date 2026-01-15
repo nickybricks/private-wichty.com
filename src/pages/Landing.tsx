@@ -8,8 +8,6 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
-import mockupEvent from "@/assets/mockup-event.jpg";
-import mockupDashboard from "@/assets/mockup-dashboard.jpg";
 import { Clock, Shield, Wallet, ArrowRight, Check } from "lucide-react";
 import {
   Accordion,
@@ -263,24 +261,6 @@ export default function Landing() {
                   )}
                 </div>
               ))}
-            </div>
-            
-            {/* Visual Preview */}
-            <div className="mt-12 sm:mt-16 grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              <div className="rounded-2xl overflow-hidden shadow-lg border border-border/50">
-                <img 
-                  src={mockupEvent} 
-                  alt={lang === 'de' ? 'Event erstellen' : 'Create event'}
-                  className="w-full h-auto"
-                />
-              </div>
-              <div className="rounded-2xl overflow-hidden shadow-lg border border-border/50">
-                <img 
-                  src={mockupDashboard} 
-                  alt={lang === 'de' ? 'Dashboard Übersicht' : 'Dashboard overview'}
-                  className="w-full h-auto"
-                />
-              </div>
             </div>
           </div>
         </section>
