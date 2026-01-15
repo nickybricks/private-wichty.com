@@ -61,8 +61,23 @@ serve(async (req) => {
     if (eventError || !event) throw new Error("Event not found");
     logStep("Event found", { eventId: event.id, price: event.price_cents, ownerId: event.user_id });
 
-    if (!event.is_paid) {
-      throw new Error("Event is not a paid event");
+    // Check if there are ticket categories with prices (for events that may not have is_paid set)
+    const ticketsArray: SelectedTicket[] = selected_tickets || [];
+    let hasPaidTickets = false;
+    
+    if (ticketsArray.length > 0) {
+      const categoryIds = ticketsArray.map((t: SelectedTicket) => t.categoryId);
+      const { data: categories } = await supabaseClient
+        .from("ticket_categories")
+        .select("price_cents")
+        .in("id", categoryIds);
+      
+      hasPaidTickets = categories?.some((c: any) => c.price_cents > 0) || false;
+    }
+
+    // Allow checkout if is_paid is true OR if there are paid ticket categories
+    if (!event.is_paid && !hasPaidTickets) {
+      throw new Error("Event is not a paid event and has no paid tickets");
     }
 
     // Get event owner's Stripe account
@@ -82,7 +97,6 @@ serve(async (req) => {
     // Build line items based on selected tickets or fallback to event price
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     let totalAmount = 0;
-    const ticketsArray: SelectedTicket[] = selected_tickets || [];
 
     if (ticketsArray.length > 0) {
       // Fetch ticket categories

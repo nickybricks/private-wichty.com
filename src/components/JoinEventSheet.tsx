@@ -204,6 +204,9 @@ export function JoinEventSheet({
   const totalPrice = priceCents;
   const totalCurrency = currency;
   const hasSelectedTickets = selectedTickets.length > 0;
+  
+  // Payment is required if either is_paid is true OR there's a totalPrice > 0
+  const requiresPayment = isPaidEvent || totalPrice > 0;
 
   const handleJoinRequest = async (displayName: string) => {
     // Create join request instead of direct participant
@@ -332,9 +335,8 @@ export function JoinEventSheet({
         return;
       }
 
-      // For paid events, redirect to Stripe checkout
-      if (isPaidEvent && totalPrice > 0) {
-
+      // For paid events (or any event with totalPrice > 0), redirect to Stripe checkout
+      if (requiresPayment && totalPrice > 0) {
         const { data: { session } } = await supabase.auth.getSession();
         
         const { data, error } = await supabase.functions.invoke('create-event-checkout', {
@@ -522,7 +524,7 @@ export function JoinEventSheet({
       <SheetContent side="bottom" className="h-auto">
         <SheetHeader className="space-y-3 pb-6">
           <SheetTitle className="text-2xl">{t('join.title')}</SheetTitle>
-          {isPaidEvent && priceCents > 0 ? (
+          {requiresPayment && totalPrice > 0 ? (
             <SheetDescription>
               {i18n.language === 'de' 
                 ? 'Schließe den Kauf ab, um am Event teilzunehmen.' 
@@ -543,7 +545,7 @@ export function JoinEventSheet({
                 : t('join.description')}
             </SheetDescription>
           )}
-          {isPaidEvent && totalPrice > 0 && (
+          {requiresPayment && totalPrice > 0 && (
             <Badge variant="secondary" className="w-fit gap-1.5">
               <CreditCard className="h-3 w-3" />
               {formatPrice(totalPrice, totalCurrency)}
@@ -645,14 +647,14 @@ export function JoinEventSheet({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {requiresApproval && !isPaidEvent ? t('join.requestLoading') : t('join.loading')}
+                {requiresApproval && !requiresPayment ? t('join.requestLoading') : t('join.loading')}
               </>
-            ) : isPaidEvent && priceCents > 0 ? (
+            ) : requiresPayment && totalPrice > 0 ? (
               <>
                 <CreditCard className="mr-2 h-5 w-5" />
                 {i18n.language === 'de' 
-                  ? `${formatPrice(priceCents, currency)} zahlen` 
-                  : `Pay ${formatPrice(priceCents, currency)}`}
+                  ? `${formatPrice(totalPrice, totalCurrency)} zahlen` 
+                  : `Pay ${formatPrice(totalPrice, totalCurrency)}`}
               </>
             ) : requiresApproval ? (
               t('join.requestButton')

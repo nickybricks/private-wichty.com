@@ -336,6 +336,10 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
   const { total: totalPrice, currency: totalCurrency } = calculateTotalPrice();
   const hasSelectedTickets = selectedTickets.length > 0;
+  
+  // Check if payment is required - either explicitly paid OR has ticket categories with prices
+  const hasPaidTicketCategories = ticketCategories.some(tc => tc.price_cents > 0);
+  const requiresPayment = event?.is_paid || hasPaidTicketCategories || totalPrice > 0;
 
   const getCTAButton = () => {
     if (!event) return null;
@@ -354,14 +358,14 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
       );
     }
 
-    // Paid event - show dynamic price based on selection
-    if (event.is_paid && (event.price_cents > 0 || ticketCategories.length > 0)) {
-      const displayPrice = ticketCategories.length > 0 && hasSelectedTickets
-        ? totalPrice
-        : (ticketCategories.length > 0 
-            ? Math.min(...ticketCategories.map(tc => tc.price_cents))
-            : event.price_cents);
-      const displayCurrency = ticketCategories.length > 0 && hasSelectedTickets
+    // Paid event OR ticket categories with prices - show dynamic price based on selection
+    if (requiresPayment && totalPrice > 0) {
+      const displayPrice = hasSelectedTickets ? totalPrice : (
+        ticketCategories.length > 0 
+          ? Math.min(...ticketCategories.map(tc => tc.price_cents))
+          : event.price_cents
+      );
+      const displayCurrency = hasSelectedTickets
         ? totalCurrency
         : (ticketCategories.length > 0 ? ticketCategories[0].currency : event.currency);
 
@@ -674,7 +678,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
           onOpenChange={setShowJoinSheet}
           eventId={event.id}
           eventName={event.name}
-          isPaidEvent={event.is_paid}
+          isPaidEvent={requiresPayment}
           priceCents={totalPrice}
           currency={totalCurrency}
           requiresApproval={event.requires_approval}
