@@ -16,16 +16,7 @@ import { Loader2, User, CreditCard, Check, Clock, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { AuthDialog } from "@/components/AuthDialog";
-import { TicketCategorySelector, SelectedTicket } from "@/components/TicketCategorySelector";
-
-interface TicketCategory {
-  id: string;
-  name: string;
-  description: string | null;
-  price_cents: number;
-  currency: string;
-  max_quantity: number | null;
-}
+import { SelectedTicket } from "@/components/TicketCategorySelector";
 
 interface JoinEventSheetProps {
   open: boolean;
@@ -37,8 +28,7 @@ interface JoinEventSheetProps {
   currency?: string;
   eventName?: string;
   requiresApproval?: boolean;
-  ticketCategories?: TicketCategory[];
-  allowMultipleTickets?: boolean;
+  selectedTickets?: SelectedTicket[];
 }
 
 interface UserProfile {
@@ -58,8 +48,7 @@ export function JoinEventSheet({
   currency = 'eur',
   eventName = '',
   requiresApproval = false,
-  ticketCategories = [],
-  allowMultipleTickets = true,
+  selectedTickets = [],
 }: JoinEventSheetProps) {
   const { t, i18n } = useTranslation('event');
   const { t: tf } = useTranslation('forms');
@@ -74,25 +63,11 @@ export function JoinEventSheet({
   const [existingRequest, setExistingRequest] = useState<{ status: string } | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
-
-  // Reset ticket selection when sheet opens
-  useEffect(() => {
-    if (open) {
-      // Auto-select first ticket if categories exist and none selected
-      if (ticketCategories.length > 0 && selectedTickets.length === 0) {
-        setSelectedTickets([{ categoryId: ticketCategories[0].id, quantity: 1 }]);
-      }
-    } else {
-      // Reset auth check when sheet closes
-      setAuthChecked(false);
-      setSelectedTickets([]);
-    }
-  }, [open, ticketCategories]);
 
   // Check auth when sheet opens
   useEffect(() => {
     if (open) {
+      setAuthChecked(false);
       checkAuthAndFetchProfile();
     }
   }, [open]);
@@ -225,27 +200,9 @@ export function JoinEventSheet({
     }).format(cents / 100);
   };
 
-  // Calculate total price from selected tickets
-  const calculateTotalPrice = (): { total: number; currency: string } => {
-    if (ticketCategories.length === 0) {
-      return { total: priceCents, currency };
-    }
-    
-    let total = 0;
-    let curr = currency;
-    
-    for (const selected of selectedTickets) {
-      const category = ticketCategories.find(c => c.id === selected.categoryId);
-      if (category) {
-        total += category.price_cents * selected.quantity;
-        curr = category.currency;
-      }
-    }
-    
-    return { total, currency: curr };
-  };
-
-  const { total: totalPrice, currency: totalCurrency } = calculateTotalPrice();
+  // Price is now passed from parent (already calculated)
+  const totalPrice = priceCents;
+  const totalCurrency = currency;
   const hasSelectedTickets = selectedTickets.length > 0;
 
   const handleJoinRequest = async (displayName: string) => {
@@ -377,12 +334,6 @@ export function JoinEventSheet({
 
       // For paid events, redirect to Stripe checkout
       if (isPaidEvent && totalPrice > 0) {
-        // Validate ticket selection for events with categories
-        if (ticketCategories.length > 0 && !hasSelectedTickets) {
-          toast.error(tf('eventForm.selectTicket'));
-          setLoading(false);
-          return;
-        }
 
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -563,21 +514,6 @@ export function JoinEventSheet({
         </SheetHeader>
 
         <div className="space-y-6 pb-6">
-          {/* Ticket Selection - only for events with ticket categories */}
-          {ticketCategories.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-medium text-sm text-muted-foreground">
-                {i18n.language === 'de' ? 'Ticket auswählen' : 'Select ticket'}
-              </h3>
-              <TicketCategorySelector
-                categories={ticketCategories}
-                selectedTickets={selectedTickets}
-                onSelectionChange={setSelectedTickets}
-                allowMultiple={allowMultipleTickets}
-              />
-            </div>
-          )}
-
           {/* Anonymous Toggle */}
           <div className="flex items-center justify-between p-4 rounded-lg border border-border">
             <div className="flex items-center gap-3">

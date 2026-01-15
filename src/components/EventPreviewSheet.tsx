@@ -31,6 +31,7 @@ import { Loader2, Calendar, MapPin, CreditCard, Share2, Pencil, Ticket, User } f
 import { getTagLabel } from "@/data/eventTags";
 import { JoinEventSheet } from "@/components/JoinEventSheet";
 import { LocationMapPreview } from "@/components/LocationMapPreview";
+import { TicketCategorySelector, SelectedTicket } from "@/components/TicketCategorySelector";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -101,15 +102,24 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [hostProfile, setHostProfile] = useState<HostProfile | null>(null);
+  const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
   useEffect(() => {
     if (open && eventId) {
       setLoading(true);
+      setSelectedTickets([]); // Reset ticket selection when opening
       fetchEventData();
     }
   }, [open, eventId]);
+
+  // Auto-select first ticket when categories are loaded
+  useEffect(() => {
+    if (ticketCategories.length > 0 && selectedTickets.length === 0) {
+      setSelectedTickets([{ categoryId: ticketCategories[0].id, quantity: 1 }]);
+    }
+  }, [ticketCategories]);
 
   const fetchEventData = async () => {
     if (!eventId) return;
@@ -304,6 +314,29 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
   const isHost = user && event?.user_id === user.id;
 
+  // Calculate total price from selected tickets
+  const calculateTotalPrice = (): { total: number; currency: string } => {
+    if (ticketCategories.length === 0) {
+      return { total: event?.price_cents || 0, currency: event?.currency || 'eur' };
+    }
+    
+    let total = 0;
+    let curr = event?.currency || 'eur';
+    
+    for (const selected of selectedTickets) {
+      const category = ticketCategories.find(c => c.id === selected.categoryId);
+      if (category) {
+        total += category.price_cents * selected.quantity;
+        curr = category.currency;
+      }
+    }
+    
+    return { total, currency: curr };
+  };
+
+  const { total: totalPrice, currency: totalCurrency } = calculateTotalPrice();
+  const hasSelectedTickets = selectedTickets.length > 0;
+
   const getCTAButton = () => {
     if (!event) return null;
     
@@ -321,22 +354,28 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
       );
     }
 
+    // Paid event - show dynamic price based on selection
     if (event.is_paid && (event.price_cents > 0 || ticketCategories.length > 0)) {
-      const lowestPrice = ticketCategories.length > 0 
-        ? Math.min(...ticketCategories.map(tc => tc.price_cents))
-        : event.price_cents;
-      const currency = ticketCategories.length > 0 
-        ? ticketCategories[0].currency 
-        : event.currency;
+      const displayPrice = ticketCategories.length > 0 && hasSelectedTickets
+        ? totalPrice
+        : (ticketCategories.length > 0 
+            ? Math.min(...ticketCategories.map(tc => tc.price_cents))
+            : event.price_cents);
+      const displayCurrency = ticketCategories.length > 0 && hasSelectedTickets
+        ? totalCurrency
+        : (ticketCategories.length > 0 ? ticketCategories[0].currency : event.currency);
+
+      const showFromPrefix = ticketCategories.length > 1 && !hasSelectedTickets;
 
       return (
         <Button 
           size="lg" 
           className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
+          disabled={ticketCategories.length > 0 && !hasSelectedTickets}
         >
           <CreditCard className="mr-2 h-4 w-4" />
-          {t('cta.buyTicket')} · {ticketCategories.length > 1 ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}{formatPrice(lowestPrice, currency)}
+          {t('cta.buyTicket')} · {showFromPrefix ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}{formatPrice(displayPrice, displayCurrency)}
         </Button>
       );
     }
@@ -492,31 +531,21 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
               </div>
             </button>
 
-            {/* 6. Tickets Section - bordered card with categories and CTA */}
+            {/* 6. Tickets Section - bordered card with interactive selection and CTA */}
             <Card className="p-4 border-2 space-y-4">
               <div className="flex items-center gap-2">
                 <Ticket className="h-4 w-4 text-muted-foreground" />
                 <h3 className="font-semibold text-sm">{t('tickets.title')}</h3>
               </div>
               
+              {/* Interactive Ticket Selection */}
               {ticketCategories.length > 0 ? (
-                <div className="space-y-2">
-                  {ticketCategories.map((category) => (
-                    <div key={category.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{category.name}</p>
-                        {category.description && (
-                          <p className="text-xs text-muted-foreground truncate">{category.description}</p>
-                        )}
-                      </div>
-                      <span className="font-semibold text-sm ml-4">
-                        {category.price_cents === 0 
-                          ? t('free') 
-                          : formatPrice(category.price_cents, category.currency)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <TicketCategorySelector
+                  categories={ticketCategories}
+                  selectedTickets={selectedTickets}
+                  onSelectionChange={setSelectedTickets}
+                  allowMultiple={event.allow_multiple_tickets ?? true}
+                />
               ) : (
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm text-muted-foreground">{t('tickets.generalAdmission')}</span>
@@ -640,12 +669,11 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
           eventId={event.id}
           eventName={event.name}
           isPaidEvent={event.is_paid}
-          priceCents={event.price_cents}
-          currency={event.currency}
+          priceCents={totalPrice}
+          currency={totalCurrency}
           requiresApproval={event.requires_approval}
           onSuccess={handleJoinSuccess}
-          ticketCategories={ticketCategories}
-          allowMultipleTickets={event.allow_multiple_tickets ?? true}
+          selectedTickets={selectedTickets}
         />
       )}
 

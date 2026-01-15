@@ -10,6 +10,11 @@ const corsHeaders = {
 // Platform fee percentage (5%)
 const PLATFORM_FEE_PERCENT = 5;
 
+interface SelectedTicket {
+  categoryId: string;
+  quantity: number;
+}
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-EVENT-CHECKOUT] ${step}${detailsStr}`);
@@ -26,10 +31,10 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { event_id, participant_name, participant_wish } = await req.json();
+    const { event_id, participant_name, participant_wish, selected_tickets } = await req.json();
     if (!event_id) throw new Error("event_id is required");
     if (!participant_name) throw new Error("participant_name is required");
-    logStep("Request data", { event_id, participant_name });
+    logStep("Request data", { event_id, participant_name, selected_tickets });
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -56,7 +61,7 @@ serve(async (req) => {
     if (eventError || !event) throw new Error("Event not found");
     logStep("Event found", { eventId: event.id, price: event.price_cents, ownerId: event.user_id });
 
-    if (!event.is_paid || !event.price_cents || event.price_cents <= 0) {
+    if (!event.is_paid) {
       throw new Error("Event is not a paid event");
     }
 
@@ -74,32 +79,85 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     
+    // Build line items based on selected tickets or fallback to event price
+    let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    let totalAmount = 0;
+    const ticketsArray: SelectedTicket[] = selected_tickets || [];
+
+    if (ticketsArray.length > 0) {
+      // Fetch ticket categories
+      const categoryIds = ticketsArray.map((t: SelectedTicket) => t.categoryId);
+      const { data: categories } = await supabaseClient
+        .from("ticket_categories")
+        .select("id, name, description, price_cents, currency")
+        .in("id", categoryIds);
+
+      if (!categories || categories.length === 0) {
+        throw new Error("Ticket categories not found");
+      }
+
+      logStep("Ticket categories found", { count: categories.length });
+
+      // Build line items for each selected ticket
+      for (const selected of ticketsArray) {
+        const category = categories.find((c: any) => c.id === selected.categoryId);
+        if (!category) continue;
+
+        lineItems.push({
+          price_data: {
+            currency: category.currency || "eur",
+            product_data: {
+              name: category.name,
+              description: category.description || `Ticket für ${event.name}`,
+            },
+            unit_amount: category.price_cents,
+          },
+          quantity: selected.quantity,
+        });
+
+        totalAmount += category.price_cents * selected.quantity;
+      }
+    } else {
+      // Fallback to event price (single ticket)
+      if (!event.price_cents || event.price_cents <= 0) {
+        throw new Error("Event has no price configured");
+      }
+
+      lineItems.push({
+        price_data: {
+          currency: event.currency || "eur",
+          product_data: {
+            name: `Teilnahme: ${event.name}`,
+            description: `Event beitreten als ${participant_name}`,
+          },
+          unit_amount: event.price_cents,
+        },
+        quantity: 1,
+      });
+
+      totalAmount = event.price_cents;
+    }
+
     // Calculate application fee (platform fee)
-    const applicationFee = Math.round(event.price_cents * (PLATFORM_FEE_PERCENT / 100));
+    const applicationFee = Math.round(totalAmount * (PLATFORM_FEE_PERCENT / 100));
     logStep("Fee calculation", { 
-      price: event.price_cents, 
+      totalAmount, 
       applicationFee, 
-      feePercent: PLATFORM_FEE_PERCENT 
+      feePercent: PLATFORM_FEE_PERCENT,
+      lineItemsCount: lineItems.length
     });
 
-    const origin = req.headers.get("origin") || "https://yskajilatxzwtnunxxvs.lovable.app";
+    const origin = req.headers.get("origin") || "https://wichty.com";
+    
+    // Encode selected tickets in URL for post-payment processing
+    const ticketsParam = ticketsArray.length > 0 
+      ? encodeURIComponent(JSON.stringify(ticketsArray))
+      : '';
     
     // Create checkout session with destination charge
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: event.currency || "eur",
-            product_data: {
-              name: `Teilnahme: ${event.name}`,
-              description: `Wichtelspiel beitreten als ${participant_name}`,
-            },
-            unit_amount: event.price_cents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       payment_intent_data: {
         application_fee_amount: applicationFee,
         transfer_data: {
@@ -111,8 +169,9 @@ serve(async (req) => {
         participant_name: participant_name,
         participant_wish: participant_wish || "",
         user_id: userId || "",
+        selected_tickets: ticketsParam,
       },
-      success_url: `${origin}/event/${event_id}?payment_success=true&name=${encodeURIComponent(participant_name)}&wish=${encodeURIComponent(participant_wish || "")}`,
+      success_url: `${origin}/event/${event_id}?payment_success=true&name=${encodeURIComponent(participant_name)}&wish=${encodeURIComponent(participant_wish || "")}&tickets=${ticketsParam}`,
       cancel_url: `${origin}/event/${event_id}?payment_cancelled=true`,
     });
 
