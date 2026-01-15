@@ -118,6 +118,8 @@
     "getDirections": "Route planen",
     "addToWallet": "Zum Wallet hinzufügen",
     "addToCalendar": "Zum Kalender hinzufügen",
+    "appleCalendar": "Apple Kalender / iCal",
+    "googleCalendar": "Google Kalender",
     "ticketOf": "Ticket {{current}} von {{total}}",
     "goHome": "Zur Startseite"
   },

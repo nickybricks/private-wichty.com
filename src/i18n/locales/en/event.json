@@ -118,6 +118,8 @@
     "getDirections": "Get Directions",
     "addToWallet": "Add to Wallet",
     "addToCalendar": "Add to Calendar",
+    "appleCalendar": "Apple Calendar / iCal",
+    "googleCalendar": "Google Calendar",
     "ticketOf": "Ticket {{current}} of {{total}}",
     "goHome": "Go to Home"
   },

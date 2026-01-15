@@ -4,7 +4,13 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, Calendar, Clock, Wallet } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Loader2, MapPin, Calendar, Clock, CalendarPlus } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -166,7 +172,7 @@ export default function Ticket() {
     }
   };
 
-  const addToCalendar = (ticket: TicketData) => {
+  const addToGoogleCalendar = (ticket: TicketData) => {
     if (!ticket) return;
 
     const event = ticket.event;
@@ -185,6 +191,62 @@ export default function Ticket() {
 
     const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&location=${location}&dates=${dateStr}/${dateStr}`;
     window.open(calUrl, '_blank');
+  };
+
+  const addToAppleCalendar = (ticket: TicketData) => {
+    if (!ticket) return;
+
+    const event = ticket.event;
+    
+    // Format date for ICS (YYYYMMDDTHHMMSS)
+    const formatICSDate = (dateStr: string | null, timeStr: string | null): string => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      if (timeStr) {
+        const [hours, minutes] = timeStr.split(':');
+        date.setHours(parseInt(hours), parseInt(minutes));
+      }
+      return date.toISOString().replace(/-|:|\.\d{3}/g, '').slice(0, -1);
+    };
+
+    const startDate = formatICSDate(event.event_date, event.event_time);
+    // End date: 2 hours after start as default
+    let endDate = startDate;
+    if (event.event_date) {
+      const date = new Date(event.event_date);
+      if (event.event_time) {
+        const [hours, minutes] = event.event_time.split(':');
+        date.setHours(parseInt(hours) + 2, parseInt(minutes));
+      } else {
+        date.setHours(date.getHours() + 2);
+      }
+      endDate = date.toISOString().replace(/-|:|\.\d{3}/g, '').slice(0, -1);
+    }
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//wichty//Event Ticket//EN',
+      'BEGIN:VEVENT',
+      `DTSTART:${startDate}`,
+      `DTEND:${endDate}`,
+      `SUMMARY:${event.name}`,
+      `LOCATION:${event.location || ''}`,
+      `DESCRIPTION:Ticket für ${event.name}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${event.name.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -221,7 +283,8 @@ export default function Ticket() {
             i18n={i18n}
             formatDate={formatDate}
             openDirections={openDirections}
-            addToCalendar={addToCalendar}
+            addToGoogleCalendar={addToGoogleCalendar}
+            addToAppleCalendar={addToAppleCalendar}
           />
         </div>
       </div>
@@ -255,7 +318,8 @@ export default function Ticket() {
                     i18n={i18n}
                     formatDate={formatDate}
                     openDirections={openDirections}
-                    addToCalendar={addToCalendar}
+                    addToGoogleCalendar={addToGoogleCalendar}
+                    addToAppleCalendar={addToAppleCalendar}
                   />
                 </div>
               );
@@ -292,10 +356,11 @@ interface TicketCardProps {
   i18n: { language: string };
   formatDate: (dateStr: string | null) => string | null;
   openDirections: (ticket: TicketData) => void;
-  addToCalendar: (ticket: TicketData) => void;
+  addToGoogleCalendar: (ticket: TicketData) => void;
+  addToAppleCalendar: (ticket: TicketData) => void;
 }
 
-function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, addToCalendar }: TicketCardProps) {
+function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, addToGoogleCalendar, addToAppleCalendar }: TicketCardProps) {
   return (
     <div className="bg-background rounded-3xl shadow-xl overflow-hidden">
       {/* Ticket Badge */}
@@ -393,14 +458,22 @@ function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, ad
           </Button>
         )}
         
-        <Button 
-          variant="outline" 
-          className="w-full" 
-          onClick={() => addToCalendar(ticket)}
-        >
-          <Wallet className="h-4 w-4 mr-2" />
-          {t('ticketPage.addToCalendar')}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <CalendarPlus className="h-4 w-4 mr-2" />
+              {t('ticketPage.addToCalendar')}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-56">
+            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)}>
+              {t('ticketPage.appleCalendar')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)}>
+              {t('ticketPage.googleCalendar')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
