@@ -34,6 +34,7 @@ interface TicketCategory {
   currency: string;
   max_quantity: number | null;
   sort_order: number;
+  pass_fee_to_customer?: boolean;
 }
 
 interface TicketCategoriesProps {
@@ -63,7 +64,8 @@ export function TicketCategories({
     name: "",
     description: "",
     price: "",
-    maxQuantity: ""
+    maxQuantity: "",
+    passFeeToCustomer: false
   });
   const [showNewForm, setShowNewForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -114,7 +116,8 @@ export function TicketCategories({
           price_cents: priceCents,
           currency: "eur",
           max_quantity: newCategory.maxQuantity ? parseInt(newCategory.maxQuantity) : null,
-          sort_order: categories.length
+          sort_order: categories.length,
+          pass_fee_to_customer: newCategory.passFeeToCustomer
         })
         .select()
         .single();
@@ -125,7 +128,7 @@ export function TicketCategories({
       setCategories(updatedCategories);
       onCategoriesChange?.(updatedCategories);
       onTicketModified?.();
-      setNewCategory({ name: "", description: "", price: "", maxQuantity: "" });
+      setNewCategory({ name: "", description: "", price: "", maxQuantity: "", passFeeToCustomer: false });
       setShowNewForm(false);
       toast.success(i18n.language === 'de' ? 'Ticket-Kategorie erstellt' : 'Ticket category created');
     } catch (error) {
@@ -281,8 +284,8 @@ export function TicketCategories({
                         {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
                       </Label>
                       <Switch
-                        checked={false}
-                        onCheckedChange={() => {}}
+                        checked={category.pass_fee_to_customer || false}
+                        onCheckedChange={(checked) => handleUpdateCategory(category.id, { pass_fee_to_customer: checked })}
                       />
                     </div>
                   )}
@@ -387,8 +390,8 @@ export function TicketCategories({
                     {i18n.language === 'de' ? '5% Gebühr an Käufer weitergeben' : 'Pass 5% fee to buyer'}
                   </Label>
                   <Switch
-                    checked={false}
-                    onCheckedChange={() => {}}
+                    checked={newCategory.passFeeToCustomer}
+                    onCheckedChange={(checked) => setNewCategory({ ...newCategory, passFeeToCustomer: checked })}
                   />
                 </div>
               )}
@@ -426,7 +429,7 @@ export function TicketCategories({
               className="flex-1"
               onClick={() => {
                 setShowNewForm(false);
-                setNewCategory({ name: "", description: "", price: "", maxQuantity: "" });
+                setNewCategory({ name: "", description: "", price: "", maxQuantity: "", passFeeToCustomer: false });
               }}
             >
               {i18n.language === 'de' ? 'Abbrechen' : 'Cancel'}
