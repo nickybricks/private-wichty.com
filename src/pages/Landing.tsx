@@ -230,6 +230,21 @@ export default function Landing() {
           </Accordion>
         </section>
 
+        {/* Final CTA Section */}
+        <section className="max-w-[var(--max-width)] mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+          <div className="bg-gradient-to-r from-[#FF6788]/10 via-[#FF8066]/10 to-[#FFB86C]/10 rounded-3xl p-8 sm:p-12 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6">
+              {t('cta.title')}
+            </h2>
+            <Button
+              onClick={handleCreateEvent}
+              className="h-11 px-8 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              {t('cta.button')}
+            </Button>
+          </div>
+        </section>
+
         <Footer />
 
         <AuthDialog

@@ -20,6 +20,10 @@
       "description": "No hidden costs."
     }
   },
+  "cta": {
+    "title": "Ready to start your next event?",
+    "button": "Start for free now"
+  },
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [
