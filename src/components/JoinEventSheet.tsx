@@ -393,8 +393,12 @@ export function JoinEventSheet({
           .eq("id", eventId)
           .single();
 
-        const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
-        const eventUrl = `${window.location.origin}/event/${eventId}`;
+        // Use production URL for emails (not preview URL)
+        const baseUrl = window.location.hostname.includes('lovable.app') 
+          ? 'https://wichty.com' 
+          : window.location.origin;
+        const ticketUrl = `${baseUrl}/ticket/${ticketCode}`;
+        const eventUrl = `${baseUrl}/event/${eventId}`;
 
         // Send RSVP confirmation email to guest (fire and forget)
         supabase.functions.invoke('send-notification', {

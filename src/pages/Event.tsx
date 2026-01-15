@@ -118,10 +118,14 @@ export default function Event() {
           // Send ONE ticket purchase confirmation email with ALL tickets
           if (session.user.email) {
             const decodedName = decodeURIComponent(participantName);
-            const eventUrl = `${window.location.origin}/event/${id}`;
+            // Use production URL for emails (not preview URL)
+            const baseUrl = window.location.hostname.includes('lovable.app') 
+              ? 'https://wichty.com' 
+              : window.location.origin;
+            const eventUrl = `${baseUrl}/event/${id}`;
             
             // Build ticket URLs - use first ticket as main, include count
-            const mainTicketUrl = `${window.location.origin}/ticket/${ticketCodes[0]}`;
+            const mainTicketUrl = `${baseUrl}/ticket/${ticketCodes[0]}`;
 
             supabase.functions.invoke('send-notification', {
               body: {
