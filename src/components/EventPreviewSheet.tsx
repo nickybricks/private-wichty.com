@@ -531,8 +531,8 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
               </div>
             </button>
 
-            {/* 6. Tickets Section - bordered card with interactive selection and CTA */}
-            <Card className="p-4 border-2 space-y-4">
+            {/* 6. Tickets Section - light border, no background */}
+            <Card className="p-4 border border-border/60 bg-transparent space-y-4">
               <div className="flex items-center gap-2">
                 <Ticket className="h-4 w-4 text-muted-foreground" />
                 <h3 className="font-semibold text-sm">{t('tickets.title')}</h3>
