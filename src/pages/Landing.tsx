@@ -8,6 +8,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
+import { Clock, Shield, Wallet } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -174,6 +175,38 @@ export default function Landing() {
                 alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
                 className="w-full max-w-md xl:max-w-lg"
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Benefits Section */}
+        <section className="max-w-[var(--max-width)] mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Benefit 1: Ready in 3 minutes */}
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-1">{t('benefits.ready.title')}</h3>
+              <p className="text-muted-foreground text-sm">{t('benefits.ready.description')}</p>
+            </div>
+
+            {/* Benefit 2: Secure payments */}
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-1">{t('benefits.secure.title')}</h3>
+              <p className="text-muted-foreground text-sm">{t('benefits.secure.description')}</p>
+            </div>
+
+            {/* Benefit 3: Only 5% fee */}
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Wallet className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-1">{t('benefits.fair.title')}</h3>
+              <p className="text-muted-foreground text-sm">{t('benefits.fair.description')}</p>
             </div>
           </div>
         </section>

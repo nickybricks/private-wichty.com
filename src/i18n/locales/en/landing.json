@@ -6,6 +6,20 @@
     "cta": "Create Event Now",
     "trust": "No credit card required • Made in Berlin"
   },
+  "benefits": {
+    "ready": {
+      "title": "Ready in 3 minutes",
+      "description": "Create event, share link, done."
+    },
+    "secure": {
+      "title": "Secure payments",
+      "description": "PayPal, credit card & Apple Pay."
+    },
+    "fair": {
+      "title": "Only 5% fee",
+      "description": "No hidden costs."
+    }
+  },
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [

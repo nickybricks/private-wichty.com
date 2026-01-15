@@ -6,6 +6,20 @@
     "cta": "Jetzt Event erstellen",
     "trust": "Keine Kreditkarte nötig • Made in Berlin"
   },
+  "benefits": {
+    "ready": {
+      "title": "In 3 Minuten startklar",
+      "description": "Event erstellen, Link teilen, fertig."
+    },
+    "secure": {
+      "title": "Sichere Zahlungen",
+      "description": "PayPal, Kreditkarte & Apple Pay."
+    },
+    "fair": {
+      "title": "Nur 5% Gebühr",
+      "description": "Keine versteckten Kosten."
+    }
+  },
   "faq": {
     "title": "Häufig gestellte Fragen",
     "items": [
