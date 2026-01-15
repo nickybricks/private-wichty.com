@@ -8,7 +8,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
-import { Clock, Shield, Wallet } from "lucide-react";
+import { Clock, Shield, Wallet, Compass } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -143,13 +143,21 @@ export default function Landing() {
                 {t('hero.subtitle')}
               </p>
 
-              {/* CTA Button */}
-              <div className="py-2 lg:pt-2 flex justify-center lg:justify-start">
+              {/* CTA Buttons */}
+              <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <Button
                   onClick={handleCreateEvent}
                   className="h-9 px-5 text-sm font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
                 >
                   {t('hero.cta')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/explore")}
+                  className="h-9 px-5 text-sm font-semibold border-foreground/20 hover:bg-foreground/5 transition-all"
+                >
+                  <Compass className="w-4 h-4 mr-2" />
+                  {t('hero.explore')}
                 </Button>
               </div>
 
