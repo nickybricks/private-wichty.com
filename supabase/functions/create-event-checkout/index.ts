@@ -97,13 +97,14 @@ serve(async (req) => {
     // Build line items based on selected tickets or fallback to event price
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     let totalAmount = 0;
+    let totalFeeToPassToCustomer = 0;
 
     if (ticketsArray.length > 0) {
-      // Fetch ticket categories
+      // Fetch ticket categories including pass_fee_to_customer
       const categoryIds = ticketsArray.map((t: SelectedTicket) => t.categoryId);
       const { data: categories } = await supabaseClient
         .from("ticket_categories")
-        .select("id, name, description, price_cents, currency")
+        .select("id, name, description, price_cents, currency, pass_fee_to_customer")
         .in("id", categoryIds);
 
       if (!categories || categories.length === 0) {
@@ -117,6 +118,19 @@ serve(async (req) => {
         const category = categories.find((c: any) => c.id === selected.categoryId);
         if (!category) continue;
 
+        // Calculate the fee for this category
+        const categoryFee = Math.round(category.price_cents * (PLATFORM_FEE_PERCENT / 100));
+        
+        // If pass_fee_to_customer is true, add the fee to the displayed price
+        const displayPrice = category.pass_fee_to_customer 
+          ? category.price_cents + categoryFee 
+          : category.price_cents;
+
+        // Track the fee that will be passed to customer (for logging)
+        if (category.pass_fee_to_customer) {
+          totalFeeToPassToCustomer += categoryFee * selected.quantity;
+        }
+
         lineItems.push({
           price_data: {
             currency: category.currency || "eur",
@@ -124,12 +138,12 @@ serve(async (req) => {
               name: category.name,
               description: category.description || `Ticket für ${event.name}`,
             },
-            unit_amount: category.price_cents,
+            unit_amount: displayPrice,
           },
           quantity: selected.quantity,
         });
 
-        totalAmount += category.price_cents * selected.quantity;
+        totalAmount += displayPrice * selected.quantity;
       }
     } else {
       // Fallback to event price (single ticket)
@@ -152,12 +166,13 @@ serve(async (req) => {
       totalAmount = event.price_cents;
     }
 
-    // Calculate application fee (platform fee)
+    // Calculate application fee (platform fee) - always 5% of total charged
     const applicationFee = Math.round(totalAmount * (PLATFORM_FEE_PERCENT / 100));
     logStep("Fee calculation", { 
       totalAmount, 
       applicationFee, 
       feePercent: PLATFORM_FEE_PERCENT,
+      feePassedToCustomer: totalFeeToPassToCustomer,
       lineItemsCount: lineItems.length
     });
 

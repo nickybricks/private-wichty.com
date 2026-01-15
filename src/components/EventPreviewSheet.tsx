@@ -72,6 +72,9 @@ interface HostProfile {
   avatar_url: string | null;
 }
 
+// Platform fee percentage (5%)
+const PLATFORM_FEE_PERCENT = 5;
+
 interface TicketCategory {
   id: string;
   name: string;
@@ -79,6 +82,7 @@ interface TicketCategory {
   price_cents: number;
   currency: string;
   max_quantity: number | null;
+  pass_fee_to_customer?: boolean;
 }
 
 interface EventPreviewSheetProps {
@@ -154,7 +158,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
       // Fetch ticket categories
       const { data: ticketsData } = await supabase
         .from("ticket_categories")
-        .select("id, name, description, price_cents, currency, max_quantity")
+        .select("id, name, description, price_cents, currency, max_quantity, pass_fee_to_customer")
         .eq("event_id", eventId)
         .order("sort_order", { ascending: true });
       
@@ -314,7 +318,7 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
   const isHost = user && event?.user_id === user.id;
 
-  // Calculate total price from selected tickets
+  // Calculate total price from selected tickets (including fees if passed to customer)
   const calculateTotalPrice = (): { total: number; currency: string } => {
     if (ticketCategories.length === 0) {
       return { total: event?.price_cents || 0, currency: event?.currency || 'eur' };
@@ -326,7 +330,13 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
     for (const selected of selectedTickets) {
       const category = ticketCategories.find(c => c.id === selected.categoryId);
       if (category) {
-        total += category.price_cents * selected.quantity;
+        // Calculate display price including fee if passed to customer
+        let displayPrice = category.price_cents;
+        if (category.pass_fee_to_customer && category.price_cents > 0) {
+          const fee = Math.round(category.price_cents * (PLATFORM_FEE_PERCENT / 100));
+          displayPrice = category.price_cents + fee;
+        }
+        total += displayPrice * selected.quantity;
         curr = category.currency;
       }
     }
@@ -360,9 +370,24 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
 
     // If there are paid ticket categories, always show the buy ticket button (even if no selection yet)
     if (hasPaidTicketCategories || (event.is_paid && event.price_cents > 0)) {
-      const minPrice = ticketCategories.length > 0 
-        ? Math.min(...ticketCategories.filter(tc => tc.price_cents > 0).map(tc => tc.price_cents))
-        : event.price_cents;
+      // Calculate minimum price including fee if applicable
+      const getMinPriceWithFee = () => {
+        if (ticketCategories.length > 0) {
+          const paidCategories = ticketCategories.filter(tc => tc.price_cents > 0);
+          if (paidCategories.length === 0) return event.price_cents;
+          
+          return Math.min(...paidCategories.map(tc => {
+            if (tc.pass_fee_to_customer) {
+              const fee = Math.round(tc.price_cents * (PLATFORM_FEE_PERCENT / 100));
+              return tc.price_cents + fee;
+            }
+            return tc.price_cents;
+          }));
+        }
+        return event.price_cents;
+      };
+      
+      const minPrice = getMinPriceWithFee();
       
       const displayPrice = hasSelectedTickets && totalPrice > 0 
         ? totalPrice 
