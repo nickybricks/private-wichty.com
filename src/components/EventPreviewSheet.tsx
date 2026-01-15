@@ -52,6 +52,7 @@ interface Event {
   currency: string;
   requires_approval: boolean;
   tags: string[] | null;
+  allow_multiple_tickets?: boolean;
 }
 
 interface Participant {
@@ -643,6 +644,8 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
           currency={event.currency}
           requiresApproval={event.requires_approval}
           onSuccess={handleJoinSuccess}
+          ticketCategories={ticketCategories}
+          allowMultipleTickets={event.allow_multiple_tickets ?? true}
         />
       )}
 

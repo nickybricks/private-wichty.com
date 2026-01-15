@@ -120,6 +120,7 @@ export default function EditEvent() {
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(false);
+  const [allowMultipleTickets, setAllowMultipleTickets] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -303,6 +304,7 @@ export default function EditEvent() {
       const initialRequiresApproval = eventData.requires_approval || false;
       const initialImagePreview = eventData.image_url;
       const initialWaitlistEnabled = eventData.waitlist_enabled || false;
+      const initialAllowMultipleTickets = eventData.allow_multiple_tickets ?? true;
       
       setName(initialName);
       setDescription(initialDescription);
@@ -321,6 +323,7 @@ export default function EditEvent() {
       setRequiresApproval(initialRequiresApproval);
       setImagePreview(initialImagePreview);
       setWaitlistEnabled(initialWaitlistEnabled);
+      setAllowMultipleTickets(initialAllowMultipleTickets);
       
       // Store original values for change detection
       setOriginalValues({
@@ -539,6 +542,7 @@ export default function EditEvent() {
         requires_approval: requiresApproval,
         image_url: imageUrl,
         waitlist_enabled: waitlistEnabled,
+        allow_multiple_tickets: allowMultipleTickets,
       };
 
       // Only allow price changes if no ticket sales
@@ -1101,6 +1105,8 @@ export default function EditEvent() {
         stripeConnected={stripeConnected}
         eventCapacity={maxCapacity ? parseInt(maxCapacity) : null}
         capacityUnlimited={capacityUnlimited}
+        allowMultipleTickets={allowMultipleTickets}
+        onAllowMultipleChange={setAllowMultipleTickets}
       />
       {tempImageSrc && (
         <ImageCropper

@@ -3,6 +3,7 @@ import { Ticket, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { TicketCategories } from "@/components/TicketCategories";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -14,6 +15,8 @@ interface TicketsEditPopupProps {
   stripeConnected: boolean | null;
   eventCapacity?: number | null;
   capacityUnlimited?: boolean;
+  allowMultipleTickets?: boolean;
+  onAllowMultipleChange?: (value: boolean) => void;
 }
 
 export function TicketsEditPopup({
@@ -24,6 +27,8 @@ export function TicketsEditPopup({
   stripeConnected,
   eventCapacity,
   capacityUnlimited,
+  allowMultipleTickets = true,
+  onAllowMultipleChange,
 }: TicketsEditPopupProps) {
   const { t, i18n } = useTranslation("forms");
 
@@ -59,6 +64,22 @@ export function TicketsEditPopup({
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Allow Multiple Tickets Toggle */}
+        <div className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/30">
+          <div>
+            <p className="font-medium text-sm">
+              {t("eventForm.allowMultipleTickets")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("eventForm.allowMultipleTicketsHint")}
+            </p>
+          </div>
+          <Switch
+            checked={allowMultipleTickets}
+            onCheckedChange={onAllowMultipleChange}
+          />
+        </div>
 
         <TicketCategories
           eventId={eventId}

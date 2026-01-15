@@ -4,6 +4,7 @@ import { Ticket, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EventFieldPopup } from "./EventFieldPopup";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { TicketCategoriesLocal, PendingTicketCategory } from "@/components/TicketCategoriesLocal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -12,9 +13,10 @@ interface TicketsPopupProps {
   onOpenChange: (open: boolean) => void;
   ticketCategories: PendingTicketCategory[];
   stripeConnected: boolean | null;
-  onConfirm: (categories: PendingTicketCategory[]) => void;
+  onConfirm: (categories: PendingTicketCategory[], allowMultiple: boolean) => void;
   eventCapacity?: number | null;
   capacityUnlimited?: boolean;
+  allowMultipleTickets?: boolean;
 }
 
 export function TicketsPopup({
@@ -25,18 +27,21 @@ export function TicketsPopup({
   onConfirm,
   eventCapacity,
   capacityUnlimited,
+  allowMultipleTickets: initialAllowMultiple = true,
 }: TicketsPopupProps) {
   const { t, i18n } = useTranslation("forms");
   const [categories, setCategories] = useState<PendingTicketCategory[]>(initialCategories);
+  const [allowMultiple, setAllowMultiple] = useState(initialAllowMultiple);
 
   useEffect(() => {
     if (open) {
       setCategories(initialCategories);
+      setAllowMultiple(initialAllowMultiple);
     }
-  }, [open, initialCategories]);
+  }, [open, initialCategories, initialAllowMultiple]);
 
   const handleConfirm = () => {
-    onConfirm(categories);
+    onConfirm(categories, allowMultiple);
     onOpenChange(false);
   };
 
@@ -84,6 +89,22 @@ export function TicketsPopup({
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Allow Multiple Tickets Toggle */}
+        <div className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/30">
+          <div>
+            <p className="font-medium text-sm">
+              {t("eventForm.allowMultipleTickets")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("eventForm.allowMultipleTicketsHint")}
+            </p>
+          </div>
+          <Switch
+            checked={allowMultiple}
+            onCheckedChange={setAllowMultiple}
+          />
+        </div>
 
         <TicketCategoriesLocal
           categories={categories}

@@ -40,7 +40,11 @@
     "tickets": "Tickets",
     "ticketsFree": "Kostenlos",
     "capacity": "Kapazität",
-    "capacityUnlimited": "Unbegrenzt"
+    "capacityUnlimited": "Unbegrenzt",
+    "allowMultipleTickets": "Mehrere Tickets pro Kauf",
+    "allowMultipleTicketsHint": "Gäste können mehrere Tickets erwerben",
+    "selectTicket": "Bitte wähle ein Ticket",
+    "quantity": "Anzahl"
   },
   "errors": {
     "enterEventName": "Bitte gib einen Event-Namen ein",
