@@ -78,6 +78,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   const [capacityUnlimited, setCapacityUnlimited] = useState(true);
   const [maxCapacity, setMaxCapacity] = useState("");
   const [ticketCategories, setTicketCategories] = useState<PendingTicketCategory[]>([]);
+  const [allowMultipleTickets, setAllowMultipleTickets] = useState(true);
   
   const [loading, setLoading] = useState(false);
   const [stripeConnected, setStripeConnected] = useState<boolean | null>(null);
@@ -250,6 +251,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
     setCapacityUnlimited(true);
     setMaxCapacity("");
     setTicketCategories([]);
+    setAllowMultipleTickets(true);
     setTags([]);
   };
 
@@ -329,6 +331,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           capacity_unlimited: capacityUnlimited,
           target_participants: capacityUnlimited ? 999 : parseInt(maxCapacity),
           waitlist_enabled: waitlistEnabled,
+          allow_multiple_tickets: allowMultipleTickets,
           status: "waiting",
           user_id: user.id,
         })
@@ -711,9 +714,13 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         onOpenChange={setTicketsPopupOpen}
         ticketCategories={ticketCategories}
         stripeConnected={stripeConnected}
-        onConfirm={setTicketCategories}
+        onConfirm={(cats, allowMultiple) => {
+          setTicketCategories(cats);
+          setAllowMultipleTickets(allowMultiple);
+        }}
         eventCapacity={maxCapacity ? parseInt(maxCapacity) : null}
         capacityUnlimited={capacityUnlimited}
+        allowMultipleTickets={allowMultipleTickets}
       />
       <CapacityPopup
         open={capacityPopupOpen}

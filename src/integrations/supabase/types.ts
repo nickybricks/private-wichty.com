@@ -43,6 +43,7 @@ export type Database = {
       }
       events: {
         Row: {
+          allow_multiple_tickets: boolean | null
           attendance_count: number | null
           capacity_unlimited: boolean | null
           city: string | null
@@ -72,6 +73,7 @@ export type Database = {
           waitlist_enabled: boolean | null
         }
         Insert: {
+          allow_multiple_tickets?: boolean | null
           attendance_count?: number | null
           capacity_unlimited?: boolean | null
           city?: string | null
@@ -101,6 +103,7 @@ export type Database = {
           waitlist_enabled?: boolean | null
         }
         Update: {
+          allow_multiple_tickets?: boolean | null
           attendance_count?: number | null
           capacity_unlimited?: boolean | null
           city?: string | null
