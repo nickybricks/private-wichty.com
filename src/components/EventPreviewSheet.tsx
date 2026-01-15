@@ -358,28 +358,34 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
       );
     }
 
-    // Paid event OR ticket categories with prices - show dynamic price based on selection
-    if (requiresPayment && totalPrice > 0) {
-      const displayPrice = hasSelectedTickets ? totalPrice : (
-        ticketCategories.length > 0 
-          ? Math.min(...ticketCategories.map(tc => tc.price_cents))
-          : event.price_cents
-      );
+    // If there are paid ticket categories, always show the buy ticket button (even if no selection yet)
+    if (hasPaidTicketCategories || (event.is_paid && event.price_cents > 0)) {
+      const minPrice = ticketCategories.length > 0 
+        ? Math.min(...ticketCategories.filter(tc => tc.price_cents > 0).map(tc => tc.price_cents))
+        : event.price_cents;
+      
+      const displayPrice = hasSelectedTickets && totalPrice > 0 
+        ? totalPrice 
+        : minPrice;
       const displayCurrency = hasSelectedTickets
         ? totalCurrency
         : (ticketCategories.length > 0 ? ticketCategories[0].currency : event.currency);
 
       const showFromPrefix = ticketCategories.length > 1 && !hasSelectedTickets;
+      const needsSelection = ticketCategories.length > 0 && !hasSelectedTickets;
 
       return (
         <Button 
           size="lg" 
           className={baseClasses}
           onClick={() => setShowJoinSheet(true)}
-          disabled={ticketCategories.length > 0 && !hasSelectedTickets}
+          disabled={needsSelection}
         >
           <CreditCard className="mr-2 h-4 w-4" />
-          {t('cta.buyTicket')} · {showFromPrefix ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}{formatPrice(displayPrice, displayCurrency)}
+          {needsSelection 
+            ? (i18n.language === 'de' ? 'Ticket auswählen' : 'Select a ticket')
+            : `${t('cta.buyTicket')} · ${showFromPrefix ? `${i18n.language === 'de' ? 'ab' : 'from'} ` : ''}${formatPrice(displayPrice, displayCurrency)}`
+          }
         </Button>
       );
     }
