@@ -600,7 +600,8 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
             {event.description && (
               <div className="pt-2">
                 <div 
-                  className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-strong:font-semibold"
+                  className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-strong:font-semibold px-1 py-0.5"
+                  style={{ color: '#1E1E20' }}
                   dangerouslySetInnerHTML={{ __html: event.description }}
                 />
               </div>
