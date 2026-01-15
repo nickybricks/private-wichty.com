@@ -4,18 +4,11 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Loader2, MapPin, Calendar, Clock, CalendarPlus } from "lucide-react";
+import { Loader2, MapPin, Calendar, Clock } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import useEmblaCarousel from "embla-carousel-react";
-import { cn } from "@/lib/utils";
 
 interface TicketData {
   id: string;
@@ -284,8 +277,6 @@ export default function Ticket() {
             i18n={i18n}
             formatDate={formatDate}
             openDirections={openDirections}
-            addToGoogleCalendar={addToGoogleCalendar}
-            addToAppleCalendar={addToAppleCalendar}
           />
         </div>
       </div>
@@ -319,8 +310,6 @@ export default function Ticket() {
                     i18n={i18n}
                     formatDate={formatDate}
                     openDirections={openDirections}
-                    addToGoogleCalendar={addToGoogleCalendar}
-                    addToAppleCalendar={addToAppleCalendar}
                   />
                 </div>
               );
@@ -334,12 +323,11 @@ export default function Ticket() {
             <button
               key={index}
               onClick={() => emblaApi?.scrollTo(index)}
-              className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300",
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 selectedIndex === index
                   ? "bg-foreground w-6"
                   : "bg-foreground/30 hover:bg-foreground/50"
-              )}
+              }`}
               aria-label={`Go to ticket ${index + 1}`}
             />
           ))}
@@ -357,13 +345,11 @@ interface TicketCardProps {
   i18n: { language: string };
   formatDate: (dateStr: string | null) => string | null;
   openDirections: (ticket: TicketData) => void;
-  addToGoogleCalendar: (ticket: TicketData) => void;
-  addToAppleCalendar: (ticket: TicketData) => void;
 }
 
-function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, addToGoogleCalendar, addToAppleCalendar }: TicketCardProps) {
+function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections }: TicketCardProps) {
   return (
-    <div className="bg-background rounded-2xl shadow-xl overflow-hidden">
+    <div className="bg-background rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden">
       {/* Header: Badge + Event Name */}
       <div className="px-5 pt-4 pb-2 text-center">
         <Badge variant="secondary" className="text-[10px] font-semibold tracking-wider mb-2">
@@ -441,37 +427,20 @@ function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, ad
         </div>
       </div>
 
-      {/* Actions - Side by side buttons */}
-      <div className="px-5 pb-5 flex gap-2">
-        {ticket.event.location && (
+      {/* Actions */}
+      {ticket.event.location && (
+        <div className="px-5 pb-5">
           <Button 
             variant="outline" 
             size="sm"
-            className="flex-1 text-xs h-9" 
+            className="w-full text-xs h-9" 
             onClick={() => openDirections(ticket)}
           >
             <MapPin className="h-3.5 w-3.5 mr-1.5" />
             {t('ticketPage.getDirections')}
           </Button>
-        )}
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("text-xs h-9", ticket.event.location ? "flex-1" : "w-full")}>
-              <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
-              {t('ticketPage.addToCalendar')}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-48">
-            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)} className="text-sm">
-              {t('ticketPage.appleCalendar')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)} className="text-sm">
-              {t('ticketPage.googleCalendar')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
