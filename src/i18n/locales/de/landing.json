@@ -20,6 +20,10 @@
       "description": "Keine versteckten Kosten."
     }
   },
+  "cta": {
+    "title": "Bereit, euer nächstes Event zu starten?",
+    "button": "Jetzt kostenlos starten"
+  },
   "faq": {
     "title": "Häufig gestellte Fragen",
     "items": [
