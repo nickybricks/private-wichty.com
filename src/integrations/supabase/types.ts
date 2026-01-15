@@ -322,6 +322,7 @@ export type Database = {
           id: string
           max_quantity: number | null
           name: string
+          pass_fee_to_customer: boolean
           price_cents: number
           sort_order: number
           updated_at: string
@@ -334,6 +335,7 @@ export type Database = {
           id?: string
           max_quantity?: number | null
           name: string
+          pass_fee_to_customer?: boolean
           price_cents?: number
           sort_order?: number
           updated_at?: string
@@ -346,6 +348,7 @@ export type Database = {
           id?: string
           max_quantity?: number | null
           name?: string
+          pass_fee_to_customer?: boolean
           price_cents?: number
           sort_order?: number
           updated_at?: string
