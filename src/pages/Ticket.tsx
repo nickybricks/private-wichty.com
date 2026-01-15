@@ -160,7 +160,8 @@ export default function Ticket() {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
     const date = new Date(dateStr);
-    return format(date, "EEEE, d. MMMM yyyy", {
+    // Shorter format for compact display: "Sa, 15. Jan 2026"
+    return format(date, "EEE, d. MMM yyyy", {
       locale: i18n.language === 'de' ? de : enUS,
     });
   };
@@ -362,69 +363,74 @@ interface TicketCardProps {
 
 function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, addToGoogleCalendar, addToAppleCalendar }: TicketCardProps) {
   return (
-    <div className="bg-background rounded-3xl shadow-xl overflow-hidden">
-      {/* Ticket Badge */}
-      <div className="flex justify-center pt-6">
-        <Badge variant="secondary" className="text-xs font-semibold tracking-wider">
+    <div className="bg-background rounded-2xl shadow-xl overflow-hidden">
+      {/* Header: Badge + Event Name */}
+      <div className="px-5 pt-4 pb-2 text-center">
+        <Badge variant="secondary" className="text-[10px] font-semibold tracking-wider mb-2">
           {t('ticketPage.badge')}
         </Badge>
+        <h1 className="text-lg font-bold leading-tight line-clamp-2">{ticket.event.name}</h1>
       </div>
 
-      {/* Event Name */}
-      <div className="px-6 pt-4 pb-2 text-center">
-        <h1 className="text-2xl font-bold">{ticket.event.name}</h1>
+      {/* Date, Time & Location - Compact single line each */}
+      <div className="px-5 py-1 space-y-0.5">
+        {ticket.event.event_date && (
+          <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5" />
+            <span className="text-xs">{formatDate(ticket.event.event_date)}</span>
+            {ticket.event.event_time && (
+              <>
+                <span className="text-xs mx-1">•</span>
+                <Clock className="h-3.5 w-3.5" />
+                <span className="text-xs">
+                  {ticket.event.event_time.slice(0, 5)} {i18n.language === 'de' ? 'Uhr' : ''}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+        {ticket.event.location && (
+          <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="text-xs text-center line-clamp-1">{ticket.event.location}</span>
+          </div>
+        )}
       </div>
 
-      {/* Date & Time */}
-      {ticket.event.event_date && (
-        <div className="px-6 py-2 flex items-center justify-center gap-2 text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span className="text-sm">{formatDate(ticket.event.event_date)}</span>
-          {ticket.event.event_time && (
-            <>
-              <Clock className="h-4 w-4 ml-2" />
-              <span className="text-sm">
-                {ticket.event.event_time.slice(0, 5)} {i18n.language === 'de' ? 'Uhr' : ''}
-              </span>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Location */}
-      {ticket.event.location && (
-        <div className="px-6 py-2 flex items-start justify-center gap-2 text-muted-foreground">
-          <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-          <span className="text-sm text-center">{ticket.event.location}</span>
-        </div>
-      )}
-
-      {/* QR Code */}
-      <div className="px-6 py-8 flex justify-center">
-        <div className="bg-white p-4 rounded-2xl">
+      {/* QR Code - Smaller on mobile */}
+      <div className="px-5 py-4 flex justify-center">
+        <div className="bg-white p-3 rounded-xl shadow-sm">
           <QRCodeSVG
             value={ticketUrl}
-            size={200}
+            size={140}
             level="H"
             includeMargin={false}
           />
         </div>
       </div>
 
-      {/* Guest Info */}
-      <div className="px-6 pb-4">
-        <div className="flex items-center justify-between py-3 border-t border-border">
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+      {/* Guest Info - Horizontal compact layout */}
+      <div className="px-5 pb-3">
+        <div className="flex items-center justify-between py-2 border-t border-border">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {t('ticketPage.guest')}
             </p>
-            <p className="font-medium">{ticket.participant.name}</p>
+            <p className="text-sm font-medium truncate">{ticket.participant.name}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+          {ticket.ticket_category && (
+            <div className="text-center px-3 border-l border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                {t('ticketPage.ticket')}
+              </p>
+              <p className="text-sm font-medium truncate">{ticket.ticket_category.name}</p>
+            </div>
+          )}
+          <div className="text-right pl-3 border-l border-border shrink-0">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {t('ticketPage.status')}
             </p>
-            <Badge variant="default" className="bg-green-500 hover:bg-green-500">
+            <Badge variant="default" className="bg-green-500 hover:bg-green-500 text-xs px-2 py-0">
               {ticket.status === 'valid' 
                 ? t('ticketPage.going')
                 : ticket.status === 'used'
@@ -433,43 +439,34 @@ function TicketCard({ ticket, ticketUrl, t, i18n, formatDate, openDirections, ad
             </Badge>
           </div>
         </div>
-
-        {/* Ticket Type */}
-        {ticket.ticket_category && (
-          <div className="py-3 border-t border-border">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
-              {t('ticketPage.ticket')}
-            </p>
-            <p className="font-medium">{ticket.ticket_category.name}</p>
-          </div>
-        )}
       </div>
 
-      {/* Actions */}
-      <div className="px-6 pb-6 space-y-3">
+      {/* Actions - Side by side buttons */}
+      <div className="px-5 pb-5 flex gap-2">
         {ticket.event.location && (
           <Button 
             variant="outline" 
-            className="w-full" 
+            size="sm"
+            className="flex-1 text-xs h-9" 
             onClick={() => openDirections(ticket)}
           >
-            <MapPin className="h-4 w-4 mr-2" />
+            <MapPin className="h-3.5 w-3.5 mr-1.5" />
             {t('ticketPage.getDirections')}
           </Button>
         )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full">
-              <CalendarPlus className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" className={cn("text-xs h-9", ticket.event.location ? "flex-1" : "w-full")}>
+              <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
               {t('ticketPage.addToCalendar')}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-56">
-            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)}>
+          <DropdownMenuContent align="center" className="w-48">
+            <DropdownMenuItem onClick={() => addToAppleCalendar(ticket)} className="text-sm">
               {t('ticketPage.appleCalendar')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)}>
+            <DropdownMenuItem onClick={() => addToGoogleCalendar(ticket)} className="text-sm">
               {t('ticketPage.googleCalendar')}
             </DropdownMenuItem>
           </DropdownMenuContent>
