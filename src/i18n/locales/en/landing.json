@@ -1,109 +1,37 @@
 {
   "hero": {
-    "title": "Your Club.",
-    "titleHighlight": "Your Events.",
-    "subtitle": "Create tournaments, games and club events in seconds. Ticket sales included – fair and transparent.",
-    "cta": "Start for Free",
-    "trust": "No credit card • Only 5% fee • Payout to your club account"
-  },
-  "benefits": {
-    "title": "Why Wichty?",
-    "items": [
-      {
-        "title": "Ready in 3 Minutes",
-        "description": "Create event, share link, done. No training, no manual needed."
-      },
-      {
-        "title": "Secure Payments",
-        "description": "Powered by Stripe. PayPal, credit card, Apple Pay & more."
-      },
-      {
-        "title": "Fair Pricing",
-        "description": "Only 5% fee per ticket. No hidden costs, no base fee."
-      }
-    ]
-  },
-  "stats": {
-    "events": "Events created",
-    "clubs": "Clubs trust us",
-    "location": "Made in Germany"
-  },
-  "howItWorks": {
-    "title": "How It Works",
-    "steps": [
-      {
-        "step": "1",
-        "title": "Create Event",
-        "description": "Set name, date and ticket categories in just a few clicks."
-      },
-      {
-        "step": "2",
-        "title": "Share Link",
-        "description": "Send to your members via WhatsApp, email or QR code."
-      },
-      {
-        "step": "3",
-        "title": "Receive Earnings",
-        "description": "Automatic payout directly to your club account."
-      }
-    ]
-  },
-  "useCases": {
-    "title": "Perfect For",
-    "items": [
-      {
-        "emoji": "🏆",
-        "title": "Tournaments",
-        "description": "Collect entry fees digitally"
-      },
-      {
-        "emoji": "🎉",
-        "title": "Club Events",
-        "description": "Ticket sales without cash"
-      },
-      {
-        "emoji": "⚽",
-        "title": "Training Camps",
-        "description": "Registration and payment in one"
-      },
-      {
-        "emoji": "🎈",
-        "title": "Private Parties",
-        "description": "Birthdays, house parties & more"
-      }
-    ]
-  },
-  "finalCta": {
-    "title": "Ready for your next event?",
-    "subtitle": "Start for free. No credit card required.",
-    "button": "Create Event Now"
+    "title": "Organize events.",
+    "titleHighlight": "Without chaos.",
+    "subtitle": "The easiest app for sports clubs, tournaments and private parties. Ready in 3 minutes.",
+    "cta": "Create Event Now",
+    "trust": "No credit card required • Made in Berlin"
   },
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [
       {
-        "question": "How much does Wichty cost?",
-        "answer": "We charge a service fee of 5% of the ticket price, with a minimum of €0.50 per ticket. As an organizer, you have the option to pass this fee on to the buyer. There's no base fee or hidden costs."
-      },
-      {
-        "question": "What payment methods are supported?",
-        "answer": "Wichty supports common online payment methods such as PayPal, credit card, and Apple Pay to provide your participants with a quick and easy checkout process."
-      },
-      {
         "question": "What is Wichty?",
-        "answer": "Wichty is an intuitive event platform specifically designed for amateur sports clubs and private events in Germany. Our goal is to make organizing events and collecting ticket revenue as simple as possible."
+        "answer": "Wichty is an intuitive event platform specifically designed for amateur sports and private events in Germany. Our goal is to make organizing events as simple as possible – without confusing WhatsApp groups or complex ticketing systems."
       },
       {
         "question": "Who is Wichty for?",
         "answer": "Wichty is designed for anyone organizing events, especially: Amateur sports clubs (e.g., for tournaments, summer festivals, training camps), organizers of private events (e.g., birthdays, parties), coaches and treasurers who want to keep track of participants and payments."
       },
       {
+        "question": "How much does Wichty cost?",
+        "answer": "We charge a service fee of 5% of the ticket price, with a minimum of €0.50 per ticket. As an organizer, you have the option to pass this fee on to the buyer."
+      },
+      {
+        "question": "What payment methods are supported?",
+        "answer": "Wichty supports common online payment methods such as PayPal, credit card, and Apple Pay to provide your participants with a quick and easy checkout process."
+      },
+      {
         "question": "How do I create an event on Wichty?",
         "answer": "Creating an event is incredibly easy and done in just a few minutes. Our platform is designed to be \"radically simple\" so you don't need any instructions."
       },
       {
-        "question": "When do I get my earnings paid out?",
-        "answer": "After the event ends, your earnings are automatically transferred to the registered bank account. The payout usually takes place within 2-3 business days."
+        "question": "Can I use Wichty for private celebrations?",
+        "answer": "Yes, absolutely! Wichty is also great for organizing private events like birthdays or house parties."
       },
       {
         "question": "Is there a mobile app?",
@@ -111,7 +39,7 @@
       },
       {
         "question": "What sets Wichty apart from other providers?",
-        "answer": "Unlike complex and expensive systems like Eventbrite or Eventim-Light, we focus on radical simplicity and transparent, fair pricing. We want to make organizing club events accessible to everyone."
+        "answer": "Unlike complex and expensive systems like Eventbrite or Eventim-Light, we focus on radical simplicity and transparent, fair pricing. We want to make event organization accessible to everyone."
       }
     ]
   }
