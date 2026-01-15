@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, Calendar, Clock, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
+import { Loader2, MapPin, Calendar, Clock, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { de, enUS } from "date-fns/locale";
+import useEmblaCarousel from "embla-carousel-react";
+import { cn } from "@/lib/utils";
 
 interface TicketData {
   id: string;
@@ -37,9 +39,39 @@ export default function Ticket() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('event');
   const [tickets, setTickets] = useState<TicketData[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: false,
+    align: 'center',
+    containScroll: 'trimSnaps'
+  });
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onSelect);
+    onSelect();
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  // Scroll to requested ticket when tickets are loaded
+  useEffect(() => {
+    if (emblaApi && tickets.length > 0 && ticketCode) {
+      const requestedIndex = tickets.findIndex(t => t.ticket_code === ticketCode);
+      if (requestedIndex >= 0) {
+        emblaApi.scrollTo(requestedIndex, true);
+      }
+    }
+  }, [emblaApi, tickets, ticketCode]);
 
   useEffect(() => {
     if (ticketCode) {
@@ -85,15 +117,19 @@ export default function Ticket() {
         .eq("id", ticketData.participant_id)
         .single();
 
-      // Get ticket category if exists
-      let categoryData = null;
-      if (ticketData.ticket_category_id) {
-        const { data } = await supabase
+      // Get all ticket categories for the tickets
+      const categoryIds = [...new Set((allTickets || [ticketData]).map(t => t.ticket_category_id).filter(Boolean))];
+      const categoriesMap: Record<string, { name: string; price_cents: number; currency: string }> = {};
+      
+      if (categoryIds.length > 0) {
+        const { data: categories } = await supabase
           .from("ticket_categories")
-          .select("name, price_cents, currency")
-          .eq("id", ticketData.ticket_category_id)
-          .single();
-        categoryData = data;
+          .select("id, name, price_cents, currency")
+          .in("id", categoryIds);
+        
+        categories?.forEach(cat => {
+          categoriesMap[cat.id] = { name: cat.name, price_cents: cat.price_cents, currency: cat.currency };
+        });
       }
 
       const formattedTickets: TicketData[] = (allTickets || [ticketData]).map(t => ({
@@ -103,14 +139,10 @@ export default function Ticket() {
         created_at: t.created_at,
         event: eventData || { id: '', name: '', event_date: null, event_time: null, location: null, image_url: null },
         participant: participantData || { name: '' },
-        ticket_category: categoryData,
+        ticket_category: t.ticket_category_id ? categoriesMap[t.ticket_category_id] || null : null,
       }));
 
       setTickets(formattedTickets);
-      
-      // Set current index to the requested ticket
-      const requestedIndex = formattedTickets.findIndex(t => t.ticket_code === ticketCode);
-      if (requestedIndex >= 0) setCurrentIndex(requestedIndex);
     } catch (err: any) {
       console.error("Error fetching ticket:", err);
       setError(err.message);
@@ -127,16 +159,14 @@ export default function Ticket() {
     });
   };
 
-  const openDirections = () => {
-    const ticket = tickets[currentIndex];
+  const openDirections = (ticket: TicketData) => {
     if (ticket?.event.location) {
       const encodedLocation = encodeURIComponent(ticket.event.location);
       window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
     }
   };
 
-  const addToCalendar = () => {
-    const ticket = tickets[currentIndex];
+  const addToCalendar = (ticket: TicketData) => {
     if (!ticket) return;
 
     const event = ticket.event;
@@ -170,160 +200,164 @@ export default function Ticket() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 p-4">
         <p className="text-lg text-muted-foreground mb-4">{error || t('notFound')}</p>
         <Button onClick={() => navigate('/')}>
-          {i18n.language === 'de' ? 'Zur Startseite' : 'Go to Home'}
+          {t('ticketPage.goHome')}
         </Button>
       </div>
     );
   }
 
-  const ticket = tickets[currentIndex];
-  const ticketUrl = `${window.location.origin}/ticket/${ticket.ticket_code}`;
-
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Stacked tickets indicator */}
+        {/* Carousel */}
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {tickets.map((ticket, index) => {
+              const ticketUrl = `${window.location.origin}/ticket/${ticket.ticket_code}`;
+              
+              return (
+                <div 
+                  key={ticket.id} 
+                  className="flex-[0_0_100%] min-w-0 px-2"
+                >
+                  {/* Ticket Card */}
+                  <div className="bg-background rounded-3xl shadow-2xl overflow-hidden">
+                    {/* Ticket Badge */}
+                    <div className="flex justify-center pt-6">
+                      <Badge variant="secondary" className="text-xs font-semibold tracking-wider">
+                        {t('ticketPage.badge')}
+                      </Badge>
+                    </div>
+
+                    {/* Event Name */}
+                    <div className="px-6 pt-4 pb-2 text-center">
+                      <h1 className="text-2xl font-bold">{ticket.event.name}</h1>
+                    </div>
+
+                    {/* Date & Time */}
+                    {ticket.event.event_date && (
+                      <div className="px-6 py-2 flex items-center justify-center gap-2 text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-sm">{formatDate(ticket.event.event_date)}</span>
+                        {ticket.event.event_time && (
+                          <>
+                            <Clock className="h-4 w-4 ml-2" />
+                            <span className="text-sm">
+                              {ticket.event.event_time.slice(0, 5)} {i18n.language === 'de' ? 'Uhr' : ''}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Location */}
+                    {ticket.event.location && (
+                      <div className="px-6 py-2 flex items-center justify-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">{ticket.event.location}</span>
+                      </div>
+                    )}
+
+                    {/* QR Code */}
+                    <div className="px-6 py-8 flex justify-center">
+                      <div className="bg-white p-4 rounded-2xl">
+                        <QRCodeSVG
+                          value={ticketUrl}
+                          size={200}
+                          level="H"
+                          includeMargin={false}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Guest Info */}
+                    <div className="px-6 pb-4">
+                      <div className="flex items-center justify-between py-3 border-t border-border">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                            {t('ticketPage.guest')}
+                          </p>
+                          <p className="font-medium">{ticket.participant.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                            {t('ticketPage.status')}
+                          </p>
+                          <Badge variant="default" className="bg-green-500 hover:bg-green-500">
+                            {ticket.status === 'valid' 
+                              ? t('ticketPage.going')
+                              : ticket.status === 'used'
+                              ? t('ticketPage.checkedIn')
+                              : ticket.status}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Ticket Type */}
+                      {ticket.ticket_category && (
+                        <div className="py-3 border-t border-border">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                            {t('ticketPage.ticket')}
+                          </p>
+                          <p className="font-medium">{ticket.ticket_category.name}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="px-6 pb-6 space-y-3">
+                      {ticket.event.location && (
+                        <Button 
+                          variant="outline" 
+                          className="w-full" 
+                          onClick={() => openDirections(ticket)}
+                        >
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {t('ticketPage.getDirections')}
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        onClick={() => addToCalendar(ticket)}
+                      >
+                        <Wallet className="h-4 w-4 mr-2" />
+                        {t('ticketPage.addToCalendar')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Pagination Dots */}
         {tickets.length > 1 && (
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {i18n.language === 'de' 
-                ? `Ticket ${currentIndex + 1} von ${tickets.length}`
-                : `Ticket ${currentIndex + 1} of ${tickets.length}`}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCurrentIndex(Math.min(tickets.length - 1, currentIndex + 1))}
-              disabled={currentIndex === tickets.length - 1}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+          <div className="flex items-center justify-center gap-2 mt-6">
+            {tickets.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => emblaApi?.scrollTo(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-300",
+                  selectedIndex === index
+                    ? "bg-foreground w-6"
+                    : "bg-foreground/30 hover:bg-foreground/50"
+                )}
+                aria-label={`Go to ticket ${index + 1}`}
+              />
+            ))}
           </div>
         )}
 
-        {/* Ticket Card */}
-        <div className="bg-background rounded-3xl shadow-2xl overflow-hidden relative">
-          {/* Stacked effect for multiple tickets */}
-          {tickets.length > 1 && currentIndex < tickets.length - 1 && (
-            <>
-              <div className="absolute -bottom-2 left-2 right-2 h-full bg-background/80 rounded-3xl -z-10" />
-              {currentIndex < tickets.length - 2 && (
-                <div className="absolute -bottom-4 left-4 right-4 h-full bg-background/60 rounded-3xl -z-20" />
-              )}
-            </>
-          )}
-
-          {/* Ticket Badge */}
-          <div className="flex justify-center pt-6">
-            <Badge variant="secondary" className="text-xs font-semibold tracking-wider">
-              TICKET
-            </Badge>
-          </div>
-
-          {/* Event Name */}
-          <div className="px-6 pt-4 pb-2 text-center">
-            <h1 className="text-2xl font-bold">{ticket.event.name}</h1>
-          </div>
-
-          {/* Date & Time */}
-          {ticket.event.event_date && (
-            <div className="px-6 py-2 flex items-center justify-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span className="text-sm">{formatDate(ticket.event.event_date)}</span>
-              {ticket.event.event_time && (
-                <>
-                  <Clock className="h-4 w-4 ml-2" />
-                  <span className="text-sm">{ticket.event.event_time} Uhr</span>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Location */}
-          {ticket.event.location && (
-            <div className="px-6 py-2 flex items-center justify-center gap-2 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm">{ticket.event.location}</span>
-            </div>
-          )}
-
-          {/* QR Code */}
-          <div className="px-6 py-8 flex justify-center">
-            <div className="bg-white p-4 rounded-2xl">
-              <QRCodeSVG
-                value={ticketUrl}
-                size={200}
-                level="H"
-                includeMargin={false}
-              />
-            </div>
-          </div>
-
-          {/* Guest Info */}
-          <div className="px-6 pb-4">
-            <div className="flex items-center justify-between py-3 border-t border-border">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  {i18n.language === 'de' ? 'Gast' : 'Guest'}
-                </p>
-                <p className="font-medium">{ticket.participant.name}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Status
-                </p>
-                <Badge variant="default" className="bg-green-500 hover:bg-green-500">
-                  {ticket.status === 'valid' 
-                    ? (i18n.language === 'de' ? 'Dabei' : 'Going')
-                    : ticket.status === 'used'
-                    ? (i18n.language === 'de' ? 'Eingecheckt' : 'Checked in')
-                    : ticket.status}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Ticket Type */}
-            {ticket.ticket_category && (
-              <div className="py-3 border-t border-border">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  Ticket
-                </p>
-                <p className="font-medium">1× {ticket.ticket_category.name}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="px-6 pb-6 space-y-3">
-            {ticket.event.location && (
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={openDirections}
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                {i18n.language === 'de' ? 'Route planen' : 'Get Directions'}
-              </Button>
-            )}
-            
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={addToCalendar}
-            >
-              <Wallet className="h-4 w-4 mr-2" />
-              {i18n.language === 'de' ? 'Zum Kalender hinzufügen' : 'Add to Calendar'}
-            </Button>
-          </div>
-        </div>
+        {/* Ticket Counter */}
+        {tickets.length > 1 && (
+          <p className="text-center text-sm text-muted-foreground mt-3">
+            {t('ticketPage.ticketOf', { current: selectedIndex + 1, total: tickets.length })}
+          </p>
+        )}
       </div>
     </div>
   );
