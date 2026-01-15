@@ -6,6 +6,11 @@ import { EventPreviewSheet } from "@/components/EventPreviewSheet";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
+interface SelectedTicket {
+  categoryId: string;
+  quantity: number;
+}
+
 export default function Event() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -37,10 +42,22 @@ export default function Event() {
     // Handle payment success/cancel from Stripe redirect
     const paymentSuccess = searchParams.get('payment_success');
     const participantName = searchParams.get('name');
+    const ticketsParam = searchParams.get('tickets');
 
     if (paymentSuccess === 'true' && participantName) {
       try {
-        const { data, error } = await supabase
+        // Parse selected tickets from URL
+        let selectedTickets: SelectedTicket[] = [];
+        if (ticketsParam) {
+          try {
+            selectedTickets = JSON.parse(decodeURIComponent(ticketsParam));
+          } catch (e) {
+            console.error("Failed to parse tickets param:", e);
+          }
+        }
+
+        // Create participant
+        const { data: participantData, error } = await supabase
           .from("participants")
           .insert({
             event_id: id,
@@ -54,17 +71,42 @@ export default function Event() {
           throw error;
         }
         
-        if (data) {
-          // Create ticket for the participant
-          const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-          
-          await supabase
-            .from("tickets")
-            .insert({
-              participant_id: data.id,
+        if (participantData) {
+          // Calculate total tickets to create
+          const totalTickets = selectedTickets.length > 0
+            ? selectedTickets.reduce((sum, t) => sum + t.quantity, 0)
+            : 1;
+
+          // Create tickets for the participant
+          const ticketCodes: string[] = [];
+          const ticketInserts: any[] = [];
+
+          for (let i = 0; i < totalTickets; i++) {
+            const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${i}`;
+            ticketCodes.push(ticketCode);
+            
+            // Find which category this ticket belongs to
+            let categoryId: string | null = null;
+            if (selectedTickets.length > 0) {
+              let ticketIndex = 0;
+              for (const selected of selectedTickets) {
+                if (i >= ticketIndex && i < ticketIndex + selected.quantity) {
+                  categoryId = selected.categoryId;
+                  break;
+                }
+                ticketIndex += selected.quantity;
+              }
+            }
+
+            ticketInserts.push({
+              participant_id: participantData.id,
               event_id: id,
               ticket_code: ticketCode,
+              ticket_category_id: categoryId,
             });
+          }
+
+          await supabase.from("tickets").insert(ticketInserts);
 
           // Get event details for confirmation email
           const { data: eventDetails } = await supabase
@@ -73,11 +115,13 @@ export default function Event() {
             .eq("id", id)
             .single();
 
-          // Send ticket purchase confirmation email (fire and forget)
+          // Send ONE ticket purchase confirmation email with ALL tickets
           if (session.user.email) {
-            const ticketUrl = `${window.location.origin}/ticket/${ticketCode}`;
-            const eventUrl = `${window.location.origin}/event/${id}`;
             const decodedName = decodeURIComponent(participantName);
+            const eventUrl = `${window.location.origin}/event/${id}`;
+            
+            // Build ticket URLs - use first ticket as main, include count
+            const mainTicketUrl = `${window.location.origin}/ticket/${ticketCodes[0]}`;
 
             supabase.functions.invoke('send-notification', {
               body: {
@@ -90,7 +134,8 @@ export default function Event() {
                 eventTime: eventDetails?.event_time,
                 eventLocation: eventDetails?.location,
                 eventUrl,
-                ticketUrl,
+                ticketUrl: mainTicketUrl,
+                ticketCount: totalTickets,
               },
             }).catch(err => console.error("Failed to send ticket email:", err));
 
@@ -115,13 +160,16 @@ export default function Event() {
                     eventLocation: eventDetails?.location,
                     eventUrl,
                     participantName: decodedName,
+                    ticketCount: totalTickets,
                   },
                 }).catch(err => console.error("Failed to send host notification:", err));
               }
             }
           }
 
-          toast.success(t('joinSuccess'));
+          toast.success(totalTickets > 1 
+            ? (i18n.language === 'de' ? `${totalTickets} Tickets erfolgreich gekauft!` : `${totalTickets} tickets purchased successfully!`)
+            : t('joinSuccess'));
         }
 
         window.history.replaceState({}, '', `/event/${id}`);
