@@ -135,6 +135,7 @@ export default function EditEvent() {
   const [ticketsPopupOpen, setTicketsPopupOpen] = useState(false);
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
   const [ticketCategoriesCount, setTicketCategoriesCount] = useState(0);
+  const [ticketsModified, setTicketsModified] = useState(false);
   
   // Auto-tagging state
   const [isAutoTagging, setIsAutoTagging] = useState(false);
@@ -190,12 +191,13 @@ export default function EditEvent() {
       imagePreview !== originalValues.imagePreview ||
       waitlistEnabled !== originalValues.waitlistEnabled ||
       imageFile !== null ||
-      removeImage
+      removeImage ||
+      ticketsModified
     );
   }, [
     name, description, isPublic, eventDate, endDate, startTime, endTime,
     location, capacityUnlimited, maxCapacity, isPaid, price, requiresApproval,
-    imagePreview, waitlistEnabled, imageFile, removeImage, originalValues
+    imagePreview, waitlistEnabled, imageFile, removeImage, ticketsModified, originalValues
   ]);
 
   // State for showing unsaved changes dialog
@@ -583,6 +585,7 @@ export default function EditEvent() {
       });
       setImageFile(null);
       setRemoveImage(false);
+      setTicketsModified(false);
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error(t('edit.error'));
@@ -1107,6 +1110,7 @@ export default function EditEvent() {
         capacityUnlimited={capacityUnlimited}
         allowMultipleTickets={allowMultipleTickets}
         onAllowMultipleChange={setAllowMultipleTickets}
+        onTicketModified={() => setTicketsModified(true)}
       />
       {tempImageSrc && (
         <ImageCropper

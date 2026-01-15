@@ -41,6 +41,7 @@ interface TicketCategoriesProps {
   isPaidEvent: boolean;
   stripeConnected?: boolean | null;
   onCategoriesChange?: (categories: TicketCategory[]) => void;
+  onTicketModified?: () => void;
   eventCapacity?: number | null;
   capacityUnlimited?: boolean;
 }
@@ -50,6 +51,7 @@ export function TicketCategories({
   isPaidEvent, 
   stripeConnected, 
   onCategoriesChange,
+  onTicketModified,
   eventCapacity,
   capacityUnlimited 
 }: TicketCategoriesProps) {
@@ -122,6 +124,7 @@ export function TicketCategories({
       const updatedCategories = [...categories, data];
       setCategories(updatedCategories);
       onCategoriesChange?.(updatedCategories);
+      onTicketModified?.();
       setNewCategory({ name: "", description: "", price: "", maxQuantity: "" });
       setShowNewForm(false);
       toast.success(i18n.language === 'de' ? 'Ticket-Kategorie erstellt' : 'Ticket category created');
@@ -147,6 +150,7 @@ export function TicketCategories({
       );
       setCategories(updatedCategories);
       onCategoriesChange?.(updatedCategories);
+      onTicketModified?.();
     } catch (error) {
       console.error("Error updating ticket category:", error);
       toast.error(i18n.language === 'de' ? 'Fehler beim Aktualisieren' : 'Error updating category');
@@ -165,6 +169,7 @@ export function TicketCategories({
       const updatedCategories = categories.filter(cat => cat.id !== id);
       setCategories(updatedCategories);
       onCategoriesChange?.(updatedCategories);
+      onTicketModified?.();
       toast.success(i18n.language === 'de' ? 'Ticket-Kategorie gelöscht' : 'Ticket category deleted');
     } catch (error) {
       console.error("Error deleting ticket category:", error);

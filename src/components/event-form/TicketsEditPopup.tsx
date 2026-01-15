@@ -17,6 +17,7 @@ interface TicketsEditPopupProps {
   capacityUnlimited?: boolean;
   allowMultipleTickets?: boolean;
   onAllowMultipleChange?: (value: boolean) => void;
+  onTicketModified?: () => void;
 }
 
 export function TicketsEditPopup({
@@ -29,6 +30,7 @@ export function TicketsEditPopup({
   capacityUnlimited,
   allowMultipleTickets = true,
   onAllowMultipleChange,
+  onTicketModified,
 }: TicketsEditPopupProps) {
   const { t, i18n } = useTranslation("forms");
 
@@ -87,6 +89,7 @@ export function TicketsEditPopup({
           stripeConnected={stripeConnected}
           eventCapacity={eventCapacity}
           capacityUnlimited={capacityUnlimited}
+          onTicketModified={onTicketModified}
         />
 
         <Button 
