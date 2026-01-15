@@ -649,18 +649,12 @@ export function EventPreviewSheet({ eventId, open, onOpenChange, user }: EventPr
               </div>
             )}
 
-            {/* 11. Event-Kategorie Tag - klickbar zur Kategorie-Seite */}
+            {/* 11. Event-Kategorie Tag - ganz unten, dezent */}
             {event.tags && event.tags.length > 0 && (
               <div className="pt-4 pb-2">
-                <button
-                  onClick={() => {
-                    onOpenChange(false);
-                    navigate(`/explore/category/${event.tags![0]}`);
-                  }}
-                  className="px-3 py-1 text-xs font-medium rounded-full bg-background text-foreground border border-border shadow-sm hover:shadow-md hover:border-foreground/20 active:scale-95 transition-all"
-                >
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground/70">
                   {getTagLabel(event.tags[0], i18n.language as "de" | "en")}
-                </button>
+                </span>
               </div>
             )}
           </div>
