@@ -80,9 +80,14 @@ export default function Event() {
           // Create tickets for the participant
           const ticketCodes: string[] = [];
           const ticketInserts: any[] = [];
+          
+          // Generate a unique batch ID for this purchase
+          const batchId = Date.now().toString(36).toUpperCase();
 
           for (let i = 0; i < totalTickets; i++) {
-            const ticketCode = `EVT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${i}`;
+            // Generate truly unique ticket code with random component for each ticket
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const ticketCode = `EVT-${batchId}${randomPart}-${i.toString().padStart(2, '0')}`;
             ticketCodes.push(ticketCode);
             
             // Find which category this ticket belongs to
@@ -106,7 +111,14 @@ export default function Event() {
             });
           }
 
-          await supabase.from("tickets").insert(ticketInserts);
+          console.log("[Event] Creating tickets:", { totalTickets, ticketCodes, ticketInserts });
+
+          const { error: ticketError } = await supabase.from("tickets").insert(ticketInserts);
+          if (ticketError) {
+            console.error("[Event] Error creating tickets:", ticketError);
+            throw ticketError;
+          }
+          console.log("[Event] Tickets created successfully:", ticketCodes);
 
           // Get event details for confirmation email
           const { data: eventDetails } = await supabase
