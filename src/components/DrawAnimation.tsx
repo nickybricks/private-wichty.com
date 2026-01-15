@@ -71,7 +71,7 @@ export function DrawAnimation({ participantId, onComplete }: DrawAnimationProps)
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold">Zulosung läuft...</h2>
                 <p className="text-muted-foreground">
-                  Einen Moment, wir ermitteln deinen Wichtel-Partner
+                  Einen Moment, wir ermitteln deinen Partner
                 </p>
               </div>
             </div>

@@ -220,7 +220,7 @@ export default function Ticket() {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//wichty//Event Ticket//EN',
+      'PRODID:-//Wichty//Event Ticket//EN',
       'BEGIN:VEVENT',
       `DTSTART:${startDate}`,
       `DTEND:${endDate}`,
