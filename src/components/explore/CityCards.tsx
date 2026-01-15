@@ -31,7 +31,7 @@ export function CityCards({ availableCities }: CityCardsProps) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-muted-foreground px-1">
+      <h3 className="text-lg font-semibold">
         {t("cities")}
       </h3>
       <ScrollArea className="w-full whitespace-nowrap">
