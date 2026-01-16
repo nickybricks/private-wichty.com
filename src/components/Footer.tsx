@@ -24,6 +24,9 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-sm">{t('footer.legal')}</h3>
             <div className="flex flex-col gap-2">
+              <Link to="/preise" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {t('footer.pricing')}
+              </Link>
               <Link to="/impressum" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {t('footer.imprint')}
               </Link>

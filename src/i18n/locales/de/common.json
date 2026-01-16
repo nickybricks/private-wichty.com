@@ -12,6 +12,7 @@
     "about": "Über uns",
     "legal": "Rechtliches",
     "resources": "Ressourcen",
+    "pricing": "Preise",
     "imprint": "Impressum",
     "privacy": "Datenschutz",
     "guide": "Ratgeber",
@@ -157,6 +158,38 @@
       "codeSent": "Bestätigungscode gesendet!",
       "phoneVerified": "Telefonnummer verifiziert!",
       "resetLinkSent": "Link zum Zurücksetzen wurde gesendet!"
+    }
+  },
+  "pricing": {
+    "pageTitle": "Preise",
+    "pageDescription": "Transparente Preise für deine Events – nur 5% Gebühr, mindestens 0,50€ pro Ticket.",
+    "title": "Einfach. Fair. Transparent.",
+    "subtitle": "Bei Wichty zahlst du nur, wenn du auch verdienst. Keine monatlichen Gebühren, keine versteckten Kosten.",
+    "feeModel": {
+      "title": "Unsere Gebühr",
+      "description": "Wir berechnen eine kleine Gebühr nur auf kostenpflichtige Tickets. Kostenlose Events sind komplett gratis.",
+      "perTicket": "pro verkauftem Ticket",
+      "minimum": "Mindestgebühr: 0,50€"
+    },
+    "benefits": {
+      "title": "Was du bekommst",
+      "noPlatformFee": "Keine monatlichen Grundgebühren",
+      "freeEvents": "Kostenlose Events bleiben kostenlos",
+      "flexibleFees": "Gebühren wahlweise an Kunden weitergeben",
+      "instantPayout": "Schnelle Auszahlung nach dem Event"
+    },
+    "calculator": {
+      "title": "Kostenrechner",
+      "ticketPrice": "Dein Ticketpreis",
+      "passFeeToggle": "Gebühr auf Kunden umlegen",
+      "passFeeDescription": "Der Kunde zahlt den Ticketpreis + Gebühr",
+      "breakdown": "Kostenaufstellung",
+      "customerPays": "Kunde zahlt",
+      "youReceive": "Du erhältst",
+      "wichtyFee": "Wichty Gebühr",
+      "feePassedNote": "Die Gebühr wird zum Ticketpreis addiert und vom Kunden bezahlt.",
+      "feeDeductedNote": "Die Gebühr wird von deinem Ticketpreis abgezogen.",
+      "enterPrice": "Gib einen Ticketpreis ein, um die Berechnung zu sehen."
     }
   }
 }
