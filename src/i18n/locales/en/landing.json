@@ -1,13 +1,21 @@
 {
   "hero": {
-    "title": "Organize events.",
-    "titleHighlight": "Without chaos.",
-    "subtitle": "Create games, tournaments and club events in seconds. Ticket sales included – fair and transparent.",
+    "title": "Sports Club Events",
+    "titleHighlight": "made simple.",
+    "subtitle": "Create game days in seconds. Ticketing for clubs – fair and transparent.",
     "cta": "Create Event Now",
     "explore": "Explore Events",
     "trustFree": "Free forever",
     "trustBerlin": "Made in Berlin",
-    "trustGdpr": "GDPR compliant"
+    "trustGdpr": "GDPR compliant",
+    "badge": "For Amateur Clubs",
+    "eventsCount": "250+ Events organized",
+    "categories": {
+      "football": "Football Tournaments",
+      "hockey": "Hockey Games",
+      "clubEvents": "Club Festivals",
+      "camps": "Training Camps"
+    }
   },
   "benefits": {
     "ready": {
