@@ -8,7 +8,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
-import { Clock, Shield, Wallet, Compass } from "lucide-react";
+import { Clock, Shield, Wallet, Compass, Check } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -147,16 +147,16 @@ export default function Landing() {
               <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <Button
                   onClick={handleCreateEvent}
-                  className="h-9 px-5 text-sm font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  className="h-12 px-8 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
                 >
                   {t('hero.cta')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/explore")}
-                  className="h-9 px-5 text-sm font-semibold border-foreground/20 hover:bg-foreground/5 transition-all"
+                  className="h-12 px-8 text-base font-semibold border-foreground/20 hover:bg-foreground/5 transition-all"
                 >
-                  <Compass className="w-4 h-4 mr-2" />
+                  <Compass className="w-5 h-5 mr-2" />
                   {t('hero.explore')}
                 </Button>
               </div>
@@ -170,10 +170,21 @@ export default function Landing() {
                 />
               </div>
 
-              {/* Trust Line */}
-              <p className="text-sm text-muted-foreground/80">
-                {t('hero.trust')}
-              </p>
+              {/* Trust Claims */}
+              <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center lg:justify-start text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-green-500" />
+                  {t('hero.trustFree')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-green-500" />
+                  {t('hero.trustBerlin')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-green-500" />
+                  {t('hero.trustGdpr')}
+                </span>
+              </div>
             </div>
 
             {/* Right: Image (Desktop only) */}
