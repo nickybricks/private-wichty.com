@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { AuthDialog } from "@/components/AuthDialog";
+import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
@@ -43,12 +44,11 @@ export default function Landing() {
     navigate("/dashboard");
   };
 
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
+
   const handleCreateEvent = () => {
-    if (user) {
-      navigate("/dashboard");
-    } else {
-      setShowAuthDialog(true);
-    }
+    // Open the create drawer for everyone - auth check happens on save
+    setCreateDrawerOpen(true);
   };
 
   const structuredData = {
@@ -271,6 +271,11 @@ export default function Landing() {
           onOpenChange={setShowAuthDialog}
           onSuccess={handleAuthSuccess}
           defaultTab="login"
+        />
+
+        <CreateEventDrawer 
+          open={createDrawerOpen} 
+          onOpenChange={setCreateDrawerOpen}
         />
       </div>
     </>
