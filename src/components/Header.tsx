@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,23 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [logoAnimated, setLogoAnimated] = useState(false);
+
+  // Scroll detection for shadow effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Logo animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => setLogoAnimated(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -47,7 +64,20 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
 
   return (
     <>
-      <header className="border-b border-border bg-card shadow-soft sticky top-0 z-10">
+      <header 
+        className={`
+          sticky top-0 z-50 
+          border-b transition-all duration-300 ease-out
+          ${isScrolled 
+            ? 'border-border/50 shadow-medium bg-white/80 backdrop-blur-xl' 
+            : 'border-transparent bg-white/60 backdrop-blur-md'
+          }
+        `}
+        style={{
+          WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'blur(12px) saturate(150%)',
+          backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'blur(12px) saturate(150%)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Left: Back button + Logo */}
           <div className="flex items-center gap-4">
@@ -69,19 +99,29 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
             )}
             <button
               onClick={() => navigate(user ? "/dashboard" : "/")}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className={`
+                flex items-center gap-2 hover:opacity-80 transition-all duration-500
+                ${logoAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}
+              `}
             >
-              <Sparkles 
-                className="h-6 w-6" 
-                style={{ 
-                  background: 'linear-gradient(90deg, #FFB86C 0%, #FF6788 50%, #C088FF 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  stroke: 'url(#icon-gradient)',
-                  fill: 'none'
-                }} 
-              />
+              <div 
+                className={`
+                  transition-all duration-700 ease-out
+                  ${logoAnimated ? 'rotate-0 scale-100' : 'rotate-180 scale-50'}
+                `}
+              >
+                <Sparkles 
+                  className="h-6 w-6" 
+                  style={{ 
+                    background: 'linear-gradient(90deg, #FFB86C 0%, #FF6788 50%, #C088FF 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    stroke: 'url(#icon-gradient)',
+                    fill: 'none'
+                  }} 
+                />
+              </div>
               <svg width="0" height="0">
                 <defs>
                   <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -91,7 +131,15 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="text-xl font-bold tracking-tight text-foreground">Wichty</span>
+              <span 
+                className={`
+                  text-xl font-bold tracking-tight text-foreground
+                  transition-all duration-500 delay-150
+                  ${logoAnimated ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}
+                `}
+              >
+                Wichty
+              </span>
             </button>
           </div>
 
