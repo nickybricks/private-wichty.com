@@ -14,6 +14,7 @@ import { DescriptionPopup } from "@/components/event-form/DescriptionPopup";
 import { TicketsPopup } from "@/components/event-form/TicketsPopup";
 import { CapacityPopup } from "@/components/event-form/CapacityPopup";
 import { ImageCropper } from "@/components/ImageCropper";
+import { AuthDialog } from "@/components/AuthDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Loader2, 
@@ -98,6 +99,10 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
   // Image cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
+  
+  // Auth dialog state for unauthenticated users
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false);
 
   const dateLocale = i18n.language === 'de' ? de : enUS;
 
@@ -278,20 +283,28 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
       return;
     }
 
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      // Show auth dialog instead of error
+      setPendingSave(true);
+      setShowAuthDialog(true);
+      return;
+    }
+
+    // Proceed with actual save
+    await saveEvent(user.id);
+  };
+
+  const saveEvent = async (userId: string) => {
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error(ta('errors.pleaseLogin'));
-        return;
-      }
-
       let imageUrl = null;
 
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('event-images')
@@ -333,7 +346,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           waitlist_enabled: waitlistEnabled,
           allow_multiple_tickets: allowMultipleTickets,
           status: "waiting",
-          user_id: user.id,
+          user_id: userId,
         })
         .select()
         .single();
@@ -366,7 +379,7 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
       const { data: profile } = await supabase
         .from("profiles")
         .select("display_name, first_name, language, notify_organizing")
-        .eq("id", user.id)
+        .eq("id", userId)
         .single();
 
       if (profile?.notify_organizing !== false) {
@@ -374,11 +387,11 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
         supabase.functions.invoke('send-notification', {
           body: {
             type: 'event_created',
-            recipientUserId: user.id,
+            recipientUserId: userId,
             recipientName: profile?.first_name || profile?.display_name || 'Host',
             language: profile?.language === 'en' ? 'en' : 'de',
             eventName: name.trim(),
-            eventDate: format(eventDate, "yyyy-MM-dd"),
+            eventDate: format(eventDate!, "yyyy-MM-dd"),
             eventTime: startTime || null,
             eventLocation: location.trim() || null,
             eventUrl,
@@ -395,6 +408,15 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
       toast.error(t('errors.createError'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle successful auth - continue with event creation
+  const handleAuthSuccess = async (userId: string) => {
+    setShowAuthDialog(false);
+    if (pendingSave) {
+      setPendingSave(false);
+      await saveEvent(userId);
     }
   };
 
@@ -760,6 +782,15 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
             aspectRatio={1}
           />
         )}
+        <AuthDialog
+          open={showAuthDialog}
+          onOpenChange={(open) => {
+            setShowAuthDialog(open);
+            if (!open) setPendingSave(false);
+          }}
+          onSuccess={handleAuthSuccess}
+          defaultTab="signup"
+        />
       </>
     );
   }
@@ -774,6 +805,24 @@ export function CreateEventDrawer({ open, onOpenChange }: CreateEventDrawerProps
           </div>
         </DialogContent>
       </Dialog>
+      {tempImageSrc && (
+        <ImageCropper
+          open={cropperOpen}
+          onOpenChange={setCropperOpen}
+          imageSrc={tempImageSrc}
+          onCropComplete={handleCropComplete}
+          aspectRatio={1}
+        />
+      )}
+      <AuthDialog
+        open={showAuthDialog}
+        onOpenChange={(open) => {
+          setShowAuthDialog(open);
+          if (!open) setPendingSave(false);
+        }}
+        onSuccess={handleAuthSuccess}
+        defaultTab="signup"
+      />
       {tempImageSrc && (
         <ImageCropper
           open={cropperOpen}
