@@ -135,7 +135,7 @@ export default function Landing() {
               <h1 className="text-[32px] lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">{t('hero.title')}</span>
                 <br />
-                <span className="bg-gradient-to-r from-[#FF6788] via-[#FF8066] to-[#FFB86C] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#ff5a5f] via-[#ff8a5b] to-[#ffbe0b] bg-clip-text text-transparent">
                   {t('hero.titleHighlight')}
                 </span>
               </h1>
@@ -151,8 +151,8 @@ export default function Landing() {
                   onClick={handleCreateEvent}
                   className="group relative h-14 px-8 text-lg font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] whitespace-nowrap"
                   style={{
-                    background: 'linear-gradient(135deg, #ff6b8b 0%, #ff8e72 100%)',
-                    boxShadow: '0 8px 24px -8px rgba(255, 107, 139, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                    background: 'linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 100%)',
+                    boxShadow: '0 8px 24px -8px rgba(255, 90, 95, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
                   }}
                 >
                   {/* Shimmer effect */}
@@ -266,7 +266,7 @@ export default function Landing() {
 
         {/* Final CTA Section */}
         <section className="max-w-[var(--max-width)] mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
-          <div className="bg-gradient-to-r from-[#FF6788]/10 via-[#FF8066]/10 to-[#FFB86C]/10 rounded-3xl p-8 sm:p-12 text-center">
+          <div className="bg-gradient-to-r from-[#ff5a5f]/10 via-[#ff8a5b]/10 to-[#ffbe0b]/10 rounded-3xl p-8 sm:p-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">
               {t('cta.title')}
             </h2>
@@ -274,8 +274,8 @@ export default function Landing() {
               onClick={handleCreateEvent}
               className="group relative h-14 px-8 text-lg font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] min-w-[200px]"
               style={{
-                background: 'linear-gradient(135deg, #ff6b8b 0%, #ff8e72 100%)',
-                boxShadow: '0 8px 24px -8px rgba(255, 107, 139, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                background: 'linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 100%)',
+                boxShadow: '0 8px 24px -8px rgba(255, 90, 95, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
               }}
             >
               {/* Shimmer effect */}

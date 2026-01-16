@@ -58,40 +58,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Pure white background */
-    --background: 0 0% 100%;
-    /* Anthracite gray for primary text #1D1D1F */
-    --foreground: 240 3% 12%;
+    /* 2026 Color Palette */
+    /* Background: Very light gray #f8f9fa */
+    --background: 210 17% 98%;
+    /* Neutral: Deep blue-gray #2b2d42 for primary text */
+    --foreground: 234 21% 21%;
 
-    /* Very light gray for cards #FBFBFD */
-    --card: 240 20% 99%;
-    --card-foreground: 240 3% 12%;
+    /* Very light gray for cards */
+    --card: 210 17% 99%;
+    --card-foreground: 234 21% 21%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 3% 12%;
+    --popover-foreground: 234 21% 21%;
 
-    /* Vibrant Pink #FF6788 */
-    --primary: 347 100% 70%;
+    /* Primary: Vibrant Coral #ff5a5f - Energy & Passion (Sport) */
+    --primary: 358 100% 68%;
     --primary-foreground: 0 0% 100%;
 
-    /* Anthracite gray for secondary buttons #1D1D1F */
-    --secondary: 240 3% 12%;
+    /* Secondary: Clear Blue #3a86ff - Trust & Reliability (Ticketing) */
+    --secondary: 217 100% 61%;
     --secondary-foreground: 0 0% 100%;
 
     /* Very light gray for muted surfaces */
-    --muted: 240 20% 99%;
-    /* Medium gray for secondary text #6E6E73 */
-    --muted-foreground: 240 2% 44%;
+    --muted: 210 17% 96%;
+    /* Medium gray for secondary text */
+    --muted-foreground: 234 10% 45%;
 
-    --accent: 347 100% 96%;
-    --accent-foreground: 347 100% 40%;
+    /* Accent: Warm Yellow #ffbe0b - Optimism & Joy (Events) */
+    --accent: 45 100% 52%;
+    --accent-foreground: 234 21% 21%;
 
-    --destructive: 354 71% 46%;
+    --destructive: 358 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 91%;
-    --input: 0 0% 91%;
-    --ring: 347 100% 70%;
+    --border: 210 14% 89%;
+    --input: 210 14% 89%;
+    --ring: 358 100% 68%;
 
     --radius: 1rem;
 
@@ -105,54 +107,57 @@ All colors MUST be HSL.
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.08);
     --shadow-strong: 0 10px 30px 0 rgb(0 0 0 / 0.12);
 
-    /* Accent Gradient: from-[#FFB86C] via-[#FF6788] to-[#C088FF] */
-    --gradient-accent: linear-gradient(90deg, #ffb86c 0%, #ff6788 50%, #c088ff 100%);
+    /* 2026 Gradient: Coral to Blue with Yellow accent */
+    --gradient-accent: linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 50%, #ffbe0b 100%);
     --gradient-accent-transparent: linear-gradient(
-      90deg,
-      rgba(255, 184, 108, 0.15) 0%,
-      rgba(255, 103, 136, 0.15) 50%,
-      rgba(192, 136, 255, 0.15) 100%
+      135deg,
+      rgba(255, 90, 95, 0.12) 0%,
+      rgba(255, 138, 91, 0.12) 50%,
+      rgba(255, 190, 11, 0.12) 100%
     );
+    
+    /* Secondary gradient for trust elements */
+    --gradient-trust: linear-gradient(135deg, #3a86ff 0%, #5fa8ff 100%);
 
     /* Liquid Glass effect for headers */
-    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-bg: rgba(248, 249, 250, 0.8);
     --glass-blur: blur(12px);
 
-    /* Dynamic background gradient */
-    --bg-gradient-base: 220 14% 98%;
-    --color-spot-coral: 347 100% 70%;
-    --color-spot-orange: 32 100% 71%;
-    --color-spot-pink: 330 100% 75%;
+    /* Dynamic background gradient - updated colors */
+    --bg-gradient-base: 210 17% 98%;
+    --color-spot-coral: 358 100% 68%;
+    --color-spot-orange: 24 100% 66%;
+    --color-spot-yellow: 45 100% 52%;
   }
 
   .dark {
-    --background: 220 13% 9%;
+    --background: 234 21% 9%;
     --foreground: 0 0% 98%;
 
-    --card: 220 13% 13%;
+    --card: 234 21% 13%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 13% 13%;
+    --popover: 234 21% 13%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 347 100% 70%;
+    --primary: 358 100% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217 100% 61%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 13% 18%;
-    --muted-foreground: 220 9% 65%;
+    --muted: 234 21% 18%;
+    --muted-foreground: 234 9% 65%;
 
-    --accent: 220 13% 18%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 45 100% 52%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 45%;
+    --destructive: 358 80% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 18%;
-    --input: 220 13% 18%;
-    --ring: 347 100% 70%;
+    --border: 234 21% 18%;
+    --input: 234 21% 18%;
+    --ring: 358 100% 68%;
 
     --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.3);
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.4);
@@ -232,7 +237,7 @@ All colors MUST be HSL.
     animation: pulse-glow 10s ease-in-out infinite 2s, float 20s ease-in-out infinite reverse;
   }
 
-  /* Third color spot for more depth - added via wrapper pseudo-element */
+  /* Third color spot - warm yellow for more depth */
   .bg-dynamic-gradient-inner::before {
     content: '';
     position: fixed;
@@ -241,7 +246,7 @@ All colors MUST be HSL.
     top: 50%;
     right: 20%;
     border-radius: 50%;
-    background: radial-gradient(circle, hsl(var(--color-spot-pink) / 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-spot-yellow) / 0.15) 0%, transparent 70%);
     filter: blur(60px);
     pointer-events: none;
     z-index: 0;
