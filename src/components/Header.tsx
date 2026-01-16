@@ -189,7 +189,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
                 <button
                   onClick={() => setCreateDrawerOpen(true)}
                   className="h-9 px-4 rounded-full flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90 transition-all text-white text-sm font-medium"
-                  style={{ background: 'linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 100%)' }}
+                  style={{ background: 'linear-gradient(135deg, #FF5A7E 0%, #FF7A5A 100%)' }}
                 >
                   <Plus className="h-4 w-4" />
                   {t('header.createEvent')}
@@ -220,7 +220,7 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
                 <button
                   onClick={() => setCreateDrawerOpen(true)}
                   className="h-9 w-9 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:opacity-90 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 100%)' }}
+                  style={{ background: 'linear-gradient(135deg, #FF5A7E 0%, #FF7A5A 100%)' }}
                 >
                   <Plus className="h-5 w-5 text-white" />
                 </button>

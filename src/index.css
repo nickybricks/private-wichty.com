@@ -58,42 +58,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* 2026 Color Palette */
-    /* Background: Very light gray #f8f9fa */
-    --background: 210 17% 98%;
-    /* Neutral: Deep blue-gray #2b2d42 for primary text */
-    --foreground: 234 21% 21%;
+    /* 2026 Sporty Color Palette */
+    /* Background: Very light blue-gray #F8F9FC */
+    --background: 225 33% 98%;
+    /* Neutral Dark: Deep blue-gray #2D3047 for primary text */
+    --foreground: 234 27% 23%;
 
-    /* Very light gray for cards */
-    --card: 210 17% 99%;
-    --card-foreground: 234 21% 21%;
+    /* Very light blue-gray for cards */
+    --card: 225 33% 99%;
+    --card-foreground: 234 27% 23%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 234 21% 21%;
+    --popover-foreground: 234 27% 23%;
 
-    /* Primary: Vibrant Coral #ff5a5f - Energy & Passion (Sport) */
-    --primary: 358 100% 68%;
+    /* Primary: Vibrant Pink/Coral #FF5A7E - Energy & Sport */
+    --primary: 347 100% 68%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Clear Blue #3a86ff - Trust & Reliability (Ticketing) */
-    --secondary: 217 100% 61%;
+    /* Secondary: Clear Sporty Blue #4A7CFF - Trust & Action */
+    --secondary: 223 100% 65%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Very light gray for muted surfaces */
-    --muted: 210 17% 96%;
+    /* Very light blue-gray for muted surfaces */
+    --muted: 225 33% 96%;
     /* Medium gray for secondary text */
-    --muted-foreground: 234 10% 45%;
+    --muted-foreground: 234 15% 50%;
 
-    /* Accent: Warm Yellow #ffbe0b - Optimism & Joy (Events) */
-    --accent: 45 100% 52%;
-    --accent-foreground: 234 21% 21%;
+    /* Accent: Fresh Turquoise #00D2B8 - Highlights & Energy */
+    --accent: 170 100% 41%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 358 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 14% 89%;
-    --input: 210 14% 89%;
-    --ring: 358 100% 68%;
+    --border: 225 20% 90%;
+    --input: 225 20% 90%;
+    --ring: 347 100% 68%;
 
     --radius: 1rem;
 
@@ -107,57 +107,56 @@ All colors MUST be HSL.
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.08);
     --shadow-strong: 0 10px 30px 0 rgb(0 0 0 / 0.12);
 
-    /* 2026 Gradient: Coral to Blue with Yellow accent */
-    --gradient-accent: linear-gradient(135deg, #ff5a5f 0%, #ff8a5b 50%, #ffbe0b 100%);
+    /* Primary Gradient: Pink to Orange-Pink */
+    --gradient-accent: linear-gradient(135deg, #FF5A7E 0%, #FF7A5A 100%);
     --gradient-accent-transparent: linear-gradient(
       135deg,
-      rgba(255, 90, 95, 0.12) 0%,
-      rgba(255, 138, 91, 0.12) 50%,
-      rgba(255, 190, 11, 0.12) 100%
+      rgba(255, 90, 126, 0.12) 0%,
+      rgba(255, 122, 90, 0.12) 100%
     );
     
-    /* Secondary gradient for trust elements */
-    --gradient-trust: linear-gradient(135deg, #3a86ff 0%, #5fa8ff 100%);
+    /* Secondary gradient: Blue to Turquoise for trust elements */
+    --gradient-trust: linear-gradient(135deg, #4A7CFF 0%, #00D2B8 100%);
 
     /* Liquid Glass effect for headers */
-    --glass-bg: rgba(248, 249, 250, 0.8);
+    --glass-bg: rgba(248, 249, 252, 0.8);
     --glass-blur: blur(12px);
 
-    /* Dynamic background gradient - updated colors */
-    --bg-gradient-base: 210 17% 98%;
-    --color-spot-coral: 358 100% 68%;
-    --color-spot-orange: 24 100% 66%;
-    --color-spot-yellow: 45 100% 52%;
+    /* Dynamic background gradient - sporty colors */
+    --bg-gradient-base: 225 33% 98%;
+    --color-spot-coral: 347 100% 68%;
+    --color-spot-blue: 223 100% 65%;
+    --color-spot-turquoise: 170 100% 41%;
   }
 
   .dark {
-    --background: 234 21% 9%;
+    --background: 234 27% 9%;
     --foreground: 0 0% 98%;
 
-    --card: 234 21% 13%;
+    --card: 234 27% 13%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 234 21% 13%;
+    --popover: 234 27% 13%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 358 100% 68%;
+    --primary: 347 100% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 100% 61%;
+    --secondary: 223 100% 65%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 234 21% 18%;
-    --muted-foreground: 234 9% 65%;
+    --muted: 234 27% 18%;
+    --muted-foreground: 234 15% 65%;
 
-    --accent: 45 100% 52%;
+    --accent: 170 100% 41%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 358 80% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 234 21% 18%;
-    --input: 234 21% 18%;
-    --ring: 358 100% 68%;
+    --border: 234 27% 18%;
+    --input: 234 27% 18%;
+    --ring: 347 100% 68%;
 
     --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.3);
     --shadow-medium: 0 4px 12px 0 rgb(0 0 0 / 0.4);
@@ -217,27 +216,27 @@ All colors MUST be HSL.
     will-change: opacity, transform;
   }
 
-  /* Coral color spot - top right */
+  /* Pink/Coral color spot - top right */
   .bg-dynamic-gradient::before {
     width: 600px;
     height: 600px;
     top: -200px;
     right: -100px;
-    background: radial-gradient(circle, hsl(var(--color-spot-coral) / 0.25) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-spot-coral) / 0.2) 0%, transparent 70%);
     animation: pulse-glow 8s ease-in-out infinite, float 15s ease-in-out infinite;
   }
 
-  /* Orange/Pink color spot - bottom left */
+  /* Blue color spot - bottom left */
   .bg-dynamic-gradient::after {
     width: 500px;
     height: 500px;
     bottom: 20%;
     left: -100px;
-    background: radial-gradient(circle, hsl(var(--color-spot-orange) / 0.2) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-spot-blue) / 0.15) 0%, transparent 70%);
     animation: pulse-glow 10s ease-in-out infinite 2s, float 20s ease-in-out infinite reverse;
   }
 
-  /* Third color spot - warm yellow for more depth */
+  /* Turquoise color spot for sporty depth */
   .bg-dynamic-gradient-inner::before {
     content: '';
     position: fixed;
@@ -246,7 +245,7 @@ All colors MUST be HSL.
     top: 50%;
     right: 20%;
     border-radius: 50%;
-    background: radial-gradient(circle, hsl(var(--color-spot-yellow) / 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-spot-turquoise) / 0.12) 0%, transparent 70%);
     filter: blur(60px);
     pointer-events: none;
     z-index: 0;

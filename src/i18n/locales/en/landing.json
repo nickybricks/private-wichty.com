@@ -1,7 +1,8 @@
 {
   "hero": {
     "title": "Sports Club Events.",
-    "titleHighlight": "Made Simple.",
+    "titleHighlightFirst": "Made",
+    "titleHighlightSecond": "Simple.",
     "subtitle": "Create games, tournaments and club events in seconds. Ticket sales included – fair and transparent.",
     "cta": "Create Event Now",
     "explore": "Explore Events",

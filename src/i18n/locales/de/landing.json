@@ -1,7 +1,8 @@
 {
   "hero": {
     "title": "Sportverein Events.",
-    "titleHighlight": "Einfach gemacht.",
+    "titleHighlightFirst": "Einfach",
+    "titleHighlightSecond": "gemacht.",
     "subtitle": "Spiele, Turniere und Vereinsfeste in Sekunden erstellen. Ticketverkauf inklusive – fair und transparent.",
     "cta": "Jetzt Event erstellen",
     "explore": "Events erkunden",
