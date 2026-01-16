@@ -69,16 +69,16 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
           sticky top-0 z-50 
           transition-all duration-300 ease-out
           ${isScrolled 
-            ? 'shadow-lg border-b border-white/20' 
+            ? 'border-b border-border/30 shadow-sm' 
             : 'border-b border-transparent'
           }
         `}
         style={{
           background: isScrolled 
-            ? 'rgba(255, 255, 255, 0.65)' 
-            : 'rgba(255, 255, 255, 0.4)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          backdropFilter: 'blur(24px) saturate(180%)',
+            ? 'rgba(255, 255, 255, 0.7)' 
+            : 'transparent',
+          WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
+          backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
