@@ -179,7 +179,8 @@ export default function Landing() {
                 <img 
                   src={heroMockup} 
                   alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
-                  className="w-[50%] max-w-[180px] bg-transparent"
+                  className="w-[50%] max-w-[180px] drop-shadow-2xl"
+                  style={{ filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.15))' }}
                 />
               </div>
 
@@ -205,7 +206,8 @@ export default function Landing() {
               <img 
                 src={heroMockup} 
                 alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
-                className="w-full max-w-md xl:max-w-lg bg-transparent"
+                className="w-full max-w-md xl:max-w-lg drop-shadow-2xl"
+                style={{ filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.15))' }}
               />
             </div>
           </div>
