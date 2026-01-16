@@ -23,7 +23,17 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [logoAnimated, setLogoAnimated] = useState(false);
+  const [logoAnimated, setLogoAnimated] = useState(() => {
+    // Check if animation was recently shown (within 3 days)
+    try {
+      const lastAnimated = localStorage.getItem('wichty_logo_animated');
+      if (lastAnimated) {
+        const daysSince = (Date.now() - parseInt(lastAnimated)) / (1000 * 60 * 60 * 24);
+        return daysSince < 3; // Already animated if within 3 days
+      }
+    } catch {}
+    return false;
+  });
 
   // Scroll detection for shadow effect
   useEffect(() => {
@@ -34,10 +44,20 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Logo animation on mount
+  // Logo animation - only on first visit or after 3 days
   useEffect(() => {
-    const timer = setTimeout(() => setLogoAnimated(true), 100);
-    return () => clearTimeout(timer);
+    try {
+      const lastAnimated = localStorage.getItem('wichty_logo_animated');
+      const shouldAnimate = !lastAnimated || (Date.now() - parseInt(lastAnimated)) / (1000 * 60 * 60 * 24) >= 3;
+      
+      if (shouldAnimate) {
+        const timer = setTimeout(() => {
+          setLogoAnimated(true);
+          localStorage.setItem('wichty_logo_animated', Date.now().toString());
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
   }, []);
 
   const handleSignOut = async () => {
