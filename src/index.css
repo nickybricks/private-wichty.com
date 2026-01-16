@@ -185,7 +185,7 @@ All colors MUST be HSL.
   .bg-dynamic-gradient {
     position: relative;
     background: hsl(var(--bg-gradient-base));
-    overflow: hidden;
+    overflow-x: clip;
   }
 
   .bg-dynamic-gradient::before,
