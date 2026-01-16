@@ -5,7 +5,9 @@
     "subtitle": "Spiele, Turniere und Vereinsfeste in Sekunden erstellen. Ticketverkauf inklusive – fair und transparent.",
     "cta": "Jetzt Event erstellen",
     "explore": "Events erkunden",
-    "trust": "Keine Kreditkarte nötig • Made in Berlin"
+    "trustFree": "Für immer kostenlos",
+    "trustBerlin": "Made in Berlin",
+    "trustGdpr": "DSGVO konform"
   },
   "benefits": {
     "ready": {
