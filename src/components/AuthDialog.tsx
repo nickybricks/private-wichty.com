@@ -329,7 +329,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
                   onClick={handleGoogleSignIn}
                   disabled={loading}
                 >
-                  <GoogleLogo className="mr-2 h-5 w-5" />
+                  <GoogleLogo className="mr-3 h-6 w-6" />
                   {t('loginWithGoogle')}
                 </Button>
 
@@ -405,7 +405,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess, defaultTab = "signup
                   onClick={handleGoogleSignIn}
                   disabled={loading}
                 >
-                  <GoogleLogo className="mr-2 h-5 w-5" />
+                  <GoogleLogo className="mr-3 h-6 w-6" />
                   {t('signupWithGoogle')}
                 </Button>
 
