@@ -9,7 +9,7 @@ import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
-import { Clock, Shield, Wallet, Compass, Check } from "lucide-react";
+import { Clock, Shield, Wallet, Compass, Check, CalendarPlus } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -145,12 +145,23 @@ export default function Landing() {
 
               {/* CTA Buttons */}
               <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button
+                <button
                   onClick={handleCreateEvent}
-                  className="h-12 px-8 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  className="group relative h-14 px-8 text-lg font-semibold text-white rounded-[16px] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] min-w-[200px]"
+                  style={{
+                    background: 'linear-gradient(135deg, #ff6b8b 0%, #ff8e72 100%)',
+                    boxShadow: '0 8px 24px -8px rgba(255, 107, 139, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                  }}
                 >
-                  {t('hero.cta')}
-                </Button>
+                  {/* Shimmer effect */}
+                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  
+                  {/* Button content */}
+                  <span className="relative flex items-center justify-center gap-2">
+                    <CalendarPlus className="w-5 h-5" />
+                    {t('hero.cta')}
+                  </span>
+                </button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/explore")}
@@ -255,12 +266,23 @@ export default function Landing() {
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">
               {t('cta.title')}
             </h2>
-            <Button
+            <button
               onClick={handleCreateEvent}
-              className="h-11 px-8 text-base font-semibold bg-[#FF6788] hover:bg-[#FF5577] text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              className="group relative h-14 px-8 text-lg font-semibold text-white rounded-[16px] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] min-w-[200px]"
+              style={{
+                background: 'linear-gradient(135deg, #ff6b8b 0%, #ff8e72 100%)',
+                boxShadow: '0 8px 24px -8px rgba(255, 107, 139, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+              }}
             >
-              {t('cta.button')}
-            </Button>
+              {/* Shimmer effect */}
+              <span className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              {/* Button content */}
+              <span className="relative flex items-center justify-center gap-2">
+                <CalendarPlus className="w-5 h-5" />
+                {t('cta.button')}
+              </span>
+            </button>
           </div>
         </section>
 
