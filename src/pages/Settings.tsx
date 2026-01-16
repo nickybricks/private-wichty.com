@@ -26,7 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Loader2, User, Settings as SettingsIcon, CreditCard, Camera, 
-  Trash2, Phone, Mail, Globe, Bell, CheckCircle2, 
+  Trash2, Mail, Globe, Bell, CheckCircle2, 
   AlertCircle, ExternalLink, ChevronDown, Megaphone 
 } from "lucide-react";
 import { toast } from "sonner";
@@ -104,11 +104,6 @@ export default function Settings() {
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
-  const [phoneCode, setPhoneCode] = useState("");
-  const [sendingPhoneCode, setSendingPhoneCode] = useState(false);
   
   // Password reset
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -170,8 +165,6 @@ export default function Settings() {
         setLastName(profile.last_name || "");
         setUsername(profile.username || "");
         setAvatarUrl(profile.avatar_url || "");
-        setPhoneNumber(profile.phone_number || "");
-        setPhoneVerified(profile.phone_verified || false);
         
         // Load granular notification settings
         setNotifications({
@@ -265,7 +258,6 @@ export default function Settings() {
         last_name: lastName.trim() || null,
         username: username.trim() || null,
         avatar_url: avatarUrl || null,
-        phone_number: phoneNumber.trim() || null,
       };
 
       if (existingProfile) {
@@ -351,46 +343,6 @@ export default function Settings() {
       toast.error(t('settingsPage.toasts.errorSaving'));
       // Revert on error
       setNotifications(prev => ({ ...prev, [field]: !value }));
-    }
-  };
-
-  const handleSendPhoneCode = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
-      toast.error("Bitte gib eine gültige Telefonnummer ein");
-      return;
-    }
-    
-    setSendingPhoneCode(true);
-    // Simulate sending code - in production, integrate with SMS service
-    setTimeout(() => {
-      setSendingPhoneCode(false);
-      setShowPhoneVerification(true);
-      toast.success("Bestätigungscode gesendet!");
-    }, 1000);
-  };
-
-  const handleVerifyPhone = async () => {
-    if (phoneCode.length !== 6) {
-      toast.error("Bitte gib den 6-stelligen Code ein");
-      return;
-    }
-    
-    // Simulate verification - in production, verify with backend
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase
-        .from("profiles")
-        .update({ phone_verified: true })
-        .eq("id", user.id);
-
-      setPhoneVerified(true);
-      setShowPhoneVerification(false);
-      setPhoneCode("");
-      toast.success("Telefonnummer bestätigt!");
-    } catch (error) {
-      toast.error("Fehler bei der Bestätigung");
     }
   };
 
@@ -619,67 +571,6 @@ export default function Settings() {
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   />
                 </div>
-
-                {/* Phone Number */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    {t('settingsPage.profile.phone')}
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+49 170 1234567"
-                      value={phoneNumber}
-                      onChange={(e) => {
-                        setPhoneNumber(e.target.value);
-                        setPhoneVerified(false);
-                      }}
-                      className="flex-1"
-                    />
-                    {phoneNumber && !phoneVerified && (
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={handleSendPhoneCode}
-                        disabled={sendingPhoneCode}
-                      >
-                        {sendingPhoneCode ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          t('settingsPage.profile.phoneVerify')
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                  {phoneVerified && (
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      ✓ {t('settingsPage.profile.phoneVerified')}
-                    </p>
-                  )}
-                </div>
-
-                {/* Phone Verification */}
-                {showPhoneVerification && (
-                  <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                    <Label htmlFor="phoneCode">{t('settingsPage.profile.phoneCode')}</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="phoneCode"
-                        type="text"
-                        placeholder={t('settingsPage.profile.phoneCodePlaceholder')}
-                        value={phoneCode}
-                        onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        maxLength={6}
-                        className="flex-1"
-                      />
-                      <Button onClick={handleVerifyPhone}>
-                        {t('settingsPage.profile.phoneCodeVerify')}
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Password Reset */}
                 <div className="space-y-2 pt-4 border-t">
