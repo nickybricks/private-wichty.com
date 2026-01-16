@@ -1,21 +1,13 @@
 {
   "hero": {
-    "title": "Sportverein Events",
-    "titleHighlight": "einfach gemacht.",
-    "subtitle": "Neue Spieltage in Sekunden erstellen. Ticketverkauf für Vereine – fair und transparent.",
+    "title": "Events organisieren.",
+    "titleHighlight": "Ohne Chaos.",
+    "subtitle": "Spiele, Turniere und Vereinsfeste in Sekunden erstellen. Ticketverkauf inklusive – fair und transparent.",
     "cta": "Jetzt Event erstellen",
     "explore": "Events erkunden",
     "trustFree": "Für immer kostenlos",
     "trustBerlin": "Made in Berlin",
-    "trustGdpr": "DSGVO konform",
-    "badge": "Für Amateurvereine",
-    "eventsCount": "250+ Events organisiert",
-    "categories": {
-      "football": "Fußballturniere",
-      "hockey": "Hockeyspiele",
-      "clubEvents": "Vereinsfeste",
-      "camps": "Trainingscamps"
-    }
+    "trustGdpr": "DSGVO konform"
   },
   "benefits": {
     "ready": {

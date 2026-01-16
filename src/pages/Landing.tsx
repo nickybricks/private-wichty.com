@@ -9,7 +9,7 @@ import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import heroMockup from "@/assets/hero-mockup.png";
-import { Clock, Shield, Wallet, Compass, Check, CalendarPlus, Trophy, Users } from "lucide-react";
+import { Clock, Shield, Wallet, Compass, Check, CalendarPlus } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -125,29 +125,10 @@ export default function Landing() {
         <Header user={user} />
 
         {/* Hero Section */}
-        <section className="relative max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-8 pb-16 sm:pb-24 overflow-hidden">
-          {/* Background Sport Icons - subtle decorative elements */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <svg className="absolute -left-20 top-20 w-64 h-64 text-primary/[0.03] rotate-12" viewBox="0 0 100 100" fill="currentColor">
-              <circle cx="50" cy="50" r="45" />
-              <path d="M50 5 L50 95 M5 50 L95 50 M15 15 L85 85 M85 15 L15 85" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
-            </svg>
-            <svg className="absolute -right-10 bottom-40 w-48 h-48 text-primary/[0.03] -rotate-12 hidden lg:block" viewBox="0 0 100 100" fill="currentColor">
-              <ellipse cx="50" cy="50" rx="45" ry="30" />
-            </svg>
-          </div>
-
-          <div className="relative grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <section className="max-w-[var(--max-width-extra-wide)] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 lg:pt-8 pb-16 sm:pb-24">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left: Text Content (Desktop) / Center Content (Mobile) */}
-            <div className="space-y-3 lg:space-y-5 order-1 text-center lg:text-left">
-              {/* Badge */}
-              <div className="flex justify-center lg:justify-start">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                  <Trophy className="w-3.5 h-3.5" />
-                  {t('hero.badge')}
-                </span>
-              </div>
-
+            <div className="space-y-2 lg:space-y-6 order-1 text-center lg:text-left">
               {/* Headline */}
               <h1 className="text-[32px] lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-foreground">{t('hero.title')}</span>
@@ -161,19 +142,6 @@ export default function Landing() {
               <p className="text-[19px] lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
                 {t('hero.subtitle')}
               </p>
-
-              {/* Category Pills */}
-              <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                {['football', 'hockey', 'clubEvents', 'camps'].map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => navigate(`/explore/category/${category === 'clubEvents' ? 'party' : category === 'camps' ? 'training' : category}`)}
-                    className="px-3 py-1.5 text-xs font-medium rounded-full bg-white border border-border/60 shadow-sm hover:shadow-md hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
-                  >
-                    {t(`hero.categories.${category}`)}
-                  </button>
-                ))}
-              </div>
 
               {/* CTA Buttons */}
               <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -211,14 +179,6 @@ export default function Landing() {
                   alt={lang === 'de' ? 'Wichty App Vorschau' : 'Wichty App Preview'}
                   className="w-[50%] max-w-[180px]"
                 />
-              </div>
-
-              {/* Social Proof Counter */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50">
-                  <Users className="w-4 h-4 text-primary" />
-                  <span className="font-medium">{t('hero.eventsCount')}</span>
-                </div>
               </div>
 
               {/* Trust Claims */}
