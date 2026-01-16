@@ -12,6 +12,33 @@
   }
 }
 
+/* Pulsating color spots animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, -10px);
+  }
+  50% {
+    transform: translate(-5px, 5px);
+  }
+  75% {
+    transform: translate(-10px, -5px);
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -77,6 +104,12 @@ All colors MUST be HSL.
     /* Liquid Glass effect for headers */
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-blur: blur(12px);
+
+    /* Dynamic background gradient */
+    --bg-gradient-base: 220 14% 98%;
+    --color-spot-coral: 347 100% 70%;
+    --color-spot-orange: 32 100% 71%;
+    --color-spot-pink: 330 100% 75%;
   }
 
   .dark {
@@ -146,6 +179,61 @@ All colors MUST be HSL.
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
+  }
+
+  /* Dynamic gradient background with pulsating color spots */
+  .bg-dynamic-gradient {
+    position: relative;
+    background: hsl(var(--bg-gradient-base));
+    overflow: hidden;
+  }
+
+  .bg-dynamic-gradient::before,
+  .bg-dynamic-gradient::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    will-change: opacity, transform;
+  }
+
+  /* Coral color spot - top right */
+  .bg-dynamic-gradient::before {
+    width: 600px;
+    height: 600px;
+    top: -200px;
+    right: -100px;
+    background: radial-gradient(circle, hsl(var(--color-spot-coral) / 0.25) 0%, transparent 70%);
+    animation: pulse-glow 8s ease-in-out infinite, float 15s ease-in-out infinite;
+  }
+
+  /* Orange/Pink color spot - bottom left */
+  .bg-dynamic-gradient::after {
+    width: 500px;
+    height: 500px;
+    bottom: 20%;
+    left: -100px;
+    background: radial-gradient(circle, hsl(var(--color-spot-orange) / 0.2) 0%, transparent 70%);
+    animation: pulse-glow 10s ease-in-out infinite 2s, float 20s ease-in-out infinite reverse;
+  }
+
+  /* Third color spot for more depth - added via wrapper pseudo-element */
+  .bg-dynamic-gradient-inner::before {
+    content: '';
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    top: 50%;
+    right: 20%;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(var(--color-spot-pink) / 0.15) 0%, transparent 70%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+    animation: pulse-glow 12s ease-in-out infinite 4s, float 18s ease-in-out infinite;
+    will-change: opacity, transform;
   }
 
   /* Card hover effect */

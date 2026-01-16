@@ -120,7 +120,9 @@ export default function Landing() {
         </script>
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-dynamic-gradient">
+        {/* Inner wrapper for third color spot */}
+        <div className="relative z-10 bg-dynamic-gradient-inner">
         {/* Header */}
         <Header user={user} />
 
@@ -299,6 +301,7 @@ export default function Landing() {
           open={createDrawerOpen} 
           onOpenChange={setCreateDrawerOpen}
         />
+        </div>
       </div>
     </>
   );
