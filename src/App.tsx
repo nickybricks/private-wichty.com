@@ -21,6 +21,7 @@ import Explore from "./pages/Explore";
 import ExploreCategory from "./pages/ExploreCategory";
 import ExploreCity from "./pages/ExploreCity";
 import UploadDemoImages from "./pages/UploadDemoImages";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/host/:id" element={<HostProfile />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
+          <Route path="/preise" element={<Pricing />} />
           <Route path="/ratgeber" element={<Blog />} />
           <Route path="/ratgeber/:slug" element={<BlogPost />} />
           <Route path="/ticket/:ticketCode" element={<Ticket />} />

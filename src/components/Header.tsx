@@ -10,7 +10,7 @@ import { CreateEventDrawer } from "@/components/CreateEventDrawer";
 import { AuthDialog } from "@/components/AuthDialog";
 
 interface HeaderProps {
-  user: any;
+  user?: any;
   showBackButton?: boolean;
   onBackClick?: () => void;
 }

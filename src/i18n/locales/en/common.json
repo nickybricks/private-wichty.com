@@ -12,6 +12,7 @@
     "about": "About Us",
     "legal": "Legal",
     "resources": "Resources",
+    "pricing": "Pricing",
     "imprint": "Imprint",
     "privacy": "Privacy Policy",
     "guide": "Guide",
@@ -157,6 +158,38 @@
       "codeSent": "Verification code sent!",
       "phoneVerified": "Phone number verified!",
       "resetLinkSent": "Password reset link sent!"
+    }
+  },
+  "pricing": {
+    "pageTitle": "Pricing",
+    "pageDescription": "Transparent pricing for your events – only 5% fee, minimum €0.50 per ticket.",
+    "title": "Simple. Fair. Transparent.",
+    "subtitle": "With Wichty, you only pay when you earn. No monthly fees, no hidden costs.",
+    "feeModel": {
+      "title": "Our Fee",
+      "description": "We charge a small fee only on paid tickets. Free events are completely free.",
+      "perTicket": "per ticket sold",
+      "minimum": "Minimum fee: €0.50"
+    },
+    "benefits": {
+      "title": "What You Get",
+      "noPlatformFee": "No monthly platform fees",
+      "freeEvents": "Free events stay free",
+      "flexibleFees": "Option to pass fees to customers",
+      "instantPayout": "Fast payout after the event"
+    },
+    "calculator": {
+      "title": "Cost Calculator",
+      "ticketPrice": "Your Ticket Price",
+      "passFeeToggle": "Pass fee to customer",
+      "passFeeDescription": "Customer pays ticket price + fee",
+      "breakdown": "Cost Breakdown",
+      "customerPays": "Customer pays",
+      "youReceive": "You receive",
+      "wichtyFee": "Wichty fee",
+      "feePassedNote": "The fee is added to the ticket price and paid by the customer.",
+      "feeDeductedNote": "The fee is deducted from your ticket price.",
+      "enterPrice": "Enter a ticket price to see the calculation."
     }
   }
 }
