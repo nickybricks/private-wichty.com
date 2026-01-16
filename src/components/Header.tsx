@@ -136,10 +136,6 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
                 <Sparkles 
                   className="h-6 w-6" 
                   style={{ 
-                    background: 'linear-gradient(90deg, #FFB86C 0%, #FF6788 50%, #C088FF 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
                     stroke: 'url(#icon-gradient)',
                     fill: 'none'
                   }} 
@@ -148,9 +144,8 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
               <svg width="0" height="0">
                 <defs>
                   <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#FFB86C" />
-                    <stop offset="50%" stopColor="#FF6788" />
-                    <stop offset="100%" stopColor="#C088FF" />
+                    <stop offset="0%" stopColor="#FF6788" />
+                    <stop offset="100%" stopColor="#00D4AA" />
                   </linearGradient>
                 </defs>
               </svg>
