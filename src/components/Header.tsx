@@ -103,6 +103,14 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => navigate("/preise")}
+                >
+                  {t('footer.pricing')}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => navigate("/explore")}
                 >
                   <Compass className="h-4 w-4 mr-2" />
@@ -221,6 +229,14 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
             <>
               {/* Desktop Navigation - Not Logged In */}
               <div className="hidden lg:flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/preise")}
+                >
+                  {t('footer.pricing')}
+                </Button>
+
                 <Button
                   variant="ghost"
                   size="sm"
