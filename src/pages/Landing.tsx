@@ -121,7 +121,8 @@ export default function Landing() {
       </Helmet>
 
       <div className="min-h-screen bg-dynamic-gradient">
-        <div className="relative z-10">
+        {/* Inner wrapper for third color spot */}
+        <div className="relative z-10 bg-dynamic-gradient-inner">
         {/* Header */}
         <Header user={user} />
 
