@@ -28,7 +28,7 @@ const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/40", className)} {...props} />
+  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/60", className)} {...props} />
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
@@ -51,7 +51,11 @@ const DrawerContent = React.forwardRef<
         fullScreenOnMobile ? "h-[100svh] max-h-[100svh]" : "mt-24 h-auto max-h-[85vh]",
         className,
       )}
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        // Ensure solid background extends beyond visible area for over-scroll
+        boxShadow: '0 -100px 0 100px hsl(var(--background))',
+      }}
       {...props}
     >
       <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted flex-shrink-0" />
