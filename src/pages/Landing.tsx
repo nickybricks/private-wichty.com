@@ -146,13 +146,13 @@ export default function Landing() {
               </p>
 
               {/* CTA Buttons */}
-              <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <div className="py-2 lg:pt-2 flex flex-wrap gap-3 justify-center lg:justify-start">
                 <button
                   onClick={handleCreateEvent}
-                  className="group relative h-14 px-8 text-lg font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] whitespace-nowrap"
+                  className="group relative h-12 px-6 text-base font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] whitespace-nowrap"
                   style={{
                     background: 'linear-gradient(135deg, #FF5A7E 0%, #FF7A5A 100%)',
-                    boxShadow: '0 8px 24px -8px rgba(255, 90, 126, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 6px 20px -6px rgba(255, 90, 126, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
                   }}
                 >
                   {/* Shimmer effect */}
@@ -160,16 +160,16 @@ export default function Landing() {
                   
                   {/* Button content */}
                   <span className="relative flex items-center justify-center gap-2">
-                    <CalendarPlus className="w-5 h-5" />
+                    <CalendarPlus className="w-4 h-4" />
                     {t('hero.cta')}
                   </span>
                 </button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/explore")}
-                  className="h-12 px-8 text-base font-semibold border-foreground/20 hover:bg-foreground/5 transition-all"
+                  className="h-12 px-6 text-base font-semibold border-foreground/20 hover:bg-foreground/5 transition-all rounded-full"
                 >
-                  <Compass className="w-5 h-5 mr-2" />
+                  <Compass className="w-4 h-4 mr-2" />
                   {t('hero.explore')}
                 </Button>
               </div>
@@ -272,10 +272,10 @@ export default function Landing() {
             </h2>
             <button
               onClick={handleCreateEvent}
-              className="group relative h-14 px-8 text-lg font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] min-w-[200px]"
+              className="group relative h-12 px-6 text-base font-semibold text-white rounded-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] whitespace-nowrap"
               style={{
                 background: 'linear-gradient(135deg, #FF5A7E 0%, #FF7A5A 100%)',
-                boxShadow: '0 8px 24px -8px rgba(255, 90, 126, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 6px 20px -6px rgba(255, 90, 126, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
               }}
             >
               {/* Shimmer effect */}
@@ -283,7 +283,7 @@ export default function Landing() {
               
               {/* Button content */}
               <span className="relative flex items-center justify-center gap-2">
-                <CalendarPlus className="w-5 h-5" />
+                <CalendarPlus className="w-4 h-4" />
                 {t('cta.button')}
               </span>
             </button>
