@@ -67,15 +67,18 @@ export function Header({ user, showBackButton = false, onBackClick }: HeaderProp
       <header 
         className={`
           sticky top-0 z-50 
-          border-b transition-all duration-300 ease-out
+          transition-all duration-300 ease-out
           ${isScrolled 
-            ? 'border-border/50 shadow-medium bg-white/80 backdrop-blur-xl' 
-            : 'border-transparent bg-white/60 backdrop-blur-md'
+            ? 'shadow-lg border-b border-white/20' 
+            : 'border-b border-transparent'
           }
         `}
         style={{
-          WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'blur(12px) saturate(150%)',
-          backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'blur(12px) saturate(150%)',
+          background: isScrolled 
+            ? 'rgba(255, 255, 255, 0.65)' 
+            : 'rgba(255, 255, 255, 0.4)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backdropFilter: 'blur(24px) saturate(180%)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
