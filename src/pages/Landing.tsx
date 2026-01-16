@@ -147,7 +147,7 @@ export default function Landing() {
               <div className="py-2 lg:pt-2 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <button
                   onClick={handleCreateEvent}
-                  className="group relative h-14 px-8 text-lg font-semibold text-white rounded-[16px] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] min-w-[200px]"
+                  className="group relative h-14 px-8 text-lg font-semibold text-white rounded-[16px] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-[0.98] whitespace-nowrap"
                   style={{
                     background: 'linear-gradient(135deg, #ff6b8b 0%, #ff8e72 100%)',
                     boxShadow: '0 8px 24px -8px rgba(255, 107, 139, 0.5), 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.2)',
